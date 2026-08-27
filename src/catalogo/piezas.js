@@ -1,0 +1,124 @@
+// ============================================================
+// CATÁLOGO REAL LAYHER ALLROUND
+// Pesos y medidas del catálogo F4-2018-SP
+// ============================================================
+
+export const CATALOGO = {
+  verticales: [
+    { id: 'V050', nombre: 'Vertical 0.50m', largo: 0.50, peso: 2.0,  ref: '2601.050', color: '#1e40af' },
+    { id: 'V100', nombre: 'Vertical 1.00m', largo: 1.00, peso: 3.9,  ref: '2601.100', color: '#1e40af' },
+    { id: 'V150', nombre: 'Vertical 1.50m', largo: 1.50, peso: 5.8,  ref: '2601.150', color: '#1e40af' },
+    { id: 'V200', nombre: 'Vertical 2.00m', largo: 2.00, peso: 7.7,  ref: '2601.200', color: '#1e40af' },
+    { id: 'V300', nombre: 'Vertical 3.00m', largo: 3.00, peso: 11.6, ref: '2601.300', color: '#1e40af' },
+    { id: 'V400', nombre: 'Vertical 4.00m', largo: 4.00, peso: 15.4, ref: '2601.400', color: '#1e40af' },
+  ],
+  horizontalesO: [
+    { id: 'HO073', nombre: 'Horizontal O 0.73m', largo: 0.73, peso: 3.1,  ref: '2607.073', color: '#059669' },
+    { id: 'HO109', nombre: 'Horizontal O 1.09m', largo: 1.09, peso: 4.3,  ref: '2607.109', color: '#059669' },
+    { id: 'HO140', nombre: 'Horizontal O 1.40m', largo: 1.40, peso: 5.4,  ref: '2607.140', color: '#059669' },
+    { id: 'HO157', nombre: 'Horizontal O 1.57m', largo: 1.57, peso: 5.9,  ref: '2607.157', color: '#059669' },
+    { id: 'HO207', nombre: 'Horizontal O 2.07m', largo: 2.07, peso: 7.8,  ref: '2607.207', color: '#059669' },
+    { id: 'HO257', nombre: 'Horizontal O 2.57m', largo: 2.57, peso: 9.7,  ref: '2607.257', color: '#059669' },
+    { id: 'HO307', nombre: 'Horizontal O 3.07m', largo: 3.07, peso: 11.4, ref: '2607.307', color: '#059669' },
+  ],
+  vigasPuente: [
+    { id: 'VP157', nombre: 'Viga Puente U 1.57m', largo: 1.57, peso: 9.4,  ref: '2624.157', color: '#b45309' },
+    { id: 'VP207', nombre: 'Viga Puente U 2.07m', largo: 2.07, peso: 12.1, ref: '2624.207', color: '#b45309' },
+    { id: 'VP257', nombre: 'Viga Puente U 2.57m', largo: 2.57, peso: 15.2, ref: '2624.257', color: '#b45309' },
+    { id: 'VP307', nombre: 'Viga Puente U 3.07m', largo: 3.07, peso: 17.6, ref: '2624.307', color: '#b45309' },
+  ],
+  horizontalesU: [
+    { id: 'HU045', nombre: 'Horizontal U 0.45m', largo: 0.45, peso: 2.1,  ref: '2613.045', color: '#92400e' },
+    { id: 'HU073', nombre: 'Horizontal U 0.73m', largo: 0.73, peso: 3.1,  ref: '2613.073', color: '#92400e' },
+    { id: 'HU109', nombre: 'Horizontal U 1.09m', largo: 1.09, peso: 4.4,  ref: '2613.108', color: '#92400e' },
+  ],
+  plataformas: [
+    { id: 'PL032_073', nombre: 'Plataforma 0.32×0.73m',  largo: 0.73, anchoPlat: 0.32, peso: 4.8,  ref: '3812.073', color: '#7f1d1d' },
+    { id: 'PL032_109', nombre: 'Plataforma 0.32×1.09m',  largo: 1.09, anchoPlat: 0.32, peso: 6.5,  ref: '3812.109', color: '#7f1d1d' },
+    { id: 'PL032_157', nombre: 'Plataforma 0.32×1.57m',  largo: 1.57, anchoPlat: 0.32, peso: 8.7,  ref: '3812.157', color: '#7f1d1d' },
+    { id: 'PL032_207', nombre: 'Plataforma 0.32×2.07m',  largo: 2.07, anchoPlat: 0.32, peso: 11.2, ref: '3812.207', color: '#7f1d1d' },
+    { id: 'PL032_257', nombre: 'Plataforma 0.32×2.57m',  largo: 2.57, anchoPlat: 0.32, peso: 13.5, ref: '3812.257', color: '#7f1d1d' },
+    { id: 'PL032_307', nombre: 'Plataforma 0.32×3.07m',  largo: 3.07, anchoPlat: 0.32, peso: 15.8, ref: '3812.307', color: '#7f1d1d' },
+    { id: 'PL061_073', nombre: 'Plataforma 0.61×0.73m',  largo: 0.73, anchoPlat: 0.61, peso: 7.0,  ref: '3835.073', color: '#7f1d1d' },
+    { id: 'PL061_109', nombre: 'Plataforma 0.61×1.09m',  largo: 1.09, anchoPlat: 0.61, peso: 9.8,  ref: '3835.109', color: '#7f1d1d' },
+    { id: 'PL061_157', nombre: 'Plataforma 0.61×1.57m',  largo: 1.57, anchoPlat: 0.61, peso: 13.4, ref: '3835.157', color: '#7f1d1d' },
+    { id: 'PL061_207', nombre: 'Plataforma 0.61×2.07m',  largo: 2.07, anchoPlat: 0.61, peso: 17.0, ref: '3835.207', color: '#7f1d1d' },
+    { id: 'PL061_257', nombre: 'Plataforma 0.61×2.57m',  largo: 2.57, anchoPlat: 0.61, peso: 20.5, ref: '3835.257', color: '#7f1d1d' },
+    { id: 'PL061_307', nombre: 'Plataforma 0.61×3.07m',  largo: 3.07, anchoPlat: 0.61, peso: 24.0, ref: '3835.307', color: '#7f1d1d' },
+  ],
+  barandillas: [
+    { id: 'BA073', nombre: 'Barandilla O 0.73m', largo: 0.73, peso: 3.1,  ref: '2607.073', color: '#0369a1' },
+    { id: 'BA109', nombre: 'Barandilla O 1.09m', largo: 1.09, peso: 4.3,  ref: '2607.109', color: '#0369a1' },
+    { id: 'BA157', nombre: 'Barandilla O 1.57m', largo: 1.57, peso: 5.9,  ref: '2607.157', color: '#0369a1' },
+    { id: 'BA207', nombre: 'Barandilla O 2.07m', largo: 2.07, peso: 7.8,  ref: '2607.207', color: '#0369a1' },
+    { id: 'BA257', nombre: 'Barandilla O 2.57m', largo: 2.57, peso: 9.7,  ref: '2607.257', color: '#0369a1' },
+    { id: 'BA307', nombre: 'Barandilla O 3.07m', largo: 3.07, peso: 11.4, ref: '2607.307', color: '#0369a1' },
+  ],
+  rodapies: [
+    { id: 'RP073', nombre: 'Rodapié 0.73m', largo: 0.73, peso: 1.4,  ref: '2640.073', color: '#a16207' },
+    { id: 'RP109', nombre: 'Rodapié 1.09m', largo: 1.09, peso: 2.0,  ref: '2640.109', color: '#a16207' },
+    { id: 'RP157', nombre: 'Rodapié 1.57m', largo: 1.57, peso: 2.7,  ref: '2640.157', color: '#a16207' },
+    { id: 'RP207', nombre: 'Rodapié 2.07m', largo: 2.07, peso: 3.5,  ref: '2640.207', color: '#a16207' },
+    { id: 'RP257', nombre: 'Rodapié 2.57m', largo: 2.57, peso: 4.2,  ref: '2640.257', color: '#a16207' },
+    { id: 'RP307', nombre: 'Rodapié 3.07m', largo: 3.07, peso: 5.0,  ref: '2640.307', color: '#a16207' },
+  ],
+  diagonales: [
+    { id: 'D109x200', nombre: 'Diagonal 1.09×2.00m', ancho: 1.09, alto: 2.00, peso: 5.8, ref: '2620.109', color: '#7c3aed' },
+    { id: 'D157x200', nombre: 'Diagonal 1.57×2.00m', ancho: 1.57, alto: 2.00, peso: 6.7, ref: '2620.157', color: '#7c3aed' },
+    { id: 'D207x200', nombre: 'Diagonal 2.07×2.00m', ancho: 2.07, alto: 2.00, peso: 7.6, ref: '2620.207', color: '#7c3aed' },
+    { id: 'D257x100', nombre: 'Diagonal 2.57×1.00m', ancho: 2.57, alto: 1.00, peso: 6.0, ref: '2620.256', color: '#7c3aed' },
+    { id: 'D257x150', nombre: 'Diagonal 2.57×1.50m', ancho: 2.57, alto: 1.50, peso: 7.5, ref: '2620.255', color: '#7c3aed' },
+    { id: 'D257x200', nombre: 'Diagonal 2.57×2.00m', ancho: 2.57, alto: 2.00, peso: 8.5, ref: '2620.257', color: '#7c3aed' },
+    { id: 'D307x200', nombre: 'Diagonal 3.07×2.00m', ancho: 3.07, alto: 2.00, peso: 9.5, ref: '2620.307', color: '#7c3aed' },
+  ],
+  // Diagonales horizontales (en plano de planta X-Z). Refs 2622/2623.xxx del catálogo
+  // Allround. Pesos aproximados — verificar contra F4-2018-SP al pulir el catálogo.
+  diagonalesPlanta: [
+    { id: 'DP157', nombre: 'Diagonal planta 1.57m', largo: 1.57, peso: 3.8, ref: '2622.157', color: '#c026d3' },
+    { id: 'DP207', nombre: 'Diagonal planta 2.07m', largo: 2.07, peso: 4.6, ref: '2622.207', color: '#c026d3' },
+    { id: 'DP257', nombre: 'Diagonal planta 2.57m', largo: 2.57, peso: 5.4, ref: '2622.257', color: '#c026d3' },
+    { id: 'DP307', nombre: 'Diagonal planta 3.07m', largo: 3.07, peso: 6.3, ref: '2622.307', color: '#c026d3' },
+    { id: 'DP363', nombre: 'Diagonal planta 3.63m (2.57×2.57)', largo: 3.634, peso: 7.4, ref: '2623.257', color: '#c026d3' },
+  ],
+  bases: [
+    { id: 'HUS060', nombre: 'Husillo regulable 0.60m', largo: 0.60, peso: 4.5, ref: '4001.060', color: '#7c2d12' },
+    { id: 'HUS080', nombre: 'Husillo regulable 0.80m', largo: 0.80, peso: 5.8, ref: '4001.080', color: '#7c2d12' },
+    { id: 'CO',     nombre: 'Collarín',                largo: 0.02, peso: 1.3, ref: '2603.000', color: '#78350f' },
+  ],
+};
+
+// Mapeo de categorías para el catálogo plano. `vistas` indica en qué vistas se muestra
+// esta sección de la paleta — las diagonales sólo tienen sentido colocarlas en su vista
+// nativa. Sin `vistas` = ambas.
+export const CAT_KEYS = [
+  { key: 'verticales',     cat: 'vertical',      label: 'Verticales' },
+  { key: 'horizontalesO',  cat: 'horizontalO',   label: 'Horizontales O (tubo)' },
+  { key: 'vigasPuente',    cat: 'vigaPuente',     label: 'Vigas Puente U' },
+  { key: 'horizontalesU',  cat: 'horizontalU',    label: 'Horizontales U' },
+  { key: 'plataformas',    cat: 'plataforma',     label: 'Plataformas' },
+  { key: 'barandillas',    cat: 'barandilla',     label: 'Barandillas' },
+  { key: 'rodapies',       cat: 'rodapie',        label: 'Rodapiés' },
+  { key: 'diagonales',     cat: 'diagonal',       label: 'Diagonales (alzado)', vistas: ['alzado'] },
+  { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: 'Diagonales (planta)', vistas: ['planta'] },
+  { key: 'bases',          cat: 'base',           label: 'Bases / Husillos' },
+];
+
+// Elige la diagonal de planta cuya longitud mejor cubre el vector origen→destino en X-Z.
+export function elegirDiagonalPlanta(dx, dz) {
+  const largoObj = Math.hypot(dx, dz);
+  let mejor = CATALOGO.diagonalesPlanta[0], mejorScore = Infinity;
+  CATALOGO.diagonalesPlanta.forEach(d => {
+    const score = Math.abs(d.largo - largoObj);
+    if (score < mejorScore) { mejorScore = score; mejor = d; }
+  });
+  return mejor;
+}
+
+export function elegirDiagonal(anchoObj, altoObj) {
+  let mejor = CATALOGO.diagonales[0]; let mejorScore = Infinity;
+  CATALOGO.diagonales.forEach(d => {
+    const score = Math.abs(d.ancho - anchoObj) + Math.abs(d.alto - altoObj) * 1.2;
+    if (score < mejorScore) { mejorScore = score; mejor = d; }
+  });
+  return mejor;
+}
