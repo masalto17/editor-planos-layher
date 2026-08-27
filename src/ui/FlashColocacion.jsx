@@ -1,0 +1,49 @@
+import { useState, useEffect, useCallback } from 'react';
+
+/**
+ * Flash visual al colocar una pieza — anillo verde que se expande y desvanece.
+ * Uso: <FlashColocacion piezas={piezas} worldToScreen={worldToScreen} />
+ * Detecta automáticamente cuando se agrega una pieza nueva.
+ */
+export default function FlashColocacion({ piezas, worldToScreen, useZ = false }) {
+  const [flashes, setFlashes] = useState([]);
+  const [prevCount, setPrevCount] = useState(piezas.length);
+
+  useEffect(() => {
+    if (piezas.length > prevCount) {
+      // Se agregó pieza(s): flash en la última
+      const nueva = piezas[piezas.length - 1];
+      if (nueva) {
+        const x = nueva.categoria === 'diagonal' ? nueva.x1 : nueva.x;
+        const y = nueva.y ?? 0;
+        const z = nueva.z ?? 0;
+        const id = Date.now();
+        setFlashes(prev => [...prev, { id, x, y, z }]);
+        setTimeout(() => setFlashes(prev => prev.filter(f => f.id !== id)), 600);
+      }
+    }
+    setPrevCount(piezas.length);
+  }, [piezas.length]);
+
+  if (!flashes.length) return null;
+
+  return (
+    <g pointerEvents="none">
+      {flashes.map(f => {
+        const p = worldToScreen(f.x, useZ ? f.z : f.y);
+        return (
+          <g key={f.id}>
+            <circle cx={p.x} cy={p.y} r="3" fill="#22c55e" opacity="0.9">
+              <animate attributeName="r" from="3" to="25" dur="0.5s" fill="freeze" />
+              <animate attributeName="opacity" from="0.9" to="0" dur="0.5s" fill="freeze" />
+            </circle>
+            <circle cx={p.x} cy={p.y} r="2" fill="#22c55e" opacity="0.7">
+              <animate attributeName="r" from="2" to="15" dur="0.35s" fill="freeze" />
+              <animate attributeName="opacity" from="0.7" to="0" dur="0.35s" fill="freeze" />
+            </circle>
+          </g>
+        );
+      })}
+    </g>
+  );
+}

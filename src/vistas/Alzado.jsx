@@ -4,6 +4,7 @@ import { piezaBounds, cruzaFilaZ } from '../modelo/operaciones.js';
 import PiezaRender, { PreviewDiagonal } from '../pieza-renders/index.jsx';
 import { Grilla, LineaBase, IndicadoresSnap } from './Compartidos.jsx';
 import Cotas from './Cotas.jsx';
+import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
 
 // Vista de alzado frontal: plano X (horizontal) - Y (altura), a la profundidad `filaZ` activa.
@@ -258,6 +259,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             onMouseEnter={(e) => { if (!arrastrando && !herramientaActiva) setHoverPieza({ pieza: p, screenX: e.clientX, screenY: e.clientY }); }}
             onMouseLeave={() => setHoverPieza(null)} />
         ))}
+        <FlashColocacion piezas={piezasFila} worldToScreen={worldToScreen} />
         {mostrarCotas && <Cotas piezas={piezasFila} worldToScreen={worldToScreen} zoom={zoom} worldVisible={worldVisible} dimCanvas={dimCanvas} modoTecnico={modoTecnico} />}
         {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && (
           <PiezaRender pieza={{ ...herramientaActiva, x: mousePos.x, y: mousePos.y, id: 'ghost', orientacion: orientacionActiva }}

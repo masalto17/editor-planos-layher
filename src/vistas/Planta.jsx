@@ -4,6 +4,7 @@ import { piezaBoundsXZ } from '../modelo/operaciones.js';
 import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
 import { Grilla, LineaBase, IndicadoresSnap } from './Compartidos.jsx';
 import CotasPlanta from './CotasPlanta.jsx';
+import FlashColocacion from '../ui/FlashColocacion.jsx';
 
 // Extremos de una horizontal en X-Z, respetando su orientacion.
 function extremosXZ(pieza) {
@@ -370,6 +371,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             <text x={mid.x} y={mid.y - 8} fontSize="9" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">→ {cat.nombre.replace('Diagonal planta ', 'DP ')}</text>
           </g>;
         })()}
+        <FlashColocacion piezas={piezas} worldToScreen={worldToScreen} useZ />
         {mostrarCotas && <CotasPlanta piezas={piezas} filas={filas} worldToScreen={worldToScreen} zoom={zoom} worldVisible={worldVisible} dimCanvas={dimCanvas} modoTecnico={modoTecnico} />}
         {seleccionRect && (() => {
           const p1 = worldToScreen(seleccionRect.x1, seleccionRect.z1), p2 = worldToScreen(seleccionRect.x2, seleccionRect.z2);

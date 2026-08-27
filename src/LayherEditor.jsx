@@ -9,6 +9,7 @@ import Planta from './vistas/Planta.jsx';
 import ModalGuardarCargar from './ui/ModalGuardarCargar.jsx';
 import ModalExportPDF from './ui/ModalExportPDF.jsx';
 import ModalConfirmar from './ui/ModalConfirmar.jsx';
+import AyudaRapida from './ui/AyudaRapida.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
 
 export default function LayherEditor() {
@@ -22,6 +23,7 @@ export default function LayherEditor() {
   const [exportando, setExportando] = useState(false);
   const [fitTrigger, setFitTrigger] = useState(0);
   const [confirmar, setConfirmar] = useState(null); // { mensaje, detalle, onConfirmar, label }
+  const [mostrarAyuda, setMostrarAyuda] = useState(false);
 
   const svgAlzadoRef = useRef(null);
   const svgPlantaRef = useRef(null);
@@ -113,6 +115,7 @@ export default function LayherEditor() {
         mostrarCotas={mostrarCotas} setMostrarCotas={setMostrarCotas}
         modoTecnico={modoTecnico} setModoTecnico={setModoTecnico}
         pesoTotal={pesoTotal} cantPiezas={cantPiezas}
+        onAyuda={() => setMostrarAyuda(true)}
       />
 
       <div className="flex-1 flex overflow-hidden">
@@ -149,6 +152,8 @@ export default function LayherEditor() {
           exportando={exportando}
         />
       )}
+
+      <AyudaRapida forzar={mostrarAyuda} onCerrar={() => setMostrarAyuda(false)} />
 
       {confirmar && (
         <ModalConfirmar

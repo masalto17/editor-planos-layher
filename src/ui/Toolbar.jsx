@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
-  Ruler, PenTool, Check, X, FileDown, Maximize2,
+  Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -18,6 +18,7 @@ export default function Toolbar({
   mostrarCotas, setMostrarCotas,
   modoTecnico, setModoTecnico,
   pesoTotal, cantPiezas,
+  onAyuda,
 }) {
   const filaActiva = filas.find(f => f.id === filaActivaId);
   const [editandoFila, setEditandoFila] = useState(false);
@@ -135,6 +136,7 @@ export default function Toolbar({
         </button>
         <div className="w-px h-5 bg-gray-300 mx-0.5" />
         <button onClick={borrarTodo} className="flex items-center gap-1 px-2 py-1 text-xs bg-red-50 hover:bg-red-100 text-red-700 rounded border border-red-300"><Trash2 size={13} /></button>
+        <button onClick={onAyuda} title="Ayuda rápida" className="p-1 bg-gray-100 hover:bg-blue-100 text-gray-500 hover:text-blue-600 rounded border border-gray-300"><HelpCircle size={13} /></button>
         <div className="flex-1" />
         <div className="text-[10px] text-gray-500 flex items-center gap-1"><Info size={11} />
           {vista === 'alzado' && herramientaActiva?.categoria === 'diagonal'
