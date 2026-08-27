@@ -19,7 +19,7 @@ export function Grilla({ worldVisible, worldToScreen, zoom }) {
 }
 
 // Línea base horizontal con achurado (suelo en Alzado, borde de referencia Z=0 en Planta).
-export function LineaBase({ worldVisible, worldToScreen, y = 0 }) {
+export function LineaBase({ worldVisible, worldToScreen, y = 0, label }) {
   const p1 = worldToScreen(worldVisible.xMin, y), p2 = worldToScreen(worldVisible.xMax, y);
   return (
     <g>
@@ -29,6 +29,12 @@ export function LineaBase({ worldVisible, worldToScreen, y = 0 }) {
         const pa = worldToScreen(xW, y);
         return <line key={i} x1={pa.x} y1={pa.y} x2={pa.x + 6} y2={pa.y + 6} stroke="#000" strokeWidth="0.5" opacity="0.5" />;
       })}
+      {label && (
+        <g>
+          <rect x={p2.x - 52} y={p1.y - 14} width={48} height={13} rx="2" fill="#000" fillOpacity="0.7" />
+          <text x={p2.x - 28} y={p1.y - 4} fontSize="9" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">{label}</text>
+        </g>
+      )}
     </g>
   );
 }

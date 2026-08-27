@@ -83,6 +83,18 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
       </g>
     );
   }
+  if (pieza.categoria === 'rodapie') {
+    // Rodapié: se dibuja igual que horizontal en planta — línea fina
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const g = Math.max(1.5, zoom * 0.03);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray="2 3" />
+      </g>
+    );
+  }
   if (pieza.categoria === 'diagonalPlanta') {
     const pA = worldToScreen(pieza.x1, pieza.z1), pB = worldToScreen(pieza.x2, pieza.z2);
     const g = Math.max(1.5, zoom * 0.035);
@@ -396,6 +408,12 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           </div>
         );
       })()}
+      {/* Controles de zoom */}
+      <div className="absolute bottom-2 right-56 flex items-center gap-1">
+        <button onClick={() => { const nz = Math.max(15, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
+        <div className="bg-white/90 border border-gray-300 text-[9px] text-gray-500 px-1.5 py-0.5 rounded font-mono min-w-[40px] text-center">{Math.round(zoom)}%</div>
+        <button onClick={() => { const nz = Math.min(220, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
+      </div>
       <div className="absolute bottom-2 right-2 bg-white/95 border border-gray-300 text-[9px] text-gray-500 px-2 py-0.5 rounded">
         Vista de planta · Z = profundidad/fila · Esquemático preliminar
       </div>

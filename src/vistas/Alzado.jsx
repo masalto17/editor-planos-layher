@@ -209,7 +209,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
         style={{ cursor: panneando ? 'grabbing' : arrastrando ? 'grabbing' : herramientaActiva ? 'crosshair' : 'default' }}>
         {mostrarGrilla && <Grilla worldVisible={worldVisible} worldToScreen={worldToScreen} zoom={zoom} />}
-        <LineaBase worldVisible={worldVisible} worldToScreen={worldToScreen} />
+        <LineaBase worldVisible={worldVisible} worldToScreen={worldToScreen} label="SUELO" />
         {/* Niveles de piso — marcas de altura cada 0.50m en borde izquierdo */}
         {(() => {
           const step = zoom > 80 ? 0.5 : zoom > 40 ? 1.0 : 2.0;
@@ -287,6 +287,12 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           {!mousePos.snapRoseta && mousePos.snapY && <span className="text-red-400 ml-1">◆Y</span>}
         </div>
       )}
+      {/* Controles de zoom */}
+      <div className="absolute bottom-2 right-44 flex items-center gap-1">
+        <button onClick={() => { const nz = Math.max(15, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
+        <div className="bg-white/90 border border-gray-300 text-[9px] text-gray-500 px-1.5 py-0.5 rounded font-mono min-w-[40px] text-center">{Math.round(zoom)}%</div>
+        <button onClick={() => { const nz = Math.min(220, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
+      </div>
       <div className="absolute bottom-2 right-2 bg-white/95 border border-gray-300 text-[9px] text-gray-500 px-2 py-0.5 rounded">
         Esquemático preliminar · No usar como guía de armado
       </div>
