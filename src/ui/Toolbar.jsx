@@ -47,7 +47,10 @@ export default function Toolbar({
       <>
         {/* Header compacto */}
         <div className="bg-black text-white px-3 py-1.5 flex items-center justify-between border-b-2 border-red-600">
-          <div className="text-red-600 font-black text-lg tracking-tight">MÁSALTO</div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <img src="/branding/masalto-isotipo.svg" alt="" style={{ height: 20 }} />
+            <div className="text-red-600 font-black text-lg tracking-tight">MÁSALTO</div>
+          </div>
           <div className="flex items-center gap-0.5 bg-gray-800 rounded p-0.5">
             <button onClick={() => setVista('alzado')}
               className={`flex items-center gap-1 px-2 py-1 text-[11px] rounded ${vista === 'alzado' ? 'bg-red-600 text-white' : 'text-gray-300'}`}>
@@ -132,7 +135,10 @@ export default function Toolbar({
       {/* HEADER */}
       <div className="bg-black text-white px-4 py-2 flex items-center justify-between border-b-2 border-red-600">
         <div className="flex items-center gap-3">
-          <div className="text-red-600 font-black text-xl tracking-tight">MÁSALTO</div>
+          <div className="flex items-center gap-2">
+            <img src="/branding/masalto-isotipo.svg" alt="MásAlto" style={{ height: 28 }} />
+            <div className="text-red-600 font-black text-xl tracking-tight">MÁSALTO</div>
+          </div>
           <div className="text-gray-400 text-xs">/</div>
           <div className="font-semibold text-sm">Editor de Planos Layher</div>
           <div className="text-gray-500 text-xs">v2.0</div>
