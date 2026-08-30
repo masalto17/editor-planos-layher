@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { DRAG_UMBRAL_PX, ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js';
 import { piezaBoundsXZ } from '../modelo/operaciones.js';
 import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
-import { Grilla, LineaBase, IndicadoresSnap } from './Compartidos.jsx';
+import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartidos.jsx';
 import CotasPlanta from './CotasPlanta.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 
@@ -13,7 +13,71 @@ function extremosXZ(pieza) {
   return { x1: pieza.x, z1: z, x2: pieza.x + pieza.largo, z2: z };
 }
 
-const TECNICO_COLORS_PLANTA = { vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333', plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333', base: '#222' };
+const TECNICO_COLORS_PLANTA = {
+  vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
+  plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
+  base: '#222', collarin: '#222', vigaIPN: '#222', truss: '#333',
+};
+
+// ─── Helpers de dibujo para planta (estilo plano profesional) ───
+
+// Doble línea paralela: desplaza perpendicular al eje de la pieza
+function dobleLinea(pL, pR, sep, lineW, sc, dash) {
+  const dx = pR.x - pL.x, dy = pR.y - pL.y;
+  const len = Math.sqrt(dx * dx + dy * dy) || 1;
+  const nx = -dy / len, ny = dx / len; // normal perpendicular
+  const off = sep / 2;
+  return <>
+    <line x1={pL.x + nx * off} y1={pL.y + ny * off} x2={pR.x + nx * off} y2={pR.y + ny * off}
+      stroke={sc} strokeWidth={lineW} strokeLinecap="butt" strokeDasharray={dash || 'none'} />
+    <line x1={pL.x - nx * off} y1={pL.y - ny * off} x2={pR.x - nx * off} y2={pR.y - ny * off}
+      stroke={sc} strokeWidth={lineW} strokeLinecap="butt" strokeDasharray={dash || 'none'} />
+  </>;
+}
+
+// Achurado diagonal dentro de un rectángulo (para plataformas)
+function achuradoDiagonal(px, py, w, h, sc, zoom) {
+  if (zoom < 20 || w < 6 || h < 6) return null;
+  const step = Math.max(5, zoom * 0.07);
+  const lines = [];
+  // Líneas 45° de esquina inferior-izq a esquina superior-der
+  for (let d = -Math.max(w, h); d < Math.max(w, h) * 2; d += step) {
+    const x1c = px + d, y1c = py;
+    const x2c = px + d - h, y2c = py + h;
+    // Clip al rectángulo
+    const pts = clipLineToRect(x1c, y1c, x2c, y2c, px, py, px + w, py + h);
+    if (pts) lines.push(
+      <line key={d} x1={pts.x1} y1={pts.y1} x2={pts.x2} y2={pts.y2}
+        stroke={sc} strokeWidth={Math.max(0.3, zoom * 0.004)} opacity="0.35" />
+    );
+  }
+  return lines;
+}
+
+// Cohen-Sutherland line clipping simplificado
+function clipLineToRect(x1, y1, x2, y2, xmin, ymin, xmax, ymax) {
+  const INSIDE = 0, LEFT = 1, RIGHT = 2, BOTTOM = 4, TOP = 8;
+  const code = (x, y) => {
+    let c = INSIDE;
+    if (x < xmin) c |= LEFT; else if (x > xmax) c |= RIGHT;
+    if (y < ymin) c |= TOP; else if (y > ymax) c |= BOTTOM;
+    return c;
+  };
+  let c1 = code(x1, y1), c2 = code(x2, y2);
+  for (let i = 0; i < 10; i++) {
+    if (!(c1 | c2)) return { x1, y1, x2, y2 };
+    if (c1 & c2) return null;
+    const c = c1 || c2;
+    let x, y;
+    if (c & BOTTOM) { x = x1 + (x2 - x1) * (ymax - y1) / (y2 - y1); y = ymax; }
+    else if (c & TOP) { x = x1 + (x2 - x1) * (ymin - y1) / (y2 - y1); y = ymin; }
+    else if (c & RIGHT) { y = y1 + (y2 - y1) * (xmax - x1) / (x2 - x1); x = xmax; }
+    else { y = y1 + (y2 - y1) * (xmin - x1) / (x2 - x1); x = xmin; }
+    if (c === c1) { x1 = x; y1 = y; c1 = code(x1, y1); }
+    else { x2 = x; y2 = y; c2 = code(x2, y2); }
+  }
+  return null;
+}
 
 function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraAltura, onMouseDown, modoTecnico }) {
   const op = fantasma ? 0.4 : otraAltura ? 0.18 : 1;
@@ -21,21 +85,70 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
   const cur = fantasma ? 'none' : 'pointer';
   const z = pieza.z ?? 0;
 
-  if (ES_TIPO_VERTICAL(pieza.categoria)) {
+  // ── Vertical (parante) → cuadrado relleno con círculo interior (sección del tubo) ──
+  if (pieza.categoria === 'vertical') {
     const p = worldToScreen(pieza.x, z);
-    const r = Math.max(3, zoom * 0.06);
+    const s = Math.max(3.5, zoom * 0.06);  // media-lado del cuadrado
+    const tubeR = s * 0.55;                 // radio del tubo interior
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
-        <circle cx={p.x} cy={p.y} r={r} fill={sc} stroke="#000" strokeWidth="0.5" />
+        {seleccionada && <rect x={p.x - s - 3} y={p.y - s - 3} width={(s + 3) * 2} height={(s + 3) * 2}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Cuadrado exterior (sección roseta) */}
+        <rect x={p.x - s} y={p.y - s} width={s * 2} height={s * 2}
+          fill={sc} stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.006)} />
+        {/* Círculo interior (sección tubo hueco) */}
+        <circle cx={p.x} cy={p.y} r={tubeR}
+          fill="none" stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.005)} opacity="0.5" />
       </g>
     );
   }
+
+  // ── Base regulable (husillo) → cuadrado con X (placa base vista desde arriba) ──
+  if (pieza.categoria === 'base') {
+    const p = worldToScreen(pieza.x, z);
+    const s = Math.max(5, zoom * 0.08);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={p.x - s - 3} y={p.y - s - 3} width={(s + 3) * 2} height={(s + 3) * 2}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        <rect x={p.x - s} y={p.y - s} width={s * 2} height={s * 2}
+          fill={sc} fillOpacity="0.6" stroke="#000" strokeWidth={Math.max(0.6, zoom * 0.007)} />
+        {/* X diagonal (marca de placa base) */}
+        <line x1={p.x - s * 0.7} y1={p.y - s * 0.7} x2={p.x + s * 0.7} y2={p.y + s * 0.7}
+          stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} />
+        <line x1={p.x + s * 0.7} y1={p.y - s * 0.7} x2={p.x - s * 0.7} y2={p.y + s * 0.7}
+          stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} />
+        {/* Agujeros esquinas */}
+        {zoom > 30 && <>
+          {[-0.6, 0.6].map(fx => [-0.6, 0.6].map(fy =>
+            <circle key={`${fx}${fy}`} cx={p.x + s * fx} cy={p.y + s * fy} r={Math.max(0.6, zoom * 0.007)}
+              fill="#000" opacity="0.25" />
+          ))}
+        </>}
+      </g>
+    );
+  }
+
+  // ── Collarín → anillo (círculo con hueco) ──
+  if (pieza.categoria === 'collarin') {
+    const p = worldToScreen(pieza.x, z);
+    const r = Math.max(4, zoom * 0.065);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
+        <circle cx={p.x} cy={p.y} r={r}
+          fill={sc} fillOpacity="0.5" stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.006)} />
+        <circle cx={p.x} cy={p.y} r={r * 0.45}
+          fill="none" stroke="#000" strokeWidth={Math.max(0.4, zoom * 0.005)} opacity="0.4" />
+      </g>
+    );
+  }
+
+  // ── Plataforma → rectángulo con achurado diagonal (estilo plano profesional) ──
   if (pieza.categoria === 'plataforma') {
     const { x1, z1, x2, z2 } = extremosXZ(pieza);
     const pA = worldToScreen(x1, z1), pB = worldToScreen(x2, z2);
-    // El ancho visual perpendicular al largo depende del eje: plataforma 0.61m ancha
-    // se ve como banda de 0.61m en el eje transversal al largo.
     const anchoW = pieza.anchoPlat || 0.32;
     const hor = pieza.orientacion !== 'z';
     const px = hor ? Math.min(pA.x, pB.x) : Math.min(pA.x, pB.x) - anchoW * zoom / 2;
@@ -44,65 +157,165 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     const h = hor ? anchoW * zoom : Math.abs(pB.y - pA.y);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6} fill="none" stroke="#E30613" strokeWidth="2" />}
-        <rect x={px} y={py} width={w} height={h} fill={sc} fillOpacity="0.55" stroke={sc} strokeWidth="1" />
+        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Relleno base */}
+        <rect x={px} y={py} width={w} height={h}
+          fill={sc} fillOpacity="0.15" stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} />
+        {/* Achurado diagonal */}
+        {achuradoDiagonal(px, py, w, h, sc, zoom)}
       </g>
     );
   }
-  if (ES_TIPO_HORIZONTAL(pieza.categoria)) {
+
+  // ── Horizontales O (tubo) → doble línea (sección circular vista en planta) ──
+  if (pieza.categoria === 'horizontalO') {
     const { x1, z1, x2, z2 } = extremosXZ(pieza);
     const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
-    const g = Math.max(2, zoom * 0.045);
-    const isDashed = pieza.categoria === 'barandilla';
+    const sep = Math.max(3, zoom * 0.04);      // separación entre líneas
+    const lineW = Math.max(0.8, zoom * 0.012);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
-        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray={isDashed ? '8 4' : 'none'} />
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 8} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
       </g>
     );
   }
+
+  // ── Viga Puente U → doble línea más gruesa (perfil U más ancho) ──
+  if (pieza.categoria === 'vigaPuente') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(5, zoom * 0.06);
+    const lineW = Math.max(1, zoom * 0.015);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 8} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+      </g>
+    );
+  }
+
+  // ── Horizontal U → doble línea fina ──
+  if (pieza.categoria === 'horizontalU') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(2.5, zoom * 0.035);
+    const lineW = Math.max(0.6, zoom * 0.01);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+      </g>
+    );
+  }
+
+  // ── Barandilla → doble línea punteada ──
+  if (pieza.categoria === 'barandilla') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(2, zoom * 0.03);
+    const lineW = Math.max(0.5, zoom * 0.008);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc, '6 3')}
+      </g>
+    );
+  }
+
+  // ── Viga IPN → doble línea gruesa (perfil I ancho) ──
+  if (pieza.categoria === 'vigaIPN') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(5, zoom * 0.065);
+    const lineW = Math.max(1.2, zoom * 0.018);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 8} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+        {/* Línea central alma (perfil I tiene alma visible) */}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke={sc} strokeWidth={Math.max(0.4, zoom * 0.005)} opacity="0.4" />
+      </g>
+    );
+  }
+
+  // ── Truss → doble línea con celosía (zigzag entre las dos líneas) ──
+  if (pieza.categoria === 'truss') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(6, zoom * 0.07);
+    const lineW = Math.max(0.8, zoom * 0.012);
+    const dx = pR.x - pL.x, dy = pR.y - pL.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    const off = sep / 2;
+    // Zigzag
+    const zigzag = [];
+    if (zoom > 15) {
+      const step = Math.max(8, zoom * 0.1);
+      const segs = Math.max(2, Math.floor(len / step));
+      for (let i = 0; i <= segs; i++) {
+        const t = i / segs;
+        const cx = pL.x + dx * t, cy = pL.y + dy * t;
+        const side = i % 2 === 0 ? 1 : -1;
+        zigzag.push({ x: cx + nx * off * side, y: cy + ny * off * side });
+      }
+    }
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 8} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+        {zigzag.length > 1 && <polyline points={zigzag.map(p => `${p.x},${p.y}`).join(' ')}
+          fill="none" stroke={sc} strokeWidth={Math.max(0.5, zoom * 0.007)} opacity="0.5" />}
+      </g>
+    );
+  }
+
+  // ── Diagonal alzado → marca rombo ──
   if (pieza.categoria === 'diagonal') {
-    // Diagonal de alzado — proyección en planta: sólo se ve como marca en su fila.
     const midX = (pieza.x1 + pieza.x2) / 2;
     const p = worldToScreen(midX, z);
     return (
       <g opacity={op * 0.6} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="none" stroke={sc} strokeWidth="1.5" transform={`rotate(45 ${p.x} ${p.y})`} />
+        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="none" stroke={sc}
+          strokeWidth="1.5" transform={`rotate(45 ${p.x} ${p.y})`} />
       </g>
     );
   }
-  if (pieza.categoria === 'base') {
-    // Husillo/collarín: cuadrado con X en planta
-    const p = worldToScreen(pieza.x, z);
-    const s = Math.max(4, zoom * 0.07);
-    return (
-      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={p.x - s - 3} y={p.y - s - 3} width={(s + 3) * 2} height={(s + 3) * 2} fill="none" stroke="#E30613" strokeWidth="2" />}
-        <rect x={p.x - s} y={p.y - s} width={s * 2} height={s * 2} fill={sc} fillOpacity="0.7" stroke="#000" strokeWidth="0.5" />
-        <line x1={p.x - s * 0.6} y1={p.y - s * 0.6} x2={p.x + s * 0.6} y2={p.y + s * 0.6} stroke="#fff" strokeWidth="0.8" />
-        <line x1={p.x + s * 0.6} y1={p.y - s * 0.6} x2={p.x - s * 0.6} y2={p.y + s * 0.6} stroke="#fff" strokeWidth="0.8" />
-      </g>
-    );
-  }
+
+  // ── Rodapié → línea fina punteada ──
   if (pieza.categoria === 'rodapie') {
-    // Rodapié: se dibuja igual que horizontal en planta — línea fina
     const { x1, z1, x2, z2 } = extremosXZ(pieza);
     const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
     const g = Math.max(1.5, zoom * 0.03);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
-        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y} stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray="2 3" />
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray="2 3" />
       </g>
     );
   }
+
+  // ── Diagonal de planta → línea dash con puntos extremos ──
   if (pieza.categoria === 'diagonalPlanta') {
     const pA = worldToScreen(pieza.x1, pieza.z1), pB = worldToScreen(pieza.x2, pieza.z2);
     const g = Math.max(1.5, zoom * 0.035);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y} stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
-        <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y} stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray="6 2" />
+        {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
+          stroke="#E30613" strokeWidth={g + 6} opacity="0.25" strokeLinecap="round" />}
+        <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
+          stroke={sc} strokeWidth={g} strokeLinecap="round" strokeDasharray="6 2" />
         <circle cx={pA.x} cy={pA.y} r={Math.max(2, zoom * 0.03)} fill={sc} />
         <circle cx={pB.x} cy={pB.y} r={Math.max(2, zoom * 0.03)} fill={sc} />
       </g>
@@ -379,7 +592,10 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             fill="#3b82f6" fillOpacity="0.08" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4 3" />;
         })()}
         {mouseEnCanvas && herramientaActiva && (mousePos.snapX || mousePos.snapZ) && (
-          <IndicadoresSnap mousePos={{ x: mousePos.x, y: mousePos.z, snapX: mousePos.snapX, snapY: mousePos.snapZ }} worldToScreen={(wx, wy) => worldToScreen(wx, wy)} dimCanvas={dimCanvas} />
+          <IndicadoresSnap mousePos={{ x: mousePos.x, y: mousePos.z, snapX: mousePos.snapX, snapY: mousePos.snapZ }} worldToScreen={(wx, wy) => worldToScreen(wx, wy)} dimCanvas={dimCanvas} zoom={zoom} />
+        )}
+        {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (
+          <GuiasModulacion mousePos={{ ...mousePos, y: mousePos.z }} worldToScreen={(wx, wy) => worldToScreen(wx, wy)} dimCanvas={dimCanvas} zoom={zoom} vista="planta" />
         )}
       </svg>
       {mouseEnCanvas && (
@@ -387,6 +603,12 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           X:{mousePos.x.toFixed(2)}m Z:{mousePos.z.toFixed(2)}m
           {mousePos.snapX && <span className="text-red-400 ml-1">◆X</span>}
           {mousePos.snapZ && <span className="text-red-400 ml-1">◆Z</span>}
+          {mousePos.distanciaX > 0.01 && (
+            <span className={mousePos.snapModuloX > 0 ? 'text-green-400 ml-1' : 'text-yellow-300 ml-1'}>
+              ↔{mousePos.distanciaX.toFixed(2)}m
+              {mousePos.snapModuloX > 0 && ' ✓mod'}
+            </span>
+          )}
         </div>
       )}
       {/* Badge altura Y activa */}

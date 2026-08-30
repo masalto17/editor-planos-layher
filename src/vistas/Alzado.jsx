@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { DRAG_UMBRAL_PX, Z_ORDER } from '../catalogo/constantes.js';
 import { piezaBounds, cruzaFilaZ } from '../modelo/operaciones.js';
 import PiezaRender, { PreviewDiagonal } from '../pieza-renders/index.jsx';
-import { Grilla, LineaBase, IndicadoresSnap } from './Compartidos.jsx';
+import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartidos.jsx';
 import Cotas from './Cotas.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
@@ -278,7 +278,10 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             fill="#3b82f6" fillOpacity="0.08" stroke="#3b82f6" strokeWidth="1" strokeDasharray="4 3" />;
         })()}
         {mouseEnCanvas && herramientaActiva && (mousePos.snapX || mousePos.snapY) && (
-          <IndicadoresSnap mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} />
+          <IndicadoresSnap mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} />
+        )}
+        {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (
+          <GuiasModulacion mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} vista="alzado" />
         )}
       </svg>
       {mouseEnCanvas && (
@@ -287,6 +290,12 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           {mousePos.snapRoseta && <span className="text-purple-300 ml-1">◆roseta</span>}
           {!mousePos.snapRoseta && mousePos.snapX && <span className="text-red-400 ml-1">◆X</span>}
           {!mousePos.snapRoseta && mousePos.snapY && <span className="text-red-400 ml-1">◆Y</span>}
+          {mousePos.distanciaVertical > 0.01 && (
+            <span className={mousePos.snapModulo > 0 ? 'text-green-400 ml-1' : 'text-yellow-300 ml-1'}>
+              ↔{mousePos.distanciaVertical.toFixed(2)}m
+              {mousePos.snapModulo > 0 && ' ✓mod'}
+            </span>
+          )}
         </div>
       )}
       {/* Controles de zoom */}

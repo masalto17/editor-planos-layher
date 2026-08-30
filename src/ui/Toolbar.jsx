@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
-  Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle,
+  Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle, Menu,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -19,11 +19,13 @@ export default function Toolbar({
   modoTecnico, setModoTecnico,
   pesoTotal, cantPiezas,
   onAyuda,
+  isMobile, onTogglePaleta, onToggleDespiece,
 }) {
   const filaActiva = filas.find(f => f.id === filaActivaId);
   const [editandoFila, setEditandoFila] = useState(false);
   const [editNombre, setEditNombre] = useState('');
   const [editZ, setEditZ] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const iniciarEdicionFila = () => {
     if (!filaActiva) return;
     setEditNombre(filaActiva.nombre);
@@ -38,6 +40,93 @@ export default function Toolbar({
   };
   const cancelarEdicionFila = () => setEditandoFila(false);
   const orientacionUsable = herramientaActiva && TIENE_ORIENTACION(herramientaActiva.categoria);
+
+  // ═══ MOBILE TOOLBAR ═══
+  if (isMobile) {
+    return (
+      <>
+        {/* Header compacto */}
+        <div className="bg-black text-white px-3 py-1.5 flex items-center justify-between border-b-2 border-red-600">
+          <div className="text-red-600 font-black text-lg tracking-tight">MÁSALTO</div>
+          <div className="flex items-center gap-0.5 bg-gray-800 rounded p-0.5">
+            <button onClick={() => setVista('alzado')}
+              className={`flex items-center gap-1 px-2 py-1 text-[11px] rounded ${vista === 'alzado' ? 'bg-red-600 text-white' : 'text-gray-300'}`}>
+              <LayoutPanelTop size={12} /> Alzado
+            </button>
+            <button onClick={() => setVista('planta')}
+              className={`flex items-center gap-1 px-2 py-1 text-[11px] rounded ${vista === 'planta' ? 'bg-red-600 text-white' : 'text-gray-300'}`}>
+              <Rows3 size={12} /> Planta
+            </button>
+          </div>
+          <button onClick={() => setMobileMenuOpen(m => !m)} className="p-1 text-gray-300 hover:text-white">
+            <Menu size={20} />
+          </button>
+        </div>
+
+        {/* Barra contextual compacta */}
+        <div className="bg-white border-b border-gray-300 px-2 py-1 flex items-center gap-1 text-[10px]">
+          {vista === 'alzado' ? (
+            <div className="flex items-center gap-1 text-gray-600 flex-1 min-w-0">
+              <span className="shrink-0">Fila:</span>
+              <select value={filaActivaId} onChange={e => setFilaActivaId(e.target.value)}
+                className="px-1 py-0.5 border border-gray-300 rounded text-[11px] font-mono bg-white min-w-0">
+                {filas.map(f => <option key={f.id} value={f.id}>{f.nombre} · Z={f.z.toFixed(2)}m</option>)}
+              </select>
+              <button onClick={agregarFila} className="p-1 bg-gray-100 rounded border border-gray-300 shrink-0"><Plus size={11} /></button>
+            </div>
+          ) : (
+            <label className="flex items-center gap-1 text-gray-600 flex-1">
+              <span className="shrink-0">Altura:</span>
+              <input type="number" step="0.1" value={alturaY} onChange={e => setAlturaY(parseFloat(e.target.value) || 0)}
+                className="w-14 px-1 py-0.5 border border-gray-300 rounded text-[11px] font-mono" />
+              <span>m</span>
+            </label>
+          )}
+          <div className="flex items-center gap-0.5 shrink-0">
+            <button onClick={toggleOrientacion}
+              className={`px-1.5 py-0.5 text-[10px] rounded border font-mono ${orientacionUsable ? 'bg-white border-gray-300' : 'bg-gray-100 border-gray-200 text-gray-400'}`}>
+              <RotateCw size={10} className="inline mr-0.5" />{orientacionActiva.toUpperCase()}
+            </button>
+            <button onClick={zoomEncuadrar} className="p-1 bg-gray-100 rounded border border-gray-300"><Maximize2 size={12} /></button>
+            <button onClick={() => setMostrarGrilla(g => !g)}
+              className={`p-1 rounded border ${mostrarGrilla ? 'bg-red-50 border-red-300' : 'bg-gray-100 border-gray-300'}`}><Grid3x3 size={12} /></button>
+          </div>
+        </div>
+
+        {/* Menu desplegable móvil */}
+        {mobileMenuOpen && (
+          <>
+            <div className="fixed inset-0 z-50" onClick={() => setMobileMenuOpen(false)} />
+            <div className="absolute right-2 top-12 z-50 bg-white rounded-lg shadow-xl border border-gray-300 py-1 w-48">
+              <button onClick={() => { guardar(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><Save size={14} /> Guardar</button>
+              <button onClick={() => { cargar(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><FolderOpen size={14} /> Cargar</button>
+              <button onClick={() => { exportarPDF(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100 text-red-700"><FileDown size={14} /> Exportar PDF</button>
+              <div className="border-t border-gray-200 my-1" />
+              <button onClick={() => { setMostrarCotas(c => !c); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100">
+                <Ruler size={14} /> Cotas {mostrarCotas ? '✓' : ''}</button>
+              <button onClick={() => { setModoTecnico(m => !m); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100">
+                <PenTool size={14} /> Modo CAD {modoTecnico ? '✓' : ''}</button>
+              <div className="border-t border-gray-200 my-1" />
+              <button onClick={() => { borrarTodo(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100 text-red-600"><Trash2 size={14} /> Borrar todo</button>
+              <button onClick={() => { onAyuda(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><HelpCircle size={14} /> Ayuda</button>
+              {cantPiezas > 0 && (
+                <div className="px-3 py-1 text-[10px] text-gray-500 border-t border-gray-200 mt-1">{cantPiezas} pzas · {pesoTotal.toFixed(0)} kg</div>
+              )}
+            </div>
+          </>
+        )}
+      </>
+    );
+  }
+
+  // ═══ DESKTOP TOOLBAR (sin cambios) ═══
   return (
     <>
       {/* HEADER */}

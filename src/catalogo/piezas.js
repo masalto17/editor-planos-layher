@@ -1,6 +1,7 @@
 // ============================================================
-// CATÁLOGO REAL LAYHER ALLROUND
-// Pesos y medidas del catálogo F4-2018-SP
+// CATÁLOGO REAL LAYHER ALLROUND + COMPLEMENTOS + TÉCNICA
+// Pesos y medidas del catálogo F4-2018-SP (Layher).
+// Pesos aprox. marcados con ≈ — verificar contra catálogo.
 // ============================================================
 
 export const CATALOGO = {
@@ -71,8 +72,6 @@ export const CATALOGO = {
     { id: 'D257x200', nombre: 'Diagonal 2.57×2.00m', ancho: 2.57, alto: 2.00, peso: 8.5, ref: '2620.257', color: '#7c3aed' },
     { id: 'D307x200', nombre: 'Diagonal 3.07×2.00m', ancho: 3.07, alto: 2.00, peso: 9.5, ref: '2620.307', color: '#7c3aed' },
   ],
-  // Diagonales horizontales (en plano de planta X-Z). Refs 2622/2623.xxx del catálogo
-  // Allround. Pesos aproximados — verificar contra F4-2018-SP al pulir el catálogo.
   diagonalesPlanta: [
     { id: 'DP157', nombre: 'Diagonal planta 1.57m', largo: 1.57, peso: 3.8, ref: '2622.157', color: '#c026d3' },
     { id: 'DP207', nombre: 'Diagonal planta 2.07m', largo: 2.07, peso: 4.6, ref: '2622.207', color: '#c026d3' },
@@ -81,26 +80,49 @@ export const CATALOGO = {
     { id: 'DP363', nombre: 'Diagonal planta 3.63m (2.57×2.57)', largo: 3.634, peso: 7.4, ref: '2623.257', color: '#c026d3' },
   ],
   bases: [
-    { id: 'HUS060', nombre: 'Husillo regulable 0.60m', largo: 0.60, peso: 4.5, ref: '4001.060', color: '#7c2d12' },
-    { id: 'HUS080', nombre: 'Husillo regulable 0.80m', largo: 0.80, peso: 5.8, ref: '4001.080', color: '#7c2d12' },
-    { id: 'CO',     nombre: 'Collarín',                largo: 0.02, peso: 1.3, ref: '2603.000', color: '#78350f' },
+    { id: 'HUS060', nombre: 'Tornillón regulable 0.60m', largo: 0.60, peso: 4.5, ref: '4001.060', color: '#7c2d12' },
+    { id: 'HUS080', nombre: 'Tornillón regulable 0.80m', largo: 0.80, peso: 5.8, ref: '4001.080', color: '#7c2d12' },
+  ],
+  collarines: [
+    { id: 'CO', nombre: 'Collarín', largo: 0.02, peso: 1.3, ref: '2603.000', color: '#78350f' },
+  ],
+
+  // ─── COMPLEMENTOS ───────────────────────────────────────
+  // Vigas IPN para rigging de sonido, pantallas, etc.
+  vigasIPN: [
+    { id: 'IPN200_3', nombre: 'Viga IPN 200 × 3m', largo: 3.00, peso: 78.0,  ref: 'IPN-200-3', color: '#374151' },
+    { id: 'IPN200_4', nombre: 'Viga IPN 200 × 4m', largo: 4.00, peso: 104.0, ref: 'IPN-200-4', color: '#374151' },
+    { id: 'IPN200_6', nombre: 'Viga IPN 200 × 6m', largo: 6.00, peso: 156.0, ref: 'IPN-200-6', color: '#374151' },
+    { id: 'IPN160_3', nombre: 'Viga IPN 160 × 3m', largo: 3.00, peso: 52.0,  ref: 'IPN-160-3', color: '#374151' },
+    { id: 'IPN160_4', nombre: 'Viga IPN 160 × 4m', largo: 4.00, peso: 69.0,  ref: 'IPN-160-4', color: '#374151' },
+  ],
+
+  // ─── TÉCNICA REFERENCIAL ────────────────────────────────
+  // Truss y elementos lineales
+  truss: [
+    { id: 'TRUSS100',   nombre: 'Truss 1.00m',               largo: 1.00, peso: 10.0, ref: 'TRUSS-100',   color: '#4b5563' },
+    { id: 'TRUSS200',   nombre: 'Truss 2.00m',               largo: 2.00, peso: 19.0, ref: 'TRUSS-200',   color: '#4b5563' },
+    { id: 'TRUSS300',   nombre: 'Truss 3.00m',               largo: 3.00, peso: 28.0, ref: 'TRUSS-300',   color: '#4b5563' },
+    { id: 'BUMPERTR',   nombre: 'Bumper truss 2.00m',         largo: 2.00, peso: 22.0, ref: 'BUMPTR-200',  color: '#4b5563' },
   ],
 };
 
-// Mapeo de categorías para el catálogo plano. `vistas` indica en qué vistas se muestra
-// esta sección de la paleta — las diagonales sólo tienen sentido colocarlas en su vista
-// nativa. Sin `vistas` = ambas.
+// Mapeo de categorías → sección de paleta. `vistas` limita en qué vista se muestra.
+// Orden natural de armado: base → collarín → verticales → horizontales → diagonales → vigas → plataformas → protecciones → complementos
 export const CAT_KEYS = [
-  { key: 'verticales',     cat: 'vertical',      label: 'Verticales' },
-  { key: 'horizontalesO',  cat: 'horizontalO',   label: 'Horizontales O (tubo)' },
-  { key: 'vigasPuente',    cat: 'vigaPuente',     label: 'Vigas Puente U' },
-  { key: 'horizontalesU',  cat: 'horizontalU',    label: 'Horizontales U' },
-  { key: 'plataformas',    cat: 'plataforma',     label: 'Plataformas' },
-  { key: 'barandillas',    cat: 'barandilla',     label: 'Barandillas' },
-  { key: 'rodapies',       cat: 'rodapie',        label: 'Rodapiés' },
-  { key: 'diagonales',     cat: 'diagonal',       label: 'Diagonales (alzado)', vistas: ['alzado'] },
-  { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: 'Diagonales (planta)', vistas: ['planta'] },
-  { key: 'bases',          cat: 'base',           label: 'Bases / Husillos' },
+  { key: 'bases',            cat: 'base',           label: '⚙️ Base Regulable (Tornillón)' },
+  { key: 'collarines',       cat: 'collarin',       label: '🔗 Collarín' },
+  { key: 'verticales',       cat: 'vertical',       label: '📐 Verticales (parantes)' },
+  { key: 'horizontalesO',    cat: 'horizontalO',    label: '🟢 Horizontales O (tubo)' },
+  { key: 'diagonales',       cat: 'diagonal',       label: '📏 Diagonales (alzado)',  vistas: ['alzado'] },
+  { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: '📏 Diagonales (planta)',  vistas: ['planta'] },
+  { key: 'vigasPuente',      cat: 'vigaPuente',     label: '🟠 Vigas Puente U' },
+  { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U' },
+  { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
+  { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
+  { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },
+  { key: 'vigasIPN',         cat: 'vigaIPN',        label: '🔩 Vigas IPN (rigging)' },
+  { key: 'truss',            cat: 'truss',          label: '🎤 Truss' },
 ];
 
 // Elige la diagonal de planta cuya longitud mejor cubre el vector origen→destino en X-Z.

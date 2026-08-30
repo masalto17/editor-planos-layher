@@ -10,16 +10,20 @@ export default function FlashColocacion({ piezas, worldToScreen, useZ = false })
   const [prevCount, setPrevCount] = useState(piezas.length);
 
   useEffect(() => {
-    if (piezas.length > prevCount) {
-      // Se agregó pieza(s): flash en la última
+    const diff = piezas.length - prevCount;
+    // Solo flash al colocar 1-3 piezas (no al cargar diseño completo ni pegar masivo)
+    if (diff > 0 && diff <= 3) {
       const nueva = piezas[piezas.length - 1];
       if (nueva) {
-        const x = nueva.categoria === 'diagonal' ? nueva.x1 : nueva.x;
+        const isDiag = nueva.categoria === 'diagonal' || nueva.categoria === 'diagonalPlanta';
+        const x = isDiag ? (nueva.x1 ?? 0) : (nueva.x ?? 0);
         const y = nueva.y ?? 0;
-        const z = nueva.z ?? 0;
-        const id = Date.now();
-        setFlashes(prev => [...prev, { id, x, y, z }]);
-        setTimeout(() => setFlashes(prev => prev.filter(f => f.id !== id)), 600);
+        const z = nueva.categoria === 'diagonalPlanta' ? (nueva.z1 ?? 0) : (nueva.z ?? 0);
+        if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+          const id = Date.now();
+          setFlashes(prev => [...prev, { id, x, y, z }]);
+          setTimeout(() => setFlashes(prev => prev.filter(f => f.id !== id)), 600);
+        }
       }
     }
     setPrevCount(piezas.length);
@@ -31,6 +35,7 @@ export default function FlashColocacion({ piezas, worldToScreen, useZ = false })
     <g pointerEvents="none">
       {flashes.map(f => {
         const p = worldToScreen(f.x, useZ ? f.z : f.y);
+        if (!p || isNaN(p.x) || isNaN(p.y)) return null;
         return (
           <g key={f.id}>
             <circle cx={p.x} cy={p.y} r="3" fill="#22c55e" opacity="0.9">

@@ -141,6 +141,7 @@ export function useDisenoState() {
     const { piezas: pz, filaZ: z, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y: parseFloat(y.toFixed(3)), z };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
@@ -161,6 +162,7 @@ export function useDisenoState() {
     const { piezas: pz, alturaY: y, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y, z: parseFloat(z.toFixed(3)) };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
@@ -196,11 +198,18 @@ export function useDisenoState() {
     const ySnap = roundTo(wy, ROSETA_STEP);
     if (Math.abs(wy - ySnap) < SNAP_TOLERANCIA) { snapY = Math.max(0, ySnap); didSnapY = true; }
     const posX = [...new Set(enFila.filter(p => ES_TIPO_VERTICAL(p.categoria) && !excluirIds.includes(p.id)).map(v => v.x))];
-    let mejorDist = SNAP_TOLERANCIA, mejorX = wx, didSnapX = false;
-    posX.forEach(px => { const d = Math.abs(wx - px); if (d < mejorDist) { mejorDist = d; mejorX = px; didSnapX = true; } });
-    posX.forEach(px => { MODULOS_STANDARD.forEach(mod => { [px + mod, px - mod].forEach(c => { const d = Math.abs(wx - c); if (d < mejorDist) { mejorDist = d; mejorX = c; didSnapX = true; } }); }); });
+    let mejorDist = SNAP_TOLERANCIA, mejorX = wx, didSnapX = false, snapDesdeX = null, snapModulo = null;
+    posX.forEach(px => { const d = Math.abs(wx - px); if (d < mejorDist) { mejorDist = d; mejorX = px; didSnapX = true; snapDesdeX = px; snapModulo = 0; } });
+    posX.forEach(px => { MODULOS_STANDARD.forEach(mod => { [px + mod, px - mod].forEach(c => { const d = Math.abs(wx - c); if (d < mejorDist) { mejorDist = d; mejorX = c; didSnapX = true; snapDesdeX = px; snapModulo = mod; } }); }); });
     const snapX = posX.length === 0 ? roundTo(wx, 0.10) : didSnapX ? mejorX : wx;
-    return { x: snapX, y: snapY, snapX: didSnapX, snapY: didSnapY };
+    // Distancia al vertical más cercano (para mostrar guías)
+    let verticalCercanoX = null, distanciaVertical = null;
+    if (posX.length > 0) {
+      let minD = Infinity;
+      posX.forEach(px => { const d = Math.abs(snapX - px); if (d < minD && d > 0.01) { minD = d; verticalCercanoX = px; } });
+      if (verticalCercanoX !== null) distanciaVertical = Math.abs(snapX - verticalCercanoX);
+    }
+    return { x: snapX, y: snapY, snapX: didSnapX, snapY: didSnapY, snapDesdeX, snapModulo, verticalCercanoX, distanciaVertical, posVertX: posX };
   }, []);
 
   // ---------- Snap: Planta (plano X-Z, todas las filas) ----------
@@ -209,15 +218,20 @@ export function useDisenoState() {
     const posX = [...new Set(piezas.filter(p => ES_TIPO_VERTICAL(p.categoria) && !excluirIds.includes(p.id)).map(v => v.x))];
     // Z snapea a: Z de filas definidas + Z de piezas existentes.
     const posZ = [...new Set([...filas.map(f => f.z), ...piezas.filter(p => !excluirIds.includes(p.id)).map(v => v.z ?? 0)])];
-    let mejorDistX = SNAP_TOLERANCIA, mejorX = wx, didSnapX = false;
-    posX.forEach(px => { const d = Math.abs(wx - px); if (d < mejorDistX) { mejorDistX = d; mejorX = px; didSnapX = true; } });
-    posX.forEach(px => { MODULOS_STANDARD.forEach(mod => { [px + mod, px - mod].forEach(c => { const d = Math.abs(wx - c); if (d < mejorDistX) { mejorDistX = d; mejorX = c; didSnapX = true; } }); }); });
-    let mejorDistZ = SNAP_TOLERANCIA, mejorZ = wz, didSnapZ = false;
-    posZ.forEach(pz => { const d = Math.abs(wz - pz); if (d < mejorDistZ) { mejorDistZ = d; mejorZ = pz; didSnapZ = true; } });
-    posZ.forEach(pz => { MODULOS_STANDARD.forEach(mod => { [pz + mod, pz - mod].forEach(c => { const d = Math.abs(wz - c); if (d < mejorDistZ) { mejorDistZ = d; mejorZ = c; didSnapZ = true; } }); }); });
+    let mejorDistX = SNAP_TOLERANCIA, mejorX = wx, didSnapX = false, snapDesdeX = null, snapModuloX = null;
+    posX.forEach(px => { const d = Math.abs(wx - px); if (d < mejorDistX) { mejorDistX = d; mejorX = px; didSnapX = true; snapDesdeX = px; snapModuloX = 0; } });
+    posX.forEach(px => { MODULOS_STANDARD.forEach(mod => { [px + mod, px - mod].forEach(c => { const d = Math.abs(wx - c); if (d < mejorDistX) { mejorDistX = d; mejorX = c; didSnapX = true; snapDesdeX = px; snapModuloX = mod; } }); }); });
+    let mejorDistZ = SNAP_TOLERANCIA, mejorZ = wz, didSnapZ = false, snapDesdeZ = null, snapModuloZ = null;
+    posZ.forEach(pz => { const d = Math.abs(wz - pz); if (d < mejorDistZ) { mejorDistZ = d; mejorZ = pz; didSnapZ = true; snapDesdeZ = pz; snapModuloZ = 0; } });
+    posZ.forEach(pz => { MODULOS_STANDARD.forEach(mod => { [pz + mod, pz - mod].forEach(c => { const d = Math.abs(wz - c); if (d < mejorDistZ) { mejorDistZ = d; mejorZ = c; didSnapZ = true; snapDesdeZ = pz; snapModuloZ = mod; } }); }); });
     const snapX = posX.length === 0 ? roundTo(wx, 0.10) : didSnapX ? mejorX : wx;
     const snapZ = posZ.length === 0 ? roundTo(wz, 0.10) : didSnapZ ? mejorZ : wz;
-    return { x: snapX, z: snapZ, snapX: didSnapX, snapZ: didSnapZ };
+    // Distancias a verticales más cercanos
+    let verticalCercanoX = null, distanciaX = null;
+    if (posX.length > 0) { let minD = Infinity; posX.forEach(px => { const d = Math.abs(snapX - px); if (d < minD && d > 0.01) { minD = d; verticalCercanoX = px; } }); if (verticalCercanoX !== null) distanciaX = minD; }
+    let verticalCercanoZ = null, distanciaZ = null;
+    if (posZ.length > 0) { let minD = Infinity; posZ.forEach(pz => { const d = Math.abs(snapZ - pz); if (d < minD && d > 0.01) { minD = d; verticalCercanoZ = pz; } }); if (verticalCercanoZ !== null) distanciaZ = minD; }
+    return { x: snapX, z: snapZ, snapX: didSnapX, snapZ: didSnapZ, snapDesdeX, snapModuloX, snapDesdeZ, snapModuloZ, verticalCercanoX, distanciaX, verticalCercanoZ, distanciaZ, posVertX: posX };
   }, []);
 
   // ---------- Mover piezas (drag, común a ambas vistas) ----------

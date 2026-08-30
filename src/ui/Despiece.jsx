@@ -5,7 +5,7 @@ import { CAT_KEYS } from '../catalogo/piezas.js';
 
 const CAT_LABEL = Object.fromEntries(CAT_KEYS.map(ck => [ck.cat, ck.label]));
 
-export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSeleccionadas, copiar, duplicar, eliminarSeleccion }) {
+export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSeleccionadas, copiar, duplicar, eliminarSeleccion, isMobile }) {
   const despiece = useMemo(() => {
     const ag = {};
     piezas.forEach(p => { if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p.nombre, categoria: p.categoria, peso: p.peso, ref: p.ref, cantidad: 0 }; ag[p.tipoId].cantidad += 1; });
@@ -28,7 +28,7 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
   const piezaUnica = piezasSeleccionadas.length === 1 ? piezas.find(p => p.id === piezasSeleccionadas[0]) : null;
 
   return (
-    <div className="w-64 bg-white border-l border-gray-300 overflow-y-auto flex flex-col text-xs">
+    <div className={`${isMobile ? 'w-full' : 'w-64'} bg-white border-l border-gray-300 overflow-y-auto flex flex-col text-xs`}>
       {piezasSeleccionadas.length > 1 && (
         <div className="p-2 border-b border-gray-200 bg-blue-50">
           <div className="flex items-center justify-between mb-1">
@@ -93,19 +93,21 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
             <div className="text-[9px] text-gray-500 text-right">{despiece.cantidadTotal} piezas</div>
           </>}
       </div>
-      <div className="border-t border-gray-200 p-2 bg-gray-50">
-        <div className="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1">Atajos</div>
-        <div className="grid grid-cols-2 gap-x-1.5 gap-y-0 text-[9px] text-gray-600">
-          <span>Ctrl+C/V/D</span><span className="text-gray-400">Copiar/Pegar/Duplicar</span>
-          <span>Ctrl+A</span><span className="text-gray-400">Seleccionar todo</span>
-          <span>Ctrl+Z/Y</span><span className="text-gray-400">Deshacer/Rehacer</span>
-          <span>Del</span><span className="text-gray-400">Eliminar</span>
-          <span>Esc</span><span className="text-gray-400">Deseleccionar</span>
-          <span>R</span><span className="text-gray-400">Alternar eje X/Z</span>
-          <span>2 dedos / Space</span><span className="text-gray-400">Mover plano</span>
-          <span>Flechas</span><span className="text-gray-400">Mover plano</span>
+      {!isMobile && (
+        <div className="border-t border-gray-200 p-2 bg-gray-50">
+          <div className="text-[9px] uppercase tracking-wider text-gray-500 font-bold mb-1">Atajos</div>
+          <div className="grid grid-cols-2 gap-x-1.5 gap-y-0 text-[9px] text-gray-600">
+            <span>Ctrl+C/V/D</span><span className="text-gray-400">Copiar/Pegar/Duplicar</span>
+            <span>Ctrl+A</span><span className="text-gray-400">Seleccionar todo</span>
+            <span>Ctrl+Z/Y</span><span className="text-gray-400">Deshacer/Rehacer</span>
+            <span>Del</span><span className="text-gray-400">Eliminar</span>
+            <span>Esc</span><span className="text-gray-400">Deseleccionar</span>
+            <span>R</span><span className="text-gray-400">Alternar eje X/Z</span>
+            <span>2 dedos / Space</span><span className="text-gray-400">Mover plano</span>
+            <span>Flechas</span><span className="text-gray-400">Mover plano</span>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
