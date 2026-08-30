@@ -16,7 +16,7 @@ function extremosXZ(pieza) {
 const TECNICO_COLORS_PLANTA = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
-  base: '#222', collarin: '#222', vigaIPN: '#222', truss: '#333',
+  base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -246,8 +246,8 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
-  // ── Truss → doble línea con celosía (zigzag entre las dos líneas) ──
-  if (pieza.categoria === 'truss') {
+  // ── Celosía → doble línea con zigzag entre las dos líneas ──
+  if (pieza.categoria === 'celosia') {
     const { x1, z1, x2, z2 } = extremosXZ(pieza);
     const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
     const sep = Math.max(6, zoom * 0.07);
@@ -275,6 +275,75 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {dobleLinea(pL, pR, sep, lineW, sc)}
         {zigzag.length > 1 && <polyline points={zigzag.map(p => `${p.x},${p.y}`).join(' ')}
           fill="none" stroke={sc} strokeWidth={Math.max(0.5, zoom * 0.007)} opacity="0.5" />}
+      </g>
+    );
+  }
+
+  // ── Truss iluminación → doble línea con zigzag (mismo render que celosía) ──
+  if (pieza.categoria === 'truss') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(6, zoom * 0.07);
+    const lineW = Math.max(0.8, zoom * 0.012);
+    const dx = pR.x - pL.x, dy = pR.y - pL.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    const nx = -dy / len, ny = dx / len;
+    const off = sep / 2;
+    const zigzag = [];
+    if (zoom > 15) {
+      const step = Math.max(8, zoom * 0.1);
+      const segs = Math.max(2, Math.floor(len / step));
+      for (let i = 0; i <= segs; i++) {
+        const t = i / segs;
+        const cx = pL.x + dx * t, cy = pL.y + dy * t;
+        const side = i % 2 === 0 ? 1 : -1;
+        zigzag.push({ x: cx + nx * off * side, y: cy + ny * off * side });
+      }
+    }
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 8} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+        {zigzag.length > 1 && <polyline points={zigzag.map(p => `${p.x},${p.y}`).join(' ')}
+          fill="none" stroke={sc} strokeWidth={Math.max(0.5, zoom * 0.007)} opacity="0.5" />}
+      </g>
+    );
+  }
+
+  // ── Cumbrera → triángulo isósceles en planta (vista desde arriba: base + pico) ──
+  if (pieza.categoria === 'cumbrera') {
+    const ANCHO_BASE = pieza.largo; // 2.20m
+    // En planta la cumbrera se ve como un rectángulo angosto (la base) con línea central (cumbrera)
+    // Profundidad en Z es el ancho del techo (~0.30m representativo)
+    const PROF = 0.30;
+    const pBL = worldToScreen(pieza.x, z - PROF / 2);
+    const pBR = worldToScreen(pieza.x + ANCHO_BASE, z - PROF / 2);
+    const pTL = worldToScreen(pieza.x, z + PROF / 2);
+    const pTR = worldToScreen(pieza.x + ANCHO_BASE, z + PROF / 2);
+    const pMidL = worldToScreen(pieza.x, z);
+    const pMidR = worldToScreen(pieza.x + ANCHO_BASE, z);
+    const sw = Math.max(0.8, zoom * 0.012);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={pBL.x - 3} y={Math.min(pBL.y, pTL.y) - 3}
+          width={pBR.x - pBL.x + 6} height={Math.abs(pTL.y - pBL.y) + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Rectángulo exterior */}
+        <rect x={pBL.x} y={Math.min(pBL.y, pTL.y)}
+          width={pBR.x - pBL.x} height={Math.abs(pTL.y - pBL.y)}
+          fill={sc} fillOpacity="0.12" stroke={sc} strokeWidth={sw} />
+        {/* Línea central (cumbrera) */}
+        <line x1={pMidL.x} y1={pMidL.y} x2={pMidR.x} y2={pMidR.y}
+          stroke={sc} strokeWidth={sw * 1.5} strokeDasharray="4 2" />
+        {/* Diagonales desde centro a esquinas (pendientes del techo) */}
+        <line x1={pMidL.x} y1={pMidL.y} x2={pBL.x} y2={pBL.y} stroke={sc} strokeWidth={sw * 0.7} opacity="0.4" />
+        <line x1={pMidL.x} y1={pMidL.y} x2={pTL.x} y2={pTL.y} stroke={sc} strokeWidth={sw * 0.7} opacity="0.4" />
+        <line x1={pMidR.x} y1={pMidR.y} x2={pBR.x} y2={pBR.y} stroke={sc} strokeWidth={sw * 0.7} opacity="0.4" />
+        <line x1={pMidR.x} y1={pMidR.y} x2={pTR.x} y2={pTR.y} stroke={sc} strokeWidth={sw * 0.7} opacity="0.4" />
+        {/* Símbolo pico central */}
+        {zoom > 30 && <text x={(pMidL.x + pMidR.x) / 2} y={pMidL.y - 4}
+          fontSize={Math.max(7, zoom * 0.07)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">⛺</text>}
       </g>
     );
   }

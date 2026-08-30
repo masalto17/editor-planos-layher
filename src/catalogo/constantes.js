@@ -9,7 +9,7 @@ export const DRAG_UMBRAL_PX = 4;
 // ancho del alzado, 'z' corre hacia el fondo (perpendicular al alzado).
 const HORIZONTAL_CATS = new Set([
   'horizontalO', 'vigaPuente', 'horizontalU', 'plataforma', 'barandilla', 'rodapie',
-  'vigaIPN', 'truss',
+  'vigaIPN', 'celosia', 'truss',
 ]);
 export const ES_TIPO_HORIZONTAL = c => HORIZONTAL_CATS.has(c);
 export const ES_TIPO_VERTICAL = c => c === 'vertical' || c === 'base' || c === 'collarin';
@@ -18,14 +18,15 @@ export const TIENE_ORIENTACION = c => ES_TIPO_HORIZONTAL(c);
 // Orden de dibujo (Z-order): primero lo de fondo, último lo de frente
 export const Z_ORDER = {
   base: 0, collarin: 0.5, vertical: 1, diagonal: 2, diagonalPlanta: 2,
-  horizontalO: 3, vigaIPN: 3.5, truss: 3.5,
+  horizontalO: 3, vigaIPN: 3.5, celosia: 3.5, truss: 3.5,
   vigaPuente: 4, horizontalU: 5,
   plataforma: 6, rodapie: 7, barandilla: 8,
+  cumbrera: 9,
 };
 
 export const DESPIECE_ORDER = {
   base: 0, collarin: 1, vertical: 2, horizontalO: 3, vigaPuente: 4, horizontalU: 5,
   plataforma: 6, barandilla: 7, rodapie: 8,
   diagonal: 9, diagonalPlanta: 9.5,
-  vigaIPN: 10, truss: 11,
+  celosia: 10, cumbrera: 10.5, truss: 11, vigaIPN: 12,
 };

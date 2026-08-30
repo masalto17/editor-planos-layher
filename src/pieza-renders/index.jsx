@@ -7,6 +7,8 @@ import Rodapie from './Rodapie.jsx';
 import DiagonalPieza, { PreviewDiagonal } from './Diagonal.jsx';
 import Base from './Base.jsx';
 import CelosiaTruss from './CelosiaTruss.jsx';
+import Truss from './Truss.jsx';
+import Cumbrera from './Cumbrera.jsx';
 import VigaIPN from './VigaIPN.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -40,14 +42,16 @@ const RENDERERS = {
   base: Base,
   collarin: Base,
   vigaIPN: VigaIPN,
-  truss: CelosiaTruss,
+  celosia: CelosiaTruss,
+  truss: Truss,
+  cumbrera: Cumbrera,
 };
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)
 const TECNICO_COLORS = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', base: '#222', collarin: '#222',
-  vigaIPN: '#222', truss: '#333',
+  vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444',
 };
 
 // Dispatcher: renderiza una pieza en el Alzado (plano X-Y) según su categoría.

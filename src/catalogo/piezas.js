@@ -97,13 +97,22 @@ export const CATALOGO = {
     { id: 'IPN160_4', nombre: 'Viga IPN 160 × 4m', largo: 4.00, peso: 69.0,  ref: 'IPN-160-4', color: '#374151' },
   ],
 
-  // ─── TÉCNICA REFERENCIAL ────────────────────────────────
-  // Truss y elementos lineales
+  // ─── TRUSS DE ILUMINACIÓN (aluminio, 30×30cm) ─────────────
   truss: [
-    { id: 'TRUSS100',   nombre: 'Truss 1.00m',               largo: 1.00, peso: 10.0, ref: 'TRUSS-100',   color: '#4b5563' },
-    { id: 'TRUSS200',   nombre: 'Truss 2.00m',               largo: 2.00, peso: 19.0, ref: 'TRUSS-200',   color: '#4b5563' },
-    { id: 'TRUSS300',   nombre: 'Truss 3.00m',               largo: 3.00, peso: 28.0, ref: 'TRUSS-300',   color: '#4b5563' },
-    { id: 'BUMPERTR',   nombre: 'Bumper truss 2.00m',         largo: 2.00, peso: 22.0, ref: 'BUMPTR-200',  color: '#4b5563' },
+    { id: 'TRUSS100', nombre: 'Truss 30×30 × 1m', largo: 1.00, alto: 0.30, peso: 8.0,  ref: 'TRUSS-30-1', color: '#333333' },
+    { id: 'TRUSS200', nombre: 'Truss 30×30 × 2m', largo: 2.00, alto: 0.30, peso: 15.0, ref: 'TRUSS-30-2', color: '#333333' },
+    { id: 'TRUSS300', nombre: 'Truss 30×30 × 3m', largo: 3.00, alto: 0.30, peso: 22.0, ref: 'TRUSS-30-3', color: '#333333' },
+  ],
+
+  // ─── CELOSÍAS (vigas reticuladas Layher/Türme) ────────────
+  celosias: [
+    { id: 'CEL257', nombre: 'Celosía U 2.57m', largo: 2.57, alto: 0.50, peso: 29.5, ref: '2.656.257', color: '#4b5563' },
+    { id: 'CEL514', nombre: 'Celosía U 5.14m', largo: 5.14, alto: 0.50, peso: 54.1, ref: '2.656.514', color: '#4b5563' },
+  ],
+
+  // ─── CUMBRERAS (techo a 2 aguas, pieza especial no Layher) ──
+  cumbreras: [
+    { id: 'CUMB220', nombre: 'Cumbrera 2.20m', largo: 2.20, altoSuperior: 2.37, peso: 35.0, ref: 'CUMB-220', color: '#6d28d9' },
   ],
 };
 
@@ -121,8 +130,10 @@ export const CAT_KEYS = [
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
   { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },
+  { key: 'celosias',          cat: 'celosia',        label: '🔺 Celosías (reticuladas)' },
+  { key: 'cumbreras',         cat: 'cumbrera',       label: '⛺ Cumbreras (techo)' },
+  { key: 'truss',             cat: 'truss',          label: '🎤 Truss (iluminación)' },
   { key: 'vigasIPN',         cat: 'vigaIPN',        label: '🔩 Vigas IPN (rigging)' },
-  { key: 'truss',            cat: 'truss',          label: '🎤 Truss' },
 ];
 
 // Elige la diagonal de planta cuya longitud mejor cubre el vector origen→destino en X-Z.
