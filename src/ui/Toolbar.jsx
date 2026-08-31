@@ -48,7 +48,7 @@ export default function Toolbar({
         {/* Header compacto */}
         <div className="bg-black text-white px-3 py-1.5 flex items-center justify-between border-b-2 border-red-600">
           <div className="flex items-center gap-1.5 shrink-0">
-            <img src="/branding/masalto-isotipo.svg" alt="" style={{ height: 20 }} />
+            <img src={`${import.meta.env.BASE_URL}branding/masalto-isotipo.svg`} alt="" style={{ height: 20 }} />
             <div className="text-red-600 font-black text-lg tracking-tight">MÁSALTO</div>
           </div>
           <div className="flex items-center gap-0.5 bg-gray-800 rounded p-0.5">
@@ -136,11 +136,11 @@ export default function Toolbar({
       <div className="bg-black text-white px-4 py-2 flex items-center justify-between border-b-2 border-red-600">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <img src="/branding/masalto-isotipo.svg" alt="MásAlto" style={{ height: 28 }} />
+            <img src={`${import.meta.env.BASE_URL}branding/masalto-isotipo.svg`} alt="MásAlto" style={{ height: 28 }} />
             <div className="text-red-600 font-black text-xl tracking-tight">MÁSALTO</div>
           </div>
           <div className="text-gray-400 text-xs">/</div>
-          <div className="font-semibold text-sm">Editor de Planos Layher</div>
+          <div className="font-semibold text-sm">Layout</div>
           <div className="text-gray-500 text-xs">v2.0</div>
         </div>
         <div className="flex items-center gap-1 bg-gray-800 rounded p-0.5">
