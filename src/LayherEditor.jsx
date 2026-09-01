@@ -9,6 +9,7 @@ import Planta from './vistas/Planta.jsx';
 import ModalGuardarCargar from './ui/ModalGuardarCargar.jsx';
 import ModalExportPDF from './ui/ModalExportPDF.jsx';
 import ModalConfirmar from './ui/ModalConfirmar.jsx';
+import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
 
@@ -35,6 +36,7 @@ export default function LayherEditor() {
   const [fitTrigger, setFitTrigger] = useState(0);
   const [confirmar, setConfirmar] = useState(null);
   const [mostrarAyuda, setMostrarAyuda] = useState(false);
+  const [mostrarCorte, setMostrarCorte] = useState(false);
   // Mobile drawers
   const [paletaAbierta, setPaletaAbierta] = useState(false);
   const [despieceAbierto, setDespieceAbierto] = useState(false);
@@ -134,6 +136,7 @@ export default function LayherEditor() {
         modoTecnico={modoTecnico} setModoTecnico={setModoTecnico}
         pesoTotal={pesoTotal} cantPiezas={cantPiezas}
         onAyuda={() => setMostrarAyuda(true)}
+        onCorte={() => setMostrarCorte(true)}
         isMobile={isMobile}
         onTogglePaleta={() => setPaletaAbierta(p => !p)}
         onToggleDespiece={() => setDespieceAbierto(d => !d)}
@@ -243,6 +246,14 @@ export default function LayherEditor() {
           onExportar={handleExportPDF}
           onCerrar={() => setModalPDF(false)}
           exportando={exportando}
+        />
+      )}
+
+      {mostrarCorte && (
+        <ModalCorte
+          piezas={modelo.piezas}
+          filas={modelo.filas}
+          onCerrar={() => setMostrarCorte(false)}
         />
       )}
 
