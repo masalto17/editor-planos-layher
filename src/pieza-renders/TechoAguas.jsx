@@ -15,6 +15,9 @@ export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, se
   const sinP = Math.sin(rad);
 
   // Geometría del techo
+  // Voladizo: zona sin celosías en los extremos (ej: 15.42m usa piezas de 12.85m + 1.285m voladizo/lado)
+  const spanCelosias = celosiasPorLado * 2 * MODULO + MODULO; // ancho cubierto por celosías + cumbrera
+  const voladizo = Math.max(0, (largo - spanCelosias) / 2);
   const mitad = largo / 2;
   const altoPico = mitad * tanP; // ~1.25m para 12.85m
 
@@ -134,10 +137,10 @@ export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, se
   // ─── Cumbrera (pieza triangular en el pico) ───
   function renderCumbrera() {
     const elements = [];
-    // La cumbrera ocupa el módulo central
-    const cumIzqX = x + celosiasPorLado * MODULO;
-    const cumIzqY = y + celosiasPorLado * MODULO * tanP;
-    const cumDerX = x + largo - celosiasPorLado * MODULO;
+    // La cumbrera ocupa el módulo central (después del voladizo)
+    const cumIzqX = x + voladizo + celosiasPorLado * MODULO;
+    const cumIzqY = y + (voladizo + celosiasPorLado * MODULO) * tanP;
+    const cumDerX = x + largo - voladizo - celosiasPorLado * MODULO;
     const cumDerY = cumIzqY; // simétrico
     const picoX = x + mitad;
     const picoY2 = y + altoPico;
@@ -190,8 +193,8 @@ export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, se
     const elements = [];
     for (let i = 1; i < celosiasPorLado; i++) {
       // Lado izquierdo
-      const lx = x + i * MODULO;
-      const ly = y + i * MODULO * tanP;
+      const lx = x + voladizo + i * MODULO;
+      const ly = y + (voladizo + i * MODULO) * tanP;
       const ltop = toS(lx, ly);
       const lbot = toS(lx, ly - ALTO_CEL);
       elements.push(
@@ -199,7 +202,7 @@ export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, se
           stroke={color} strokeWidth={swCordon * 0.7} opacity={0.5} />
       );
       // Lado derecho (simétrico)
-      const rx = x + largo - i * MODULO;
+      const rx = x + largo - voladizo - i * MODULO;
       const ry = ly;
       const rtop = toS(rx, ry);
       const rbot = toS(rx, ry - ALTO_CEL);
@@ -239,17 +242,49 @@ export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, se
 
       {/* Celosías lado izquierdo (base → pico, peakDir=+1) */}
       {Array.from({ length: celosiasPorLado }, (_, i) => {
-        const bx = x + i * MODULO;
-        const by = y + i * MODULO * tanP;
+        const bx = x + voladizo + i * MODULO;
+        const by = y + (voladizo + i * MODULO) * tanP;
         return renderCelosia(i, bx, by, +1);
       })}
 
       {/* Celosías lado derecho (base → pico, peakDir=-1) */}
       {Array.from({ length: celosiasPorLado }, (_, i) => {
-        const bx = x + largo - i * MODULO;
-        const by = y + i * MODULO * tanP;
+        const bx = x + largo - voladizo - i * MODULO;
+        const by = y + (voladizo + i * MODULO) * tanP;
         return renderCelosia(i, bx, by, -1);
       })}
+
+      {/* Voladizos: líneas de pendiente simples (sin celosía) */}
+      {voladizo > 0 && (() => {
+        const volElements = [];
+        // Izquierdo: de base (x,y) hasta inicio celosía (x+vol, y+vol*tanP)
+        const lBase = toS(x, y);
+        const lEnd = toS(x + voladizo, y + voladizo * tanP);
+        const lInfBase = toS(x + sinP * ALTO_CEL, y - cosP * ALTO_CEL);
+        const lInfEnd = toS(x + voladizo + sinP * ALTO_CEL, y + voladizo * tanP - cosP * ALTO_CEL);
+        volElements.push(
+          <line key="vol-L-sup" x1={lBase.x} y1={lBase.y} x2={lEnd.x} y2={lEnd.y}
+            stroke={color} strokeWidth={swCordon} strokeLinecap="round" opacity={0.6} />,
+          <line key="vol-L-inf" x1={lInfBase.x} y1={lInfBase.y} x2={lInfEnd.x} y2={lInfEnd.y}
+            stroke={color} strokeWidth={swCordon} strokeLinecap="round" opacity={0.6} />,
+          <line key="vol-L-m" x1={lBase.x} y1={lBase.y} x2={lInfBase.x} y2={lInfBase.y}
+            stroke={color} strokeWidth={swWeb} opacity={0.4} />
+        );
+        // Derecho: de base (x+largo, y) hasta inicio celosía
+        const rBase = toS(x + largo, y);
+        const rEnd = toS(x + largo - voladizo, y + voladizo * tanP);
+        const rInfBase = toS(x + largo - sinP * ALTO_CEL, y - cosP * ALTO_CEL);
+        const rInfEnd = toS(x + largo - voladizo - sinP * ALTO_CEL, y + voladizo * tanP - cosP * ALTO_CEL);
+        volElements.push(
+          <line key="vol-R-sup" x1={rBase.x} y1={rBase.y} x2={rEnd.x} y2={rEnd.y}
+            stroke={color} strokeWidth={swCordon} strokeLinecap="round" opacity={0.6} />,
+          <line key="vol-R-inf" x1={rInfBase.x} y1={rInfBase.y} x2={rInfEnd.x} y2={rInfEnd.y}
+            stroke={color} strokeWidth={swCordon} strokeLinecap="round" opacity={0.6} />,
+          <line key="vol-R-m" x1={rBase.x} y1={rBase.y} x2={rInfBase.x} y2={rInfBase.y}
+            stroke={color} strokeWidth={swWeb} opacity={0.4} />
+        );
+        return volElements;
+      })()}
 
       {/* Parantes de unión */}
       {renderParantes()}

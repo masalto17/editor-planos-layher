@@ -136,11 +136,12 @@ export const CATALOGO = {
         { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 2 },
       ],
     },
-    { id: 'TECHO_6', nombre: 'Techo 2 aguas 15.42m', largo: 15.42, modulosAncho: 6, celosiasPorLado: 3, peso: 192.4, ref: 'TECHO-1542', color: '#555',
+    // 15.42m = mismas piezas que 12.85m, apoyando en voladizos/paredes de 1.09m
+    { id: 'TECHO_6', nombre: 'Techo 2 aguas 15.42m', largo: 15.42, modulosAncho: 6, celosiasPorLado: 2, peso: 138.6, ref: 'TECHO-1542', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 6 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 4 },
         { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
-        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 4 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 2 },
       ],
     },
     { id: 'TECHO_7', nombre: 'Techo 2 aguas 17.99m', largo: 17.99, modulosAncho: 7, celosiasPorLado: 3, peso: 192.4, ref: 'TECHO-1799', color: '#555',
@@ -150,11 +151,12 @@ export const CATALOGO = {
         { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 4 },
       ],
     },
-    { id: 'TECHO_8', nombre: 'Techo 2 aguas 20.56m', largo: 20.56, modulosAncho: 8, celosiasPorLado: 4, peso: 246.2, ref: 'TECHO-2056', color: '#555',
+    // 20.56m = mismas piezas que 17.99m, apoyando en voladizos/paredes de 1.09m
+    { id: 'TECHO_8', nombre: 'Techo 2 aguas 20.56m', largo: 20.56, modulosAncho: 8, celosiasPorLado: 3, peso: 192.4, ref: 'TECHO-2056', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 8 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 6 },
         { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
-        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 6 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 4 },
       ],
     },
   ],
