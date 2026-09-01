@@ -1,18 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
-import { Save, FolderOpen, Trash2, X, FileText, Clock } from 'lucide-react';
+import { Save, FolderOpen, Trash2, X, FileText, Clock, HardDrive, Download, Upload } from 'lucide-react';
 
 /**
  * Modal unificado para guardar / cargar / eliminar diseños.
- * Props:
- *  - modo: 'guardar' | 'cargar'
- *  - nombreActual: nombre del diseño abierto
- *  - listarDisenos(): [{nombre, fecha, cantPiezas}]
- *  - onGuardar(nombre): guarda con ese nombre
- *  - onCargar(nombre): carga ese diseño
- *  - onEliminar(nombre): borra ese diseño
- *  - onCerrar(): cierra modal
+ * Soporta localStorage (rápido) y archivo .json (elegir ubicación).
  */
-export default function ModalGuardarCargar({ modo, nombreActual, listarDisenos, onGuardar, onCargar, onEliminar, onCerrar }) {
+export default function ModalGuardarCargar({
+  modo, nombreActual, listarDisenos,
+  onGuardar, onCargar, onEliminar,
+  onGuardarArchivo, onCargarArchivo,
+  onCerrar
+}) {
   const [nombre, setNombre] = useState(nombreActual || '');
   const [disenos, setDisenos] = useState([]);
   const [confirmEliminar, setConfirmEliminar] = useState(null);
@@ -32,6 +30,11 @@ export default function ModalGuardarCargar({ modo, nombreActual, listarDisenos, 
     onGuardar(n);
   };
 
+  const handleGuardarArchivo = () => {
+    const n = nombre.trim() || 'Diseño sin título';
+    onGuardarArchivo?.(n);
+  };
+
   const handleCargar = (n) => {
     onCargar(n);
   };
@@ -48,7 +51,7 @@ export default function ModalGuardarCargar({ modo, nombreActual, listarDisenos, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCerrar}>
-      <div className="bg-white rounded-lg shadow-2xl w-[480px] max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-lg shadow-2xl w-[480px] max-w-[95vw] max-h-[80vh] flex flex-col" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           <div className="flex items-center gap-2 font-semibold text-sm">
@@ -58,30 +61,48 @@ export default function ModalGuardarCargar({ modo, nombreActual, listarDisenos, 
           <button onClick={onCerrar} className="p-1 hover:bg-gray-100 rounded"><X size={16} /></button>
         </div>
 
-        {/* Guardar: input nombre */}
+        {/* Guardar: input nombre + botones */}
         {modo === 'guardar' && (
           <div className="px-4 pt-3 pb-2 border-b border-gray-100">
             <label className="text-xs text-gray-500 mb-1 block">Nombre del diseño</label>
+            <input ref={inputRef} type="text" value={nombre} onChange={e => setNombre(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleGuardar()}
+              placeholder="Ej: Escenario Rock 40m"
+              className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-red-500 mb-2" />
+            {disenos.some(d => d.nombre === nombre.trim()) && (
+              <p className="text-[10px] text-amber-600 mb-2">⚠ Ya existe — se sobreescribirá</p>
+            )}
             <div className="flex gap-2">
-              <input ref={inputRef} type="text" value={nombre} onChange={e => setNombre(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleGuardar()}
-                placeholder="Ej: Escenario Rock 40m"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-red-500" />
               <button onClick={handleGuardar} disabled={!nombre.trim()}
-                className="px-4 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed">
-                Guardar
+                className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 text-white text-sm font-semibold rounded hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed">
+                <HardDrive size={14} /> Guardar en navegador
+              </button>
+              <button onClick={handleGuardarArchivo}
+                className="flex items-center gap-1.5 px-3 py-2 bg-gray-800 text-white text-sm font-semibold rounded hover:bg-gray-900"
+                title="Elegir ubicación en disco">
+                <Download size={14} /> Guardar archivo
               </button>
             </div>
-            {disenos.some(d => d.nombre === nombre.trim()) && (
-              <p className="text-[10px] text-amber-600 mt-1">⚠ Ya existe — se sobreescribirá</p>
-            )}
           </div>
         )}
 
-        {/* Lista de diseños guardados */}
+        {/* Cargar: botón de archivo */}
+        {modo === 'cargar' && onCargarArchivo && (
+          <div className="px-4 pt-3 pb-2 border-b border-gray-100">
+            <button onClick={onCargarArchivo}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2.5 bg-gray-800 text-white text-sm font-semibold rounded hover:bg-gray-900">
+              <Upload size={14} /> Abrir archivo .json desde disco
+            </button>
+          </div>
+        )}
+
+        {/* Lista de diseños guardados en localStorage */}
         <div className="flex-1 overflow-y-auto px-4 py-2">
+          <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-1.5 flex items-center gap-1">
+            <HardDrive size={10} /> Guardados en navegador
+          </div>
           {disenos.length === 0 ? (
-            <div className="text-center text-gray-400 text-sm py-8">No hay diseños guardados</div>
+            <div className="text-center text-gray-400 text-sm py-6">No hay diseños guardados</div>
           ) : (
             <div className="space-y-1">
               {disenos.map(d => (
@@ -115,7 +136,7 @@ export default function ModalGuardarCargar({ modo, nombreActual, listarDisenos, 
 
         {/* Footer */}
         <div className="px-4 py-2 border-t border-gray-100 text-[10px] text-gray-400 text-center">
-          Almacenamiento local del navegador · {disenos.length} diseño{disenos.length !== 1 ? 's' : ''}
+          Navegador: almacenamiento local · Archivo: elegí dónde guardar en tu disco
         </div>
       </div>
     </div>

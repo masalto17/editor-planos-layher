@@ -310,6 +310,113 @@ export function useDisenoState() {
     localStorage.removeItem(`layher:disenos:${nombre}`);
   }, []);
 
+  // ---------- Guardar/Cargar como archivo (.json) ----------
+  const guardarComoArchivo = useCallback(async (nombre) => {
+    const payload = {
+      nombre: nombre || stateRef.current.nombreDiseno || 'Diseño sin título',
+      piezas: stateRef.current.piezas,
+      filas: stateRef.current.filas,
+      fecha: new Date().toISOString(),
+      version: '2.0',
+      app: 'MasAlto Layout',
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const fileName = `${payload.nombre.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ _-]/g, '')}.masalto.json`;
+
+    // Intentar File System Access API (Chrome/Edge)
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fileName,
+          types: [
+            { description: 'MasAlto Layout', accept: { 'application/json': ['.masalto.json', '.json'] } },
+          ],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+        setNombreDiseno(payload.nombre);
+        setMensajeGuardado(`✓ Archivo guardado`);
+        setTimeout(() => setMensajeGuardado(''), 2500);
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return; // usuario canceló
+        // Fallback abajo
+      }
+    }
+    // Fallback: descarga directa
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fileName; a.click();
+    URL.revokeObjectURL(url);
+    setNombreDiseno(payload.nombre);
+    setMensajeGuardado(`✓ Archivo descargado`);
+    setTimeout(() => setMensajeGuardado(''), 2500);
+  }, []);
+
+  const cargarDesdeArchivo = useCallback(async () => {
+    // Intentar File System Access API
+    if (window.showOpenFilePicker) {
+      try {
+        const [handle] = await window.showOpenFilePicker({
+          types: [
+            { description: 'MasAlto Layout', accept: { 'application/json': ['.masalto.json', '.json'] } },
+          ],
+          multiple: false,
+        });
+        const file = await handle.getFile();
+        const text = await file.text();
+        const d = JSON.parse(text);
+        const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
+        commit(piezasNorm);
+        setNombreDiseno(d.nombre || 'Importado');
+        if (Array.isArray(d.filas) && d.filas.length) {
+          setFilas(d.filas); setFilaActivaId(d.filas[0].id);
+        } else {
+          const zs = [...new Set(piezasNorm.map(p => p.z ?? 0))].sort((a, b) => a - b);
+          const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const derivadas = zs.length
+            ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
+            : [{ id: 'A', nombre: 'A', z: 0 }];
+          setFilas(derivadas); setFilaActivaId(derivadas[0].id);
+        }
+        setMensajeGuardado(`✓ ${d.nombre || 'Archivo cargado'}`);
+        setTimeout(() => setMensajeGuardado(''), 2500);
+        return;
+      } catch (err) {
+        if (err.name === 'AbortError') return;
+      }
+    }
+    // Fallback: input file
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = '.json,.masalto.json';
+    input.onchange = async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const d = JSON.parse(text);
+        const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
+        commit(piezasNorm);
+        setNombreDiseno(d.nombre || 'Importado');
+        if (Array.isArray(d.filas) && d.filas.length) {
+          setFilas(d.filas); setFilaActivaId(d.filas[0].id);
+        } else {
+          const zs = [...new Set(piezasNorm.map(p => p.z ?? 0))].sort((a, b) => a - b);
+          const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const derivadas = zs.length
+            ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
+            : [{ id: 'A', nombre: 'A', z: 0 }];
+          setFilas(derivadas); setFilaActivaId(derivadas[0].id);
+        }
+        setMensajeGuardado(`✓ ${d.nombre || 'Archivo cargado'}`);
+        setTimeout(() => setMensajeGuardado(''), 2500);
+      } catch { setMensajeGuardado('✗ Archivo inválido'); setTimeout(() => setMensajeGuardado(''), 2500); }
+    };
+    input.click();
+  }, [commit]);
+
   // ---------- Atajos de teclado (comunes a ambas vistas) ----------
   useEffect(() => {
     const kd = (e) => {
@@ -341,5 +448,6 @@ export function useDisenoState() {
     colocarPiezaAlzado, colocarDiagonalAlzado, colocarPiezaPlanta, colocarDiagonalPlanta, borrarTodo,
     calcularSnapAlzado, calcularSnapPlanta, moverPiezas, moverPiezasZ, commitPiezasActuales,
     guardar, cargar, listarDisenos, eliminarDiseno,
+    guardarComoArchivo, cargarDesdeArchivo,
   };
 }

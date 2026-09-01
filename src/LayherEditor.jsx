@@ -231,6 +231,8 @@ export default function LayherEditor() {
           onGuardar={(n) => { modelo.guardar(n); setModal(null); }}
           onCargar={(n) => { modelo.cargar(n); setModal(null); setTimeout(zoomEncuadrar, 100); }}
           onEliminar={modelo.eliminarDiseno}
+          onGuardarArchivo={async (n) => { await modelo.guardarComoArchivo(n); setModal(null); }}
+          onCargarArchivo={async () => { await modelo.cargarDesdeArchivo(); setModal(null); setTimeout(zoomEncuadrar, 100); }}
           onCerrar={() => setModal(null)}
         />
       )}
