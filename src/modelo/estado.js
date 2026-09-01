@@ -141,6 +141,11 @@ export function useDisenoState() {
     const { piezas: pz, filaZ: z, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y: parseFloat(y.toFixed(3)), z };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+    // Techo compuesto: copiar metadata para despiece y render
+    if (h.componentes) n.componentes = h.componentes;
+    if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
+    if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
+    if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
@@ -162,6 +167,10 @@ export function useDisenoState() {
     const { piezas: pz, alturaY: y, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y, z: parseFloat(z.toFixed(3)) };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+    if (h.componentes) n.componentes = h.componentes;
+    if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
+    if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
+    if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);

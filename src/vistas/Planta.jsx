@@ -16,7 +16,7 @@ function extremosXZ(pieza) {
 const TECNICO_COLORS_PLANTA = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
-  base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444',
+  base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -344,6 +344,36 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Símbolo pico central */}
         {zoom > 30 && <text x={(pMidL.x + pMidR.x) / 2} y={pMidL.y - 4}
           fontSize={Math.max(7, zoom * 0.07)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">⛺</text>}
+      </g>
+    );
+  }
+
+  // ── Techo a 2 aguas → línea en ancho con marca central (cumbrera) ──
+  if (pieza.categoria === 'techo') {
+    // En planta: solo una línea horizontal (ancho) — NO profundidad
+    const pL = worldToScreen(pieza.x, z);
+    const pR = worldToScreen(pieza.x + pieza.largo, z);
+    const pMid = worldToScreen(pieza.x + pieza.largo / 2, z);
+    const sw = Math.max(1.5, zoom * 0.025);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={pL.x - 3} y={pL.y - 8} width={pR.x - pL.x + 6} height={16}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Línea principal (ancho total del techo) */}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke={sc} strokeWidth={sw * 2} strokeLinecap="round" opacity={0.7} />
+        {/* Marca central (posición de cumbrera) */}
+        <line x1={pMid.x} y1={pMid.y - Math.max(4, zoom * 0.05)} x2={pMid.x} y2={pMid.y + Math.max(4, zoom * 0.05)}
+          stroke={sc} strokeWidth={sw * 1.5} strokeLinecap="round" />
+        {/* Nodos extremos */}
+        <circle cx={pL.x} cy={pL.y} r={Math.max(2, zoom * 0.025)} fill={sc} />
+        <circle cx={pR.x} cy={pR.y} r={Math.max(2, zoom * 0.025)} fill={sc} />
+        <circle cx={pMid.x} cy={pMid.y} r={Math.max(2.5, zoom * 0.03)} fill={sc} stroke="#fff" strokeWidth="0.5" />
+        {/* Etiqueta */}
+        {zoom > 25 && <text x={pMid.x} y={pL.y - Math.max(6, zoom * 0.06)}
+          fontSize={Math.max(7, zoom * 0.065)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
+          🏠 {pieza.largo.toFixed(2)}m
+        </text>}
       </g>
     );
   }

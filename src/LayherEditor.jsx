@@ -113,7 +113,7 @@ export default function LayherEditor() {
       <Toolbar
         vista={vista} setVista={setVista}
         nombreDiseno={modelo.nombreDiseno} mensajeGuardado={modelo.mensajeGuardado}
-        guardar={() => setModal('guardar')} cargar={() => setModal('cargar')}
+        guardar={() => setModal('guardar')} guardarComo={() => setModal('guardarComo')} cargar={() => setModal('cargar')}
         exportarPDF={() => setModalPDF(true)} exportando={exportando}
         zoomEncuadrar={zoomEncuadrar}
         undo={modelo.undo} redo={modelo.redo}
@@ -225,8 +225,8 @@ export default function LayherEditor() {
 
       {modal && (
         <ModalGuardarCargar
-          modo={modal}
-          nombreActual={modelo.nombreDiseno}
+          modo={modal === 'guardarComo' ? 'guardar' : modal}
+          nombreActual={modal === 'guardarComo' ? '' : modelo.nombreDiseno}
           listarDisenos={modelo.listarDisenos}
           onGuardar={(n) => { modelo.guardar(n); setModal(null); }}
           onCargar={(n) => { modelo.cargar(n); setModal(null); setTimeout(zoomEncuadrar, 100); }}

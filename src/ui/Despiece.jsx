@@ -8,7 +8,18 @@ const CAT_LABEL = Object.fromEntries(CAT_KEYS.map(ck => [ck.cat, ck.label]));
 export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSeleccionadas, copiar, duplicar, eliminarSeleccion, isMobile }) {
   const despiece = useMemo(() => {
     const ag = {};
-    piezas.forEach(p => { if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p.nombre, categoria: p.categoria, peso: p.peso, ref: p.ref, cantidad: 0 }; ag[p.tipoId].cantidad += 1; });
+    piezas.forEach(p => {
+      // Techos compuestos: desglosan en componentes reales (celosías + cumbreras)
+      if (p.categoria === 'techo' && Array.isArray(p.componentes)) {
+        p.componentes.forEach(c => {
+          if (!ag[c.tipoId]) ag[c.tipoId] = { nombre: c.nombre, categoria: c.tipoId.startsWith('CEL') ? 'celosia' : 'cumbrera', peso: c.peso, ref: c.ref, cantidad: 0 };
+          ag[c.tipoId].cantidad += c.cantidad;
+        });
+        return;
+      }
+      if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p.nombre, categoria: p.categoria, peso: p.peso, ref: p.ref, cantidad: 0 };
+      ag[p.tipoId].cantidad += 1;
+    });
     const lista = Object.values(ag).sort((a, b) => (DESPIECE_ORDER[a.categoria] ?? 99) - (DESPIECE_ORDER[b.categoria] ?? 99));
     // Agrupar por categoría
     const grupos = [];

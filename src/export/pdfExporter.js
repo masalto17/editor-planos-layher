@@ -91,6 +91,14 @@ function svgToImage(svgElement, scale = 2) {
 function calcularDespiece(piezas) {
   const ag = {};
   piezas.forEach(p => {
+    // Techos compuestos: desglosan en componentes reales
+    if (p.categoria === 'techo' && Array.isArray(p.componentes)) {
+      p.componentes.forEach(c => {
+        if (!ag[c.tipoId]) ag[c.tipoId] = { nombre: c.nombre, categoria: c.tipoId.startsWith('CEL') ? 'celosia' : 'cumbrera', peso: c.peso, ref: c.ref, cantidad: 0 };
+        ag[c.tipoId].cantidad += c.cantidad;
+      });
+      return;
+    }
     if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p.nombre, categoria: p.categoria, peso: p.peso, ref: p.ref, cantidad: 0 };
     ag[p.tipoId].cantidad += 1;
   });
