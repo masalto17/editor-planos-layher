@@ -1,218 +1,280 @@
-// Techo a 2 aguas — pieza compuesta (celosías inclinadas + cumbrera central)
-// Render realista tipo plano técnico: cordón superior, cordón inferior,
-// montantes verticales y diagonales entre cordones (reticulado triangulado)
+// Techo a 2 aguas — pieza compuesta (celosías U 2.57m inclinadas + cumbrera)
+// Pendiente estándar: 11° (sistema techo Cassette Layher)
+// Cada celosía: 2.57m largo × 0.50m alto, patrón W/V interior
+// Cumbrera: pieza triangular en el pico, ancho 1 módulo (2.57m)
+// Unión entre celosías: parantes 0.50m (chaveta → roseta)
 export default function TechoAguas({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
-  const modulosAncho = pieza.modulosAncho ?? Math.round(largo / 2.57);
-  const celosiasPorLado = pieza.celosiasPorLado ?? Math.ceil(modulosAncho / 2);
+  const celosiasPorLado = pieza.celosiasPorLado ?? Math.floor((pieza.modulosAncho ?? Math.round(largo / 2.57)) / 2);
+  const MODULO = 2.57;
+  const ALTO_CEL = 0.50; // profundidad de la celosía (perpendicular al cordón)
+  const PENDIENTE = 11; // grados
+  const rad = (PENDIENTE * Math.PI) / 180;
+  const tanP = Math.tan(rad);
+  const cosP = Math.cos(rad);
+  const sinP = Math.sin(rad);
 
-  // Dimensiones reales de celosía Layher
-  const ALTO_CELOSIA = 0.45; // profundidad del reticulado (alto de la celosía)
-  const PENDIENTE_GRADOS = 15; // pendiente real para escenarios Layher
-  const pendienteRad = (PENDIENTE_GRADOS * Math.PI) / 180;
-  const altoPico = (largo / 2) * Math.tan(pendienteRad);
+  // Geometría del techo
+  const mitad = largo / 2;
+  const altoPico = mitad * tanP; // ~1.25m para 12.85m
 
-  // Número de paneles de reticulado por lado (cada ~1.28m de recorrido inclinado)
-  const largoInclinado = (largo / 2) / Math.cos(pendienteRad);
-  const nPaneles = Math.max(3, Math.round(largoInclinado / 1.28));
-
-  // Dirección perpendicular a la pendiente (hacia abajo/adentro para cordón inferior)
-  // Lado izquierdo: pendiente sube hacia la derecha
-  const cosP = Math.cos(pendienteRad);
-  const sinP = Math.sin(pendienteRad);
-
-  // Construir puntos del cordón superior e inferior — LADO IZQUIERDO
-  function buildLadoIzq() {
-    const sup = []; // cordón superior (línea de pendiente)
-    const inf = []; // cordón inferior (offset hacia abajo perpendicular)
-    for (let i = 0; i <= nPaneles; i++) {
-      const t = i / nPaneles;
-      // Sobre la línea de pendiente
-      const xSup = x + (largo / 2) * t;
-      const ySup = y + altoPico * t;
-      sup.push({ x: xSup, y: ySup });
-      // Offset perpendicular hacia abajo (hacia dentro del triángulo)
-      // Perpendicular a la pendiente izq: normal = (sinP, -cosP) en mundo (Y arriba)
-      const xInf = xSup + sinP * ALTO_CELOSIA;
-      const yInf = ySup - cosP * ALTO_CELOSIA;
-      inf.push({ x: xInf, y: yInf });
-    }
-    return { sup, inf };
-  }
-
-  // LADO DERECHO (simétrico)
-  function buildLadoDer() {
-    const sup = [];
-    const inf = [];
-    for (let i = 0; i <= nPaneles; i++) {
-      const t = i / nPaneles;
-      const xSup = x + largo - (largo / 2) * t;
-      const ySup = y + altoPico * t;
-      sup.push({ x: xSup, y: ySup });
-      // Perpendicular hacia abajo en lado derecho: normal = (-sinP, -cosP)
-      const xInf = xSup - sinP * ALTO_CELOSIA;
-      const yInf = ySup - cosP * ALTO_CELOSIA;
-      inf.push({ x: xInf, y: yInf });
-    }
-    return { sup, inf };
-  }
-
-  const ladoIzq = buildLadoIzq();
-  const ladoDer = buildLadoDer();
-
-  // Convertir a pantalla
-  const toS = (p) => worldToScreen(p.x, p.y);
-
-  const supIzqS = ladoIzq.sup.map(toS);
-  const infIzqS = ladoIzq.inf.map(toS);
-  const supDerS = ladoDer.sup.map(toS);
-  const infDerS = ladoDer.inf.map(toS);
-
-  // Puntos clave pantalla
-  const sBaseIzq = worldToScreen(x, y);
-  const sBaseDer = worldToScreen(x + largo, y);
-  const sPico = worldToScreen(x + largo / 2, y + altoPico);
+  const toS = (wx, wy) => worldToScreen(wx, wy);
 
   // Grosores
-  const swCordon = Math.max(1.5, zoom * 0.025);  // cordón principal
-  const swWeb = Math.max(0.8, zoom * 0.015);      // montantes/diagonales
-  const nodeR = Math.max(1.8, zoom * 0.025);
-
-  // Bounding box
-  const allPts = [...supIzqS, ...infIzqS, ...supDerS, ...infDerS];
-  const allX = allPts.map(p => p.x);
-  const allY = allPts.map(p => p.y);
-  const minX = Math.min(...allX) - 6;
-  const minY = Math.min(...allY) - 6;
-  const bW = Math.max(...allX) - minX + 12;
-  const bH = Math.max(...allY) - minY + 12;
+  const swCordon = Math.max(1.8, zoom * 0.028);
+  const swWeb = Math.max(0.7, zoom * 0.012);
+  const swCumbrera = Math.max(2, zoom * 0.032);
+  const nodeR = Math.max(1.5, zoom * 0.02);
 
   const color = modoTecnico ? '#333' : (sc || pieza.color || '#555');
-  const colorFill = modoTecnico ? '#666' : (sc || pieza.color || '#555');
 
-  // Dibujar un lado de celosía
-  function renderLado(supS, infS, keyPrefix) {
+  // ─── Dibujar una celosía individual ───
+  // baseX, baseY = extremo inferior (junto a la base/torre)
+  // peakDir = +1 si el pico está a la derecha, -1 si está a la izquierda
+  function renderCelosia(idx, baseX, baseY, peakDir) {
     const elements = [];
+    const side = peakDir > 0 ? 'L' : 'R';
+    const key = `cel-${side}-${idx}`;
 
-    // Cordón superior (línea continua gruesa)
-    for (let i = 0; i < supS.length - 1; i++) {
+    // La celosía va desde base (abajo) hacia el pico (arriba)
+    // X avanza hacia el centro, Y siempre sube
+    const endX = baseX + MODULO * peakDir;
+    const endY = baseY + MODULO * tanP;
+
+    // Offset perpendicular al cordón para el cordón inferior
+    // Perpendicular a la pendiente, apuntando "hacia abajo" (fuera del triángulo)
+    // En el lado izquierdo: normal perpendicular hacia abajo-derecha
+    // En el lado derecho: normal perpendicular hacia abajo-izquierda
+    const offX = sinP * ALTO_CEL * peakDir;
+    const offY = -cosP * ALTO_CEL; // siempre hacia abajo
+
+    // Cordón superior (sobre la línea de pendiente)
+    const supBase = toS(baseX, baseY);
+    const supEnd = toS(endX, endY);
+
+    // Cordón inferior (offset perpendicular hacia abajo)
+    const infBase = toS(baseX + offX, baseY + offY);
+    const infEnd = toS(endX + offX, endY + offY);
+
+    // Cordones principales
+    elements.push(
+      <line key={`${key}-sup`} x1={supBase.x} y1={supBase.y} x2={supEnd.x} y2={supEnd.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />,
+      <line key={`${key}-inf`} x1={infBase.x} y1={infBase.y} x2={infEnd.x} y2={infEnd.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />
+    );
+
+    // Montantes en extremos (conectan cordón sup a inf)
+    elements.push(
+      <line key={`${key}-m0`} x1={supBase.x} y1={supBase.y} x2={infBase.x} y2={infBase.y}
+        stroke={color} strokeWidth={swWeb} />,
+      <line key={`${key}-m1`} x1={supEnd.x} y1={supEnd.y} x2={infEnd.x} y2={infEnd.y}
+        stroke={color} strokeWidth={swWeb} />
+    );
+
+    // Patrón W/V interior (4 triángulos en 2.57m de celosía real)
+    const nTriangles = 4;
+    for (let i = 0; i < nTriangles; i++) {
+      const t0 = i / nTriangles;
+      const t1 = (i + 1) / nTriangles;
+      const tMid = (t0 + t1) / 2;
+
+      // Punto en cordón superior en t0 y t1
+      const s0 = toS(
+        baseX + MODULO * peakDir * t0,
+        baseY + MODULO * tanP * t0
+      );
+      const s1 = toS(
+        baseX + MODULO * peakDir * t1,
+        baseY + MODULO * tanP * t1
+      );
+
+      // Punto en cordón inferior en el medio del panel
+      const iMid = toS(
+        baseX + offX + MODULO * peakDir * tMid,
+        baseY + offY + MODULO * tanP * tMid
+      );
+
+      // V-pattern: sup[t0] → inf[mid] → sup[t1]
       elements.push(
-        <line key={`${keyPrefix}-sup-${i}`}
-          x1={supS[i].x} y1={supS[i].y} x2={supS[i + 1].x} y2={supS[i + 1].y}
-          stroke={color} strokeWidth={swCordon} strokeLinecap="round" />
+        <line key={`${key}-va-${i}`} x1={s0.x} y1={s0.y} x2={iMid.x} y2={iMid.y}
+          stroke={color} strokeWidth={swWeb} opacity={0.8} />,
+        <line key={`${key}-vb-${i}`} x1={iMid.x} y1={iMid.y} x2={s1.x} y2={s1.y}
+          stroke={color} strokeWidth={swWeb} opacity={0.8} />
+      );
+
+      // Nodo inferior
+      elements.push(
+        <circle key={`${key}-ni-${i}`} cx={iMid.x} cy={iMid.y} r={nodeR * 0.6}
+          fill={color} stroke="#fff" strokeWidth={Math.max(0.3, zoom * 0.003)} />
       );
     }
 
-    // Cordón inferior (línea continua gruesa)
-    for (let i = 0; i < infS.length - 1; i++) {
+    // Nodos en cordón superior (extremos)
+    [supBase, supEnd].forEach((pt, i) => {
       elements.push(
-        <line key={`${keyPrefix}-inf-${i}`}
-          x1={infS[i].x} y1={infS[i].y} x2={infS[i + 1].x} y2={infS[i + 1].y}
-          stroke={color} strokeWidth={swCordon} strokeLinecap="round" />
+        <circle key={`${key}-ns-${i}`} cx={pt.x} cy={pt.y} r={nodeR}
+          fill={color} stroke="#fff" strokeWidth={Math.max(0.3, zoom * 0.004)} />
       );
-    }
+    });
 
-    // Montantes verticales (perpendiculares entre cordones)
-    for (let i = 0; i <= supS.length - 1; i++) {
-      elements.push(
-        <line key={`${keyPrefix}-mont-${i}`}
-          x1={supS[i].x} y1={supS[i].y} x2={infS[i].x} y2={infS[i].y}
-          stroke={color} strokeWidth={swWeb} strokeLinecap="round" />
-      );
-    }
-
-    // Diagonales (V-pattern: alternando sup[i]->inf[i+1] e inf[i+1]->sup[i+1])
-    for (let i = 0; i < supS.length - 1; i++) {
-      // Diagonal desde cordón superior a cordón inferior del siguiente panel
-      elements.push(
-        <line key={`${keyPrefix}-diag-a-${i}`}
-          x1={supS[i].x} y1={supS[i].y} x2={infS[i + 1].x} y2={infS[i + 1].y}
-          stroke={color} strokeWidth={swWeb} strokeLinecap="round" />
-      );
-      // Diagonal desde cordón inferior al cordón superior del siguiente panel
-      elements.push(
-        <line key={`${keyPrefix}-diag-b-${i}`}
-          x1={infS[i].x} y1={infS[i].y} x2={supS[i + 1].x} y2={supS[i + 1].y}
-          stroke={color} strokeWidth={swWeb} strokeLinecap="round" />
-      );
-    }
-
-    // Nodos en cordón superior
-    for (let i = 0; i < supS.length; i++) {
-      elements.push(
-        <circle key={`${keyPrefix}-nsup-${i}`}
-          cx={supS[i].x} cy={supS[i].y} r={nodeR}
-          fill={colorFill} stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.005)} />
-      );
-    }
-
-    // Nodos en cordón inferior
-    for (let i = 0; i < infS.length; i++) {
-      elements.push(
-        <circle key={`${keyPrefix}-ninf-${i}`}
-          cx={infS[i].x} cy={infS[i].y} r={nodeR * 0.8}
-          fill={colorFill} stroke="#fff" strokeWidth={Math.max(0.3, zoom * 0.004)} />
-      );
-    }
+    // Cabezales cuña en extremos del cordón superior
+    const cabW = Math.max(2, zoom * 0.035);
+    const cabH = Math.max(4, zoom * 0.055);
+    elements.push(
+      <rect key={`${key}-cab0`} x={supBase.x - cabW / 2} y={supBase.y - cabH / 2}
+        width={cabW} height={cabH} fill={color} opacity={0.6} rx={0.5} />,
+      <rect key={`${key}-cab1`} x={supEnd.x - cabW / 2} y={supEnd.y - cabH / 2}
+        width={cabW} height={cabH} fill={color} opacity={0.6} rx={0.5} />
+    );
 
     return elements;
   }
 
-  // Cumbrera: pieza horizontal en el pico conectando ambos lados
-  const cumbreraIzqSup = supIzqS[supIzqS.length - 1];
-  const cumbreraIzqInf = infIzqS[infIzqS.length - 1];
-  const cumbreraDerSup = supDerS[supDerS.length - 1];
-  const cumbreraDerInf = infDerS[infDerS.length - 1];
+  // ─── Cumbrera (pieza triangular en el pico) ───
+  function renderCumbrera() {
+    const elements = [];
+    // La cumbrera ocupa el módulo central
+    const cumIzqX = x + celosiasPorLado * MODULO;
+    const cumIzqY = y + celosiasPorLado * MODULO * tanP;
+    const cumDerX = x + largo - celosiasPorLado * MODULO;
+    const cumDerY = cumIzqY; // simétrico
+    const picoX = x + mitad;
+    const picoY2 = y + altoPico;
+
+    const cIzq = toS(cumIzqX, cumIzqY);
+    const cDer = toS(cumDerX, cumDerY);
+    const pico = toS(picoX, picoY2);
+
+    // Montantes verticales bajo los extremos de la cumbrera
+    const cIzqBot = toS(cumIzqX, cumIzqY - ALTO_CEL);
+    const cDerBot = toS(cumDerX, cumDerY - ALTO_CEL);
+
+    elements.push(
+      // Pendientes al pico
+      <line key="cumb-izq" x1={cIzq.x} y1={cIzq.y} x2={pico.x} y2={pico.y}
+        stroke={color} strokeWidth={swCumbrera} strokeLinecap="round" />,
+      <line key="cumb-der" x1={cDer.x} y1={cDer.y} x2={pico.x} y2={pico.y}
+        stroke={color} strokeWidth={swCumbrera} strokeLinecap="round" />,
+      // Base horizontal
+      <line key="cumb-base" x1={cIzq.x} y1={cIzq.y} x2={cDer.x} y2={cDer.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />,
+      // Montantes verticales en extremos
+      <line key="cumb-mL" x1={cIzq.x} y1={cIzq.y} x2={cIzqBot.x} y2={cIzqBot.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />,
+      <line key="cumb-mR" x1={cDer.x} y1={cDer.y} x2={cDerBot.x} y2={cDerBot.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />,
+      // Horizontal inferior
+      <line key="cumb-inf" x1={cIzqBot.x} y1={cIzqBot.y} x2={cDerBot.x} y2={cDerBot.y}
+        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />,
+      // Diagonales internas al pico
+      <line key="cumb-d1" x1={cIzqBot.x} y1={cIzqBot.y} x2={pico.x} y2={pico.y}
+        stroke={color} strokeWidth={swWeb} opacity={0.65} />,
+      <line key="cumb-d2" x1={cDerBot.x} y1={cDerBot.y} x2={pico.x} y2={pico.y}
+        stroke={color} strokeWidth={swWeb} opacity={0.65} />
+    );
+
+    // Nodos
+    [cIzq, cDer, pico, cIzqBot, cDerBot].forEach((pt, i) => {
+      elements.push(
+        <circle key={`cumb-n${i}`} cx={pt.x} cy={pt.y} r={nodeR * 1.1}
+          fill={color} stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.005)} />
+      );
+    });
+
+    return elements;
+  }
+
+  // ─── Parantes de unión 0.50m entre celosías adyacentes ───
+  function renderParantes() {
+    const elements = [];
+    for (let i = 1; i < celosiasPorLado; i++) {
+      // Lado izquierdo
+      const lx = x + i * MODULO;
+      const ly = y + i * MODULO * tanP;
+      const ltop = toS(lx, ly);
+      const lbot = toS(lx, ly - ALTO_CEL);
+      elements.push(
+        <line key={`par-L${i}`} x1={ltop.x} y1={ltop.y} x2={lbot.x} y2={lbot.y}
+          stroke={color} strokeWidth={swCordon * 0.7} opacity={0.5} />
+      );
+      // Lado derecho (simétrico)
+      const rx = x + largo - i * MODULO;
+      const ry = ly;
+      const rtop = toS(rx, ry);
+      const rbot = toS(rx, ry - ALTO_CEL);
+      elements.push(
+        <line key={`par-R${i}`} x1={rtop.x} y1={rtop.y} x2={rbot.x} y2={rbot.y}
+          stroke={color} strokeWidth={swCordon * 0.7} opacity={0.5} />
+      );
+    }
+    return elements;
+  }
+
+  // ─── Bounding box ───
+  const sBaseIzq = toS(x, y);
+  const sBaseDer = toS(x + largo, y);
+  const sPico = toS(x + mitad, y + altoPico);
+  // Incluir los cordones inferiores (offset abajo)
+  const sInfIzq = toS(x + sinP * ALTO_CEL, y - cosP * ALTO_CEL);
+  const sInfDer = toS(x + largo - sinP * ALTO_CEL, y - cosP * ALTO_CEL);
+  const pad = 8;
+  const pts = [sBaseIzq, sBaseDer, sPico, sInfIzq, sInfDer];
+  const minX = Math.min(...pts.map(p => p.x)) - pad;
+  const minY = Math.min(...pts.map(p => p.y)) - pad;
+  const maxX = Math.max(...pts.map(p => p.x)) + pad;
+  const maxY = Math.max(...pts.map(p => p.y)) + pad;
 
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       {seleccionada && (
-        <rect x={minX} y={minY} width={bW} height={bH}
+        <rect x={minX} y={minY} width={maxX - minX} height={maxY - minY}
           fill="none" stroke="#E30613" strokeWidth="2" strokeDasharray="4 2" />
       )}
 
-      {/* Relleno semi-transparente suave */}
+      {/* Relleno sutil del perfil triangular */}
       <polygon
         points={`${sBaseIzq.x},${sBaseIzq.y} ${sPico.x},${sPico.y} ${sBaseDer.x},${sBaseDer.y}`}
         fill={color} fillOpacity={0.03} stroke="none" />
 
-      {/* Celosía lado izquierdo */}
-      {renderLado(supIzqS, infIzqS, 'izq')}
+      {/* Celosías lado izquierdo (base → pico, peakDir=+1) */}
+      {Array.from({ length: celosiasPorLado }, (_, i) => {
+        const bx = x + i * MODULO;
+        const by = y + i * MODULO * tanP;
+        return renderCelosia(i, bx, by, +1);
+      })}
 
-      {/* Celosía lado derecho */}
-      {renderLado(supDerS, infDerS, 'der')}
+      {/* Celosías lado derecho (base → pico, peakDir=-1) */}
+      {Array.from({ length: celosiasPorLado }, (_, i) => {
+        const bx = x + largo - i * MODULO;
+        const by = y + i * MODULO * tanP;
+        return renderCelosia(i, bx, by, -1);
+      })}
 
-      {/* Cumbrera — unión superior entre ambos lados */}
-      <line x1={cumbreraIzqSup.x} y1={cumbreraIzqSup.y}
-        x2={cumbreraDerSup.x} y2={cumbreraDerSup.y}
-        stroke={color} strokeWidth={swCordon * 1.2} strokeLinecap="round" />
-      {/* Cumbrera — unión inferior */}
-      <line x1={cumbreraIzqInf.x} y1={cumbreraIzqInf.y}
-        x2={cumbreraDerInf.x} y2={cumbreraDerInf.y}
-        stroke={color} strokeWidth={swCordon} strokeLinecap="round" />
-      {/* Cumbrera — montante central vertical */}
-      <line x1={sPico.x} y1={cumbreraIzqSup.y}
-        x2={sPico.x} y2={cumbreraIzqInf.y}
-        stroke={color} strokeWidth={swWeb} strokeLinecap="round" />
+      {/* Parantes de unión */}
+      {renderParantes()}
 
-      {/* Placas de apoyo en base (donde apoya sobre vertical) */}
+      {/* Cumbrera */}
+      {renderCumbrera()}
+
+      {/* Placas de apoyo en base */}
       {(() => {
-        const pw = Math.max(4, zoom * 0.08);
+        const pw = Math.max(5, zoom * 0.09);
         const ph = Math.max(2, zoom * 0.03);
         return <>
           <rect x={sBaseIzq.x - pw / 2} y={sBaseIzq.y - ph} width={pw} height={ph}
-            fill={color} opacity={0.6} />
+            fill={color} opacity={0.5} rx={0.5} />
           <rect x={sBaseDer.x - pw / 2} y={sBaseDer.y - ph} width={pw} height={ph}
-            fill={color} opacity={0.6} />
+            fill={color} opacity={0.5} rx={0.5} />
         </>;
       })()}
 
       {/* Etiqueta */}
-      {zoom > 20 && (
-        <text x={sPico.x} y={sPico.y - nodeR - 6}
+      {zoom > 18 && (
+        <text x={sPico.x} y={sPico.y - nodeR - 8}
           fontSize={Math.max(8, zoom * 0.07)} fill={color} textAnchor="middle"
           fontFamily="monospace" opacity="0.8" fontWeight="bold">
-          Techo {largo.toFixed(2)}m
+          Techo 2 aguas {largo}m
         </text>
       )}
     </g>

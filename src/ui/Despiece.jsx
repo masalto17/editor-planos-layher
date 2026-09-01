@@ -9,10 +9,13 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
   const despiece = useMemo(() => {
     const ag = {};
     piezas.forEach(p => {
-      // Techos compuestos: desglosan en componentes reales (celosías + cumbreras)
+      // Techos compuestos: desglosan en componentes reales (celosías + cumbreras + parantes)
       if (p.categoria === 'techo' && Array.isArray(p.componentes)) {
         p.componentes.forEach(c => {
-          if (!ag[c.tipoId]) ag[c.tipoId] = { nombre: c.nombre, categoria: c.tipoId.startsWith('CEL') ? 'celosia' : 'cumbrera', peso: c.peso, ref: c.ref, cantidad: 0 };
+          const cat = c.tipoId.startsWith('CEL') ? 'celosia'
+            : c.tipoId.startsWith('CUMB') ? 'cumbrera'
+            : c.tipoId.startsWith('V') ? 'vertical' : 'otro';
+          if (!ag[c.tipoId]) ag[c.tipoId] = { nombre: c.nombre, categoria: cat, peso: c.peso, ref: c.ref, cantidad: 0 };
           ag[c.tipoId].cantidad += c.cantidad;
         });
         return;

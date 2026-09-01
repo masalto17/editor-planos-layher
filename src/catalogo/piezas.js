@@ -104,46 +104,57 @@ export const CATALOGO = {
     { id: 'TRUSS300', nombre: 'Truss 30×30 × 3m', largo: 3.00, alto: 0.30, peso: 22.0, ref: 'TRUSS-30-3', color: '#333333' },
   ],
 
-  // ─── CELOSÍAS (vigas reticuladas Layher/Türme) ────────────
+  // ─── CELOSÍAS (vigas reticuladas Layher Allround U, ancho 0.50m) ──
+  // Pesos = acero LW con 4 cabezales (catálogo Layher)
   celosias: [
-    { id: 'CEL257', nombre: 'Celosía U 2.57m', largo: 2.57, alto: 0.50, peso: 29.5, ref: '2.656.257', color: '#4b5563' },
-    { id: 'CEL514', nombre: 'Celosía U 5.14m', largo: 5.14, alto: 0.50, peso: 54.1, ref: '2.656.514', color: '#4b5563' },
+    { id: 'CEL157', nombre: 'Celosía U 1.57m', largo: 1.57, alto: 0.50, peso: 15.0, ref: '2.656.157', color: '#4b5563' },
+    { id: 'CEL207', nombre: 'Celosía U 2.07m', largo: 2.07, alto: 0.50, peso: 21.4, ref: '2.656.207', color: '#4b5563' },
+    { id: 'CEL257', nombre: 'Celosía U 2.57m', largo: 2.57, alto: 0.50, peso: 24.9, ref: '2.656.257', color: '#4b5563' },
+    { id: 'CEL307', nombre: 'Celosía U 3.07m', largo: 3.07, alto: 0.50, peso: 31.9, ref: '2.656.307', color: '#4b5563' },
+    { id: 'CEL414', nombre: 'Celosía U 4.14m', largo: 4.14, alto: 0.50, peso: 40.0, ref: '2.656.414', color: '#4b5563' },
+    { id: 'CEL514', nombre: 'Celosía U 5.14m', largo: 5.14, alto: 0.50, peso: 51.2, ref: '2.656.514', color: '#4b5563' },
+    { id: 'CEL614', nombre: 'Celosía U 6.14m', largo: 6.14, alto: 0.50, peso: 60.5, ref: '2.656.614', color: '#4b5563' },
   ],
 
-  // ─── CUMBRERAS (techo a 2 aguas, pieza especial no Layher) ──
+  // ─── CUMBRERAS (techo a 2 aguas, pieza TURME/compatible) ──
+  // altoSuperior = altura del pico desde la base horizontal de la cumbrera
   cumbreras: [
-    { id: 'CUMB220', nombre: 'Cumbrera 2.20m', largo: 2.20, altoSuperior: 2.37, peso: 35.0, ref: 'CUMB-220', color: '#6d28d9' },
+    { id: 'CUMB257', nombre: 'Cumbrera 2.57m', largo: 2.57, altoSuperior: 0.50, peso: 35.0, ref: 'CUMB-257', color: '#6d28d9' },
   ],
 
   // ─── TECHO A 2 AGUAS (pieza compuesta: celosías inclinadas + cumbrera) ──
   // Solo línea en ancho — profundidad se arma copiando cada 2.57m.
-  // Despiece desglosa en celosías reales + cumbrera.
-  // modulosAncho = cantidad de módulos de 2.57m que cubre el ancho total.
+  // Despiece desglosa en celosías reales + cumbrera + parantes de unión.
+  // Pendiente estándar: 11° (sistema techo Cassette Layher).
   // celosiasPorLado = celosías inclinadas en cada pendiente.
-  // pendiente = inclinación del techo (ej: 15° a 25°)
+  // Parantes 0.50m unen celosías entre sí (chaveta → roseta).
   techos: [
-    { id: 'TECHO_5', nombre: 'Techo 2 aguas 12.85m', largo: 12.85, modulosAncho: 5, celosiasPorLado: 3, peso: 212.0, ref: 'TECHO-1285', color: '#dc2626',
+    { id: 'TECHO_5', nombre: 'Techo 2 aguas 12.85m', largo: 12.85, modulosAncho: 5, celosiasPorLado: 2, peso: 138.6, ref: 'TECHO-1285', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 29.5, cantidad: 6 },
-        { tipoId: 'CUMB220', nombre: 'Cumbrera 2.20m', ref: 'CUMB-220', peso: 35.0, cantidad: 1 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 4 },
+        { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 2 },
       ],
     },
-    { id: 'TECHO_6', nombre: 'Techo 2 aguas 15.42m', largo: 15.42, modulosAncho: 6, celosiasPorLado: 3, peso: 212.0, ref: 'TECHO-1542', color: '#dc2626',
+    { id: 'TECHO_6', nombre: 'Techo 2 aguas 15.42m', largo: 15.42, modulosAncho: 6, celosiasPorLado: 3, peso: 192.4, ref: 'TECHO-1542', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 29.5, cantidad: 6 },
-        { tipoId: 'CUMB220', nombre: 'Cumbrera 2.20m', ref: 'CUMB-220', peso: 35.0, cantidad: 1 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 6 },
+        { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 4 },
       ],
     },
-    { id: 'TECHO_7', nombre: 'Techo 2 aguas 17.99m', largo: 17.99, modulosAncho: 7, celosiasPorLado: 4, peso: 271.0, ref: 'TECHO-1799', color: '#dc2626',
+    { id: 'TECHO_7', nombre: 'Techo 2 aguas 17.99m', largo: 17.99, modulosAncho: 7, celosiasPorLado: 3, peso: 192.4, ref: 'TECHO-1799', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 29.5, cantidad: 8 },
-        { tipoId: 'CUMB220', nombre: 'Cumbrera 2.20m', ref: 'CUMB-220', peso: 35.0, cantidad: 1 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 6 },
+        { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 4 },
       ],
     },
-    { id: 'TECHO_8', nombre: 'Techo 2 aguas 20.56m', largo: 20.56, modulosAncho: 8, celosiasPorLado: 4, peso: 271.0, ref: 'TECHO-2056', color: '#dc2626',
+    { id: 'TECHO_8', nombre: 'Techo 2 aguas 20.56m', largo: 20.56, modulosAncho: 8, celosiasPorLado: 4, peso: 246.2, ref: 'TECHO-2056', color: '#555',
       componentes: [
-        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 29.5, cantidad: 8 },
-        { tipoId: 'CUMB220', nombre: 'Cumbrera 2.20m', ref: 'CUMB-220', peso: 35.0, cantidad: 1 },
+        { tipoId: 'CEL257', nombre: 'Celosía U 2.57m', ref: '2.656.257', peso: 24.9, cantidad: 8 },
+        { tipoId: 'CUMB257', nombre: 'Cumbrera 2.57m', ref: 'CUMB-257', peso: 35.0, cantidad: 1 },
+        { tipoId: 'V050', nombre: 'Parante 0.50m (unión)', ref: '2601.050', peso: 2.0, cantidad: 6 },
       ],
     },
   ],
