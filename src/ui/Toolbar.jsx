@@ -3,7 +3,7 @@ import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
   Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle, Menu, SaveAll, Scissors,
-  FilePlus2,
+  FilePlus2, LayoutTemplate,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -19,7 +19,7 @@ export default function Toolbar({
   mostrarCotas, setMostrarCotas,
   modoTecnico, setModoTecnico,
   pesoTotal, cantPiezas,
-  onAyuda, onCorte,
+  onAyuda, onCorte, onPlantillas,
   isMobile, onTogglePaleta, onToggleDespiece,
 }) {
   const filaActiva = filas.find(f => f.id === filaActivaId);
@@ -104,6 +104,8 @@ export default function Toolbar({
             <div className="absolute right-2 top-12 z-50 bg-white rounded-lg shadow-xl border border-gray-300 py-1 w-48">
               <button onClick={() => { nuevo(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><FilePlus2 size={14} /> Nuevo</button>
+              <button onClick={() => { onPlantillas?.(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><LayoutTemplate size={14} /> Plantillas</button>
               <button onClick={() => { guardar(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><Save size={14} /> Guardar</button>
               <button onClick={() => { guardarComo(); setMobileMenuOpen(false); }}
@@ -175,6 +177,7 @@ export default function Toolbar({
         <button onClick={guardarComo} title="Guardar como…" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><SaveAll size={13} /> Guardar como</button>
         <button onClick={cargar} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><FolderOpen size={13} /> Cargar</button>
         <button onClick={exportarPDF} disabled={exportando} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded border border-red-700 disabled:opacity-50"><FileDown size={13} /> {exportando ? 'Exportando…' : 'PDF'}</button>
+        <button onClick={onPlantillas} title="Plantillas de arranque" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300"><LayoutTemplate size={13} /> Plantillas</button>
         <div className="w-px h-5 bg-gray-300 mx-0.5" />
         <button onClick={undo} disabled={historialIdx === 0} title="Ctrl+Z" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><Undo2 size={13} /></button>
         <button onClick={redo} disabled={historialIdx >= historialLen - 1} title="Ctrl+Y" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><Redo2 size={13} /></button>

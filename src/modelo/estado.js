@@ -58,6 +58,12 @@ export function useDisenoState() {
       return [...prev, { id, nombre: id, z: parseFloat(zBase.toFixed(3)) }];
     });
   }, [proximaLetra]);
+  const agregarFilaConDatos = useCallback((f) => {
+    setFilas(prev => {
+      if (prev.find(p => p.id === f.id)) return prev;
+      return [...prev, { id: f.id, nombre: f.nombre, z: parseFloat((f.z ?? 0).toFixed(3)) }];
+    });
+  }, []);
   // Info sobre la fila (para confirmación externa). No borra.
   // Función plana (no useCallback) — lee de stateRef, no necesita memoizar.
   const infoFila = (id) => {
@@ -501,10 +507,10 @@ export function useDisenoState() {
     piezasSeleccionadas, setPiezasSeleccionadas, diagonalOrigen, setDiagonalOrigen,
     diagonalPlantaOrigen, setDiagonalPlantaOrigen,
     clipboard, filaZ, filas, filaActivaId, filaActiva, setFilaActivaId,
-    agregarFila, eliminarFila, infoFila, renombrarFila, moverFila,
+    agregarFila, agregarFilaConDatos, eliminarFila, infoFila, renombrarFila, moverFila,
     alturaY, setAlturaY,
     orientacionActiva, setOrientacionActiva, toggleOrientacion,
-    nombreDiseno, mensajeGuardado,
+    nombreDiseno, setNombreDiseno, mensajeGuardado,
     commit, undo, redo, copiar, pegar, duplicar, eliminarSeleccion, seleccionarTodo,
     colocarPiezaAlzado, colocarDiagonalAlzado, colocarPiezaPlanta, colocarDiagonalPlanta, borrarTodo, nuevoDiseno,
     calcularSnapAlzado, calcularSnapPlanta, moverPiezas, moverPiezasZ, commitPiezasActuales,

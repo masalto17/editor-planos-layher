@@ -11,6 +11,8 @@ import ModalExportPDF from './ui/ModalExportPDF.jsx';
 import ModalConfirmar from './ui/ModalConfirmar.jsx';
 import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
+import ModalPlantillas from './ui/ModalPlantillas.jsx';
+import Onboarding from './ui/Onboarding.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
 
 function useIsMobile(breakpoint = 768) {
@@ -37,6 +39,7 @@ export default function LayherEditor() {
   const [confirmar, setConfirmar] = useState(null);
   const [mostrarAyuda, setMostrarAyuda] = useState(false);
   const [mostrarCorte, setMostrarCorte] = useState(false);
+  const [mostrarPlantillas, setMostrarPlantillas] = useState(false);
   // Mobile drawers
   const [paletaAbierta, setPaletaAbierta] = useState(false);
   const [despieceAbierto, setDespieceAbierto] = useState(false);
@@ -94,6 +97,19 @@ export default function LayherEditor() {
     }
   };
 
+  const handleCargarPlantilla = (tpl) => {
+    modelo.commit(tpl.piezas);
+    modelo.setNombreDiseno(tpl.nombre);
+    // Sincronizar filas de la plantilla
+    tpl.filas.forEach(f => {
+      if (!modelo.filas.find(mf => mf.id === f.id)) {
+        modelo.agregarFilaConDatos(f);
+      }
+    });
+    setMostrarPlantillas(false);
+    setTimeout(() => setFitTrigger(t => t + 1), 100);
+  };
+
   useEffect(() => {
     const h = modelo.herramientaActiva;
     if (!h) return;
@@ -148,6 +164,7 @@ export default function LayherEditor() {
         pesoTotal={pesoTotal} cantPiezas={cantPiezas}
         onAyuda={() => setMostrarAyuda(true)}
         onCorte={() => setMostrarCorte(true)}
+        onPlantillas={() => setMostrarPlantillas(true)}
         isMobile={isMobile}
         onTogglePaleta={() => setPaletaAbierta(p => !p)}
         onToggleDespiece={() => setDespieceAbierto(d => !d)}
@@ -269,6 +286,15 @@ export default function LayherEditor() {
       )}
 
       <AyudaRapida forzar={mostrarAyuda} onCerrar={() => setMostrarAyuda(false)} />
+
+      {mostrarPlantillas && (
+        <ModalPlantillas
+          onCargar={handleCargarPlantilla}
+          onCerrar={() => setMostrarPlantillas(false)}
+        />
+      )}
+
+      <Onboarding />
 
       {confirmar && (
         <ModalConfirmar
