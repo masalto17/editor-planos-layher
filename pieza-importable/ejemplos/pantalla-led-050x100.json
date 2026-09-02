@@ -1,0 +1,175 @@
+{
+  "schemaVersion": "1.0",
+  "id": "EXT_PANTALLA_LED_050X100",
+  "nombre": "Pantalla LED 0.50x1.00m",
+  "categoria": "accesorio",
+  "origen": {
+    "tipo": "piezaPropia",
+    "referencia": "LED-P050100",
+    "estadoVerificacion": "noEstructural",
+    "notas": "Modulo pantalla LED. No estructural, se monta sobre horizontales."
+  },
+  "dimensiones": {
+    "largo": 0.50,
+    "alto": 1.00,
+    "profundidad": 0.15
+  },
+  "despiece": {
+    "pesoKg": 12.5,
+    "unidad": "pieza"
+  },
+  "colocacion": {
+    "modo": "unClick",
+    "orientacionesPermitidas": ["x", "z"],
+    "snap": {
+      "requiereRoseta": false,
+      "pasoX": 0.01,
+      "pasoY": 0.50,
+      "pasoZ": 0.01
+    },
+    "puntosConexion": [
+      { "id": "apoyo_izq", "posicion": { "x": 0, "y": 0, "z": 0 }, "tipo": "apoyo" },
+      { "id": "apoyo_der", "posicion": { "x": 0.50, "y": 0, "z": 0 }, "tipo": "apoyo" }
+    ]
+  },
+  "vistas": {
+    "alzado": {
+      "bounds": { "minX": 0, "minY": 0, "maxX": 0.50, "maxY": 1.00 },
+      "elementos": [
+        {
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.50,
+          "alto": 1.00,
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.025,
+          "fill": "rgba(0,229,255,0.12)"
+        },
+        {
+          "tipo": "rectangulo",
+          "x": 0.03,
+          "y": 0.03,
+          "ancho": 0.44,
+          "alto": 0.94,
+          "stroke": "#0091ea",
+          "strokeWidth": 0.012,
+          "fill": "rgba(0,145,234,0.08)"
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0.03, "y": 0.03 },
+          "hasta": { "x": 0.47, "y": 0.97 },
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0.47, "y": 0.03 },
+          "hasta": { "x": 0.03, "y": 0.97 },
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0.25, "y": 0.03 },
+          "hasta": { "x": 0.25, "y": 0.97 },
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0.03, "y": 0.50 },
+          "hasta": { "x": 0.47, "y": 0.50 },
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0.08, "y": 0.15 },
+            { "x": 0.17, "y": 0.15 },
+            { "x": 0.17, "y": 0.35 },
+            { "x": 0.08, "y": 0.35 },
+            { "x": 0.08, "y": 0.15 }
+          ],
+          "stroke": "#0091ea",
+          "strokeWidth": 0.006
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0.33, "y": 0.15 },
+            { "x": 0.42, "y": 0.15 },
+            { "x": 0.42, "y": 0.35 },
+            { "x": 0.33, "y": 0.35 },
+            { "x": 0.33, "y": 0.15 }
+          ],
+          "stroke": "#0091ea",
+          "strokeWidth": 0.006
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0.08, "y": 0.65 },
+            { "x": 0.17, "y": 0.65 },
+            { "x": 0.17, "y": 0.85 },
+            { "x": 0.08, "y": 0.85 },
+            { "x": 0.08, "y": 0.65 }
+          ],
+          "stroke": "#0091ea",
+          "strokeWidth": 0.006
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0.33, "y": 0.65 },
+            { "x": 0.42, "y": 0.65 },
+            { "x": 0.42, "y": 0.85 },
+            { "x": 0.33, "y": 0.85 },
+            { "x": 0.33, "y": 0.65 }
+          ],
+          "stroke": "#0091ea",
+          "strokeWidth": 0.006
+        }
+      ]
+    },
+    "planta": {
+      "bounds": { "minX": 0, "minY": 0, "maxX": 0.50, "maxY": 0.15 },
+      "elementos": [
+        {
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.50,
+          "alto": 0.15,
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.015,
+          "fill": "rgba(0,229,255,0.15)"
+        },
+        {
+          "tipo": "circulo",
+          "x": 0,
+          "y": 0,
+          "radio": 0.025,
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008,
+          "fill": "#ffffff"
+        },
+        {
+          "tipo": "circulo",
+          "x": 0.50,
+          "y": 0,
+          "radio": 0.025,
+          "stroke": "#00e5ff",
+          "strokeWidth": 0.008,
+          "fill": "#ffffff"
+        }
+      ]
+    }
+  },
+  "advertencias": [
+    "Plano esquematico preliminar realizado unicamente con fines presupuestarios y comerciales.",
+    "Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construccion."
+  ]
+}

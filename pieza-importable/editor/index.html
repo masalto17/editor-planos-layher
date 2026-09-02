@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Editor de piezas importables | MasAlto Layout</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="panel panel-left" aria-label="Datos de pieza">
+        <section class="brand">
+          <div class="brand-mark">M</div>
+          <div>
+            <h1>Editor de piezas</h1>
+            <p>Biblioteca importable para MasAlto Layout</p>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Ficha tecnica</h2>
+          <label>
+            Nombre
+            <input id="pieceName" value="Pieza manual 2.57m" />
+          </label>
+          <label>
+            ID
+            <input id="pieceId" value="EXT_PIEZA_257" />
+          </label>
+          <label>
+            Categoria
+            <select id="pieceCategory">
+              <option value="piezaManual">Pieza manual</option>
+              <option value="celosia">Celosia</option>
+              <option value="truss">Truss</option>
+              <option value="mensula">Mensula</option>
+              <option value="escalera">Escalera</option>
+              <option value="tacoMadera">Taco de madera</option>
+              <option value="accesorio">Accesorio</option>
+            </select>
+          </label>
+          <div class="field-grid">
+            <label>
+              Largo m
+              <input id="pieceLength" type="number" min="0" step="0.01" value="2.57" />
+            </label>
+            <label>
+              Alto m
+              <input id="pieceHeight" type="number" min="0" step="0.01" value="0.50" />
+            </label>
+            <label>
+              Prof. m
+              <input id="pieceDepth" type="number" min="0" step="0.01" value="0.00" />
+            </label>
+            <label>
+              Peso kg
+              <input id="pieceWeight" type="number" min="0" step="0.1" value="29.5" />
+            </label>
+          </div>
+          <label>
+            Referencia
+            <input id="pieceReference" value="SIN-REF" />
+          </label>
+          <label>
+            Estado
+            <select id="verificationState">
+              <option value="pendienteVerificacion">Pendiente de verificacion</option>
+              <option value="verificadaCatalogo">Verificada contra catalogo</option>
+              <option value="noEstructural">No estructural</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="section">
+          <h2>Colocacion</h2>
+          <label>
+            Modo
+            <select id="placementMode">
+              <option value="unClick">Un click</option>
+              <option value="dosClicks">Dos clicks</option>
+              <option value="libre">Libre</option>
+            </select>
+          </label>
+          <div class="checkbox-row">
+            <label><input id="snapRosette" type="checkbox" checked /> Requiere roseta</label>
+            <label><input id="orientX" type="checkbox" checked /> Orientacion X</label>
+            <label><input id="orientZ" type="checkbox" /> Orientacion Z</label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>Dibujo</h2>
+          <div class="field-grid">
+            <label>
+              Trazo
+              <input id="strokeColor" type="color" value="#4b5563" />
+            </label>
+            <label>
+              Relleno
+              <select id="fillColor">
+                <option value="none">Sin relleno</option>
+                <option value="rgba(75,85,99,0.12)">Gris suave</option>
+                <option value="rgba(227,6,19,0.15)">Rojo suave</option>
+                <option value="rgba(245,158,11,0.15)">Ambar suave</option>
+                <option value="rgba(59,130,246,0.15)">Azul suave</option>
+                <option value="rgba(16,185,129,0.15)">Verde suave</option>
+              </select>
+            </label>
+            <label>
+              Snap
+              <select id="snapStep">
+                <option value="0.01">0.01m</option>
+                <option value="0.05" selected>0.05m</option>
+                <option value="0.10">0.10m</option>
+                <option value="0.25">0.25m</option>
+                <option value="0.50">0.50m (roseta)</option>
+              </select>
+            </label>
+            <label>
+              Tipo conexion
+              <select id="connectionType">
+                <option value="extremo">Extremo</option>
+                <option value="roseta">Roseta</option>
+                <option value="apoyo">Apoyo</option>
+                <option value="anclaje">Anclaje</option>
+              </select>
+            </label>
+          </div>
+        </section>
+      </aside>
+
+      <section class="workspace">
+        <header class="topbar">
+          <div class="tabs" role="tablist" aria-label="Vista">
+            <button class="tab is-active" data-view="alzado" type="button">Alzado</button>
+            <button class="tab" data-view="planta" type="button">Planta</button>
+          </div>
+          <div class="tools" aria-label="Herramientas de dibujo">
+            <button class="tool is-active" data-tool="select" type="button" title="Seleccionar (V)">V</button>
+            <button class="tool" data-tool="linea" type="button" title="Linea (L)">L</button>
+            <button class="tool" data-tool="rectangulo" type="button" title="Rectangulo (R)">R</button>
+            <button class="tool" data-tool="circulo" type="button" title="Circulo (C)">C</button>
+            <button class="tool" data-tool="polilinea" type="button" title="Polilinea (P)">P</button>
+            <button id="addConnection" class="tool" type="button" title="Punto de conexion (X)">X</button>
+            <span class="tool-sep"></span>
+            <button id="undoBtn" class="tool" type="button" title="Deshacer (Ctrl+Z)" disabled>↩</button>
+            <button id="redoBtn" class="tool" type="button" title="Rehacer (Ctrl+Y)" disabled>↪</button>
+            <button id="fitBtn" class="tool" type="button" title="Encuadrar todo">⊞</button>
+          </div>
+          <div class="actions">
+            <button id="loadFile" class="button secondary" type="button">Abrir</button>
+            <button id="saveFile" class="button secondary" type="button">Guardar</button>
+            <button id="clearView" class="button secondary" type="button">Limpiar</button>
+            <button id="loadExample" class="button secondary" type="button">Ejemplo</button>
+            <button id="exportJson" class="button primary" type="button">Exportar JSON</button>
+          </div>
+        </header>
+
+        <div class="canvas-wrap">
+          <svg id="drawingCanvas" class="canvas" viewBox="-0.5 -0.5 4 2" aria-label="Lienzo vectorial">
+            <defs>
+              <pattern id="minorGrid" width="0.1" height="0.1" patternUnits="userSpaceOnUse">
+                <path d="M 0.1 0 L 0 0 0 0.1" fill="none" stroke="#e5e7eb" stroke-width="0.005" />
+              </pattern>
+              <pattern id="majorGrid" width="0.5" height="0.5" patternUnits="userSpaceOnUse">
+                <rect width="0.5" height="0.5" fill="url(#minorGrid)" />
+                <path d="M 0.5 0 L 0 0 0 0.5" fill="none" stroke="#c7cdd6" stroke-width="0.008" />
+              </pattern>
+            </defs>
+            <rect class="grid-bg" x="-20" y="-20" width="40" height="40" fill="url(#majorGrid)" />
+            <g class="axis">
+              <line x1="-20" y1="0" x2="20" y2="0" />
+              <line x1="0" y1="-20" x2="0" y2="20" />
+            </g>
+            <g id="shapeLayer"></g>
+            <g id="connectionLayer"></g>
+            <g id="previewLayer"></g>
+          </svg>
+          <div class="hint-bar">
+            <span id="statusText">Zoom: pinch/scroll · Pan: Alt+drag · Atajos: V L R C P X</span>
+            <span id="coordsText">x 0.00 / y 0.00</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel panel-right" aria-label="Inspector">
+        <section class="section">
+          <h2>Elementos</h2>
+          <div id="elementList" class="element-list"></div>
+        </section>
+        <section class="section">
+          <h2>Puntos de conexion</h2>
+          <div id="connectionList" class="element-list"></div>
+        </section>
+        <section class="section">
+          <h2>Salida</h2>
+          <textarea id="jsonOutput" spellcheck="false" placeholder="El JSON exportado aparece aca."></textarea>
+          <p id="validationText" class="validation">Sin exportar.</p>
+        </section>
+      </aside>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

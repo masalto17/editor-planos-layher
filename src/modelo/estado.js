@@ -146,6 +146,10 @@ export function useDisenoState() {
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
+    // Pieza importada: copiar datos de render genérico
+    if (h._visual) n._visual = h._visual;
+    if (h._importada) n._importada = true;
+    if (h._verificacion) n._verificacion = h._verificacion;
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
@@ -171,6 +175,10 @@ export function useDisenoState() {
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
+    // Pieza importada: copiar datos de render genérico
+    if (h._visual) n._visual = h._visual;
+    if (h._importada) n._importada = true;
+    if (h._verificacion) n._verificacion = h._verificacion;
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);

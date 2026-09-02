@@ -11,6 +11,7 @@ import Truss from './Truss.jsx';
 import Cumbrera from './Cumbrera.jsx';
 import TechoAguas from './TechoAguas.jsx';
 import VigaIPN from './VigaIPN.jsx';
+import GenericPiezaRender from './GenericPiezaRender.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
 export { PreviewDiagonal };
@@ -70,10 +71,12 @@ export default function PiezaRender({ pieza, worldToScreen, zoom, seleccionada, 
     </g>;
   }
   const Comp = RENDERERS[pieza.categoria];
-  if (!Comp) return null;
+  // Fallback: piezas importadas traen _visual (definición vectorial JSON)
+  if (!Comp && !pieza._visual) return null;
+  const Renderer = Comp || GenericPiezaRender;
   return (
     <g onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
-      <Comp pieza={pieza} worldToScreen={worldToScreen} zoom={zoom} sc={sc} op={op} cur={cur}
+      <Renderer pieza={pieza} worldToScreen={worldToScreen} zoom={zoom} sc={sc} op={op} cur={cur}
         seleccionada={!!seleccionada} fantasma={!!fantasma} onMouseDown={onMouseDown} />
     </g>
   );

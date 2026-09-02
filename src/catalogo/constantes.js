@@ -10,6 +10,7 @@ export const DRAG_UMBRAL_PX = 4;
 const HORIZONTAL_CATS = new Set([
   'horizontalO', 'vigaPuente', 'horizontalU', 'plataforma', 'barandilla', 'rodapie',
   'vigaIPN', 'celosia', 'truss', 'techo',
+  'importada',  // piezas importadas se tratan como horizontales por defecto
 ]);
 export const ES_TIPO_HORIZONTAL = c => HORIZONTAL_CATS.has(c);
 export const ES_TIPO_VERTICAL = c => c === 'vertical' || c === 'base' || c === 'collarin';
@@ -22,6 +23,7 @@ export const Z_ORDER = {
   vigaPuente: 4, horizontalU: 5,
   plataforma: 6, rodapie: 7, barandilla: 8,
   cumbrera: 9, techo: 9.5,
+  importada: 5.5, // piezas importadas entre horizontalU y plataforma
 };
 
 export const DESPIECE_ORDER = {
@@ -29,4 +31,5 @@ export const DESPIECE_ORDER = {
   plataforma: 6, barandilla: 7, rodapie: 8,
   diagonal: 9, diagonalPlanta: 9.5,
   celosia: 10, cumbrera: 10.5, techo: 10.7, truss: 11, vigaIPN: 12,
+  importada: 13, // piezas importadas al final del despiece
 };

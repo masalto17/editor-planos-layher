@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "1.0",
+  "id": "EXT_CEL_U_257",
+  "nombre": "Celosia U 2.57m",
+  "categoria": "celosia",
+  "origen": {
+    "tipo": "catalogoFabricante",
+    "fabricante": "Layher",
+    "referencia": "2.656.257",
+    "estadoVerificacion": "pendienteVerificacion",
+    "notas": "Ejemplo inicial para probar el formato de importacion. Verificar peso y geometria contra catalogo antes de uso comercial."
+  },
+  "dimensiones": {
+    "largo": 2.57,
+    "alto": 0.5,
+    "profundidad": 0.0
+  },
+  "despiece": {
+    "pesoKg": 29.5,
+    "unidad": "pieza"
+  },
+  "colocacion": {
+    "modo": "unClick",
+    "orientacionesPermitidas": ["x"],
+    "snap": {
+      "requiereRoseta": true,
+      "pasoX": 0.01,
+      "pasoY": 0.5,
+      "pasoZ": 0.01
+    },
+    "puntosConexion": [
+      {
+        "id": "extremo_izquierdo_inferior",
+        "posicion": { "x": 0, "y": 0, "z": 0 },
+        "tipo": "extremo"
+      },
+      {
+        "id": "extremo_derecho_inferior",
+        "posicion": { "x": 2.57, "y": 0, "z": 0 },
+        "tipo": "extremo"
+      },
+      {
+        "id": "extremo_izquierdo_superior",
+        "posicion": { "x": 0, "y": 0.5, "z": 0 },
+        "tipo": "extremo"
+      },
+      {
+        "id": "extremo_derecho_superior",
+        "posicion": { "x": 2.57, "y": 0.5, "z": 0 },
+        "tipo": "extremo"
+      }
+    ]
+  },
+  "vistas": {
+    "alzado": {
+      "bounds": { "minX": 0, "minY": 0, "maxX": 2.57, "maxY": 0.5 },
+      "elementos": [
+        {
+          "tipo": "linea",
+          "desde": { "x": 0, "y": 0 },
+          "hasta": { "x": 2.57, "y": 0 },
+          "stroke": "#4b5563",
+          "strokeWidth": 0.04
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0, "y": 0.5 },
+          "hasta": { "x": 2.57, "y": 0.5 },
+          "stroke": "#4b5563",
+          "strokeWidth": 0.04
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 0, "y": 0 },
+          "hasta": { "x": 0, "y": 0.5 },
+          "stroke": "#4b5563",
+          "strokeWidth": 0.03
+        },
+        {
+          "tipo": "linea",
+          "desde": { "x": 2.57, "y": 0 },
+          "hasta": { "x": 2.57, "y": 0.5 },
+          "stroke": "#4b5563",
+          "strokeWidth": 0.03
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0, "y": 0 },
+            { "x": 0.64, "y": 0.5 },
+            { "x": 1.28, "y": 0 },
+            { "x": 1.93, "y": 0.5 },
+            { "x": 2.57, "y": 0 }
+          ],
+          "stroke": "#4b5563",
+          "strokeWidth": 0.025,
+          "fill": "none"
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            { "x": 0, "y": 0.5 },
+            { "x": 0.64, "y": 0 },
+            { "x": 1.28, "y": 0.5 },
+            { "x": 1.93, "y": 0 },
+            { "x": 2.57, "y": 0.5 }
+          ],
+          "stroke": "#4b5563",
+          "strokeWidth": 0.025,
+          "fill": "none"
+        }
+      ]
+    },
+    "planta": {
+      "bounds": { "minX": 0, "minY": -0.05, "maxX": 2.57, "maxY": 0.05 },
+      "elementos": [
+        {
+          "tipo": "linea",
+          "desde": { "x": 0, "y": 0 },
+          "hasta": { "x": 2.57, "y": 0 },
+          "stroke": "#4b5563",
+          "strokeWidth": 0.05
+        },
+        {
+          "tipo": "circulo",
+          "x": 0,
+          "y": 0,
+          "radio": 0.045,
+          "stroke": "#111111",
+          "strokeWidth": 0.01,
+          "fill": "#ffffff"
+        },
+        {
+          "tipo": "circulo",
+          "x": 2.57,
+          "y": 0,
+          "radio": 0.045,
+          "stroke": "#111111",
+          "strokeWidth": 0.01,
+          "fill": "#ffffff"
+        }
+      ]
+    }
+  },
+  "advertencias": [
+    "Plano esquematico preliminar realizado unicamente con fines presupuestarios y comerciales.",
+    "Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construccion."
+  ]
+}

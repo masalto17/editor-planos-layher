@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://masalto.local/schemas/pieza-importable.schema.json",
+  "title": "Pieza importable MasAlto Layout",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "id",
+    "nombre",
+    "categoria",
+    "origen",
+    "dimensiones",
+    "despiece",
+    "colocacion",
+    "vistas"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9_\\-]{3,40}$",
+      "description": "Identificador estable de catalogo externo."
+    },
+    "nombre": {
+      "type": "string",
+      "minLength": 3
+    },
+    "categoria": {
+      "type": "string",
+      "enum": [
+        "piezaManual",
+        "celosia",
+        "truss",
+        "mensula",
+        "escalera",
+        "tacoMadera",
+        "accesorio"
+      ]
+    },
+    "origen": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tipo", "estadoVerificacion"],
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "enum": ["catalogoFabricante", "piezaPropia", "adaptacionObra", "referenciaInterna"]
+        },
+        "fabricante": {
+          "type": "string"
+        },
+        "referencia": {
+          "type": "string"
+        },
+        "estadoVerificacion": {
+          "type": "string",
+          "enum": ["verificadaCatalogo", "pendienteVerificacion", "noEstructural"]
+        },
+        "notas": {
+          "type": "string"
+        }
+      }
+    },
+    "dimensiones": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["largo", "alto", "profundidad"],
+      "properties": {
+        "largo": { "type": "number", "minimum": 0 },
+        "alto": { "type": "number", "minimum": 0 },
+        "profundidad": { "type": "number", "minimum": 0 }
+      }
+    },
+    "despiece": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pesoKg"],
+      "properties": {
+        "pesoKg": { "type": "number", "minimum": 0 },
+        "unidad": {
+          "type": "string",
+          "enum": ["pieza"],
+          "default": "pieza"
+        }
+      }
+    },
+    "colocacion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["modo", "snap"],
+      "properties": {
+        "modo": {
+          "type": "string",
+          "enum": ["unClick", "dosClicks", "libre"]
+        },
+        "orientacionesPermitidas": {
+          "type": "array",
+          "items": { "type": "string", "enum": ["x", "z"] },
+          "uniqueItems": true
+        },
+        "snap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["requiereRoseta"],
+          "properties": {
+            "requiereRoseta": { "type": "boolean" },
+            "pasoX": { "type": "number", "minimum": 0 },
+            "pasoY": { "type": "number", "minimum": 0 },
+            "pasoZ": { "type": "number", "minimum": 0 }
+          }
+        },
+        "puntosConexion": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/puntoConexion" }
+        }
+      }
+    },
+    "vistas": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alzado", "planta"],
+      "properties": {
+        "alzado": { "$ref": "#/$defs/vistaVectorial" },
+        "planta": { "$ref": "#/$defs/vistaVectorial" }
+      }
+    },
+    "advertencias": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "punto2d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" }
+      }
+    },
+    "punto3d": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { "type": "number" }
+      }
+    },
+    "puntoConexion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "posicion", "tipo"],
+      "properties": {
+        "id": { "type": "string" },
+        "posicion": { "$ref": "#/$defs/punto3d" },
+        "tipo": {
+          "type": "string",
+          "enum": ["roseta", "extremo", "apoyo", "centro", "libre"]
+        }
+      }
+    },
+    "vistaVectorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bounds", "elementos"],
+      "properties": {
+        "bounds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["minX", "minY", "maxX", "maxY"],
+          "properties": {
+            "minX": { "type": "number" },
+            "minY": { "type": "number" },
+            "maxX": { "type": "number" },
+            "maxY": { "type": "number" }
+          }
+        },
+        "elementos": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/elementoVectorial" }
+        }
+      }
+    },
+    "elementoVectorial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tipo"],
+      "properties": {
+        "tipo": {
+          "type": "string",
+          "enum": ["linea", "rectangulo", "circulo", "polilinea"]
+        },
+        "desde": { "$ref": "#/$defs/punto2d" },
+        "hasta": { "$ref": "#/$defs/punto2d" },
+        "puntos": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/punto2d" }
+        },
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "ancho": { "type": "number" },
+        "alto": { "type": "number" },
+        "radio": { "type": "number" },
+        "stroke": { "type": "string" },
+        "strokeWidth": { "type": "number" },
+        "fill": { "type": "string" },
+        "dash": {
+          "type": "array",
+          "items": { "type": "number" }
+        }
+      }
+    }
+  }
+}

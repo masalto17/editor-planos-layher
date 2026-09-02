@@ -110,10 +110,7 @@ export const CATALOGO = {
     { id: 'CEL157', nombre: 'Celosía U 1.57m', largo: 1.57, alto: 0.50, peso: 15.0, ref: '2.656.157', color: '#4b5563' },
     { id: 'CEL207', nombre: 'Celosía U 2.07m', largo: 2.07, alto: 0.50, peso: 21.4, ref: '2.656.207', color: '#4b5563' },
     { id: 'CEL257', nombre: 'Celosía U 2.57m', largo: 2.57, alto: 0.50, peso: 24.9, ref: '2.656.257', color: '#4b5563' },
-    { id: 'CEL307', nombre: 'Celosía U 3.07m', largo: 3.07, alto: 0.50, peso: 31.9, ref: '2.656.307', color: '#4b5563' },
-    { id: 'CEL414', nombre: 'Celosía U 4.14m', largo: 4.14, alto: 0.50, peso: 40.0, ref: '2.656.414', color: '#4b5563' },
-    { id: 'CEL514', nombre: 'Celosía U 5.14m', largo: 5.14, alto: 0.50, peso: 51.2, ref: '2.656.514', color: '#4b5563' },
-    { id: 'CEL614', nombre: 'Celosía U 6.14m', largo: 6.14, alto: 0.50, peso: 60.5, ref: '2.656.614', color: '#4b5563' },
+    // Solo medidas reales del catálogo Layher F4-2018-SP (ref 2.656.xxx)
   ],
 
   // ─── CUMBRERAS (techo a 2 aguas, pieza TURME/compatible) ──
