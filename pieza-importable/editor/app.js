@@ -19,7 +19,7 @@ const state = {
   history: [],
   historyIdx: -1,
   // Drawing options
-  strokeColor: "#4b5563",
+  strokeColor: "#c8d6e5",
   fillColor: "none",
   snapStep: 0.05,
 };
@@ -204,10 +204,10 @@ function renderShape(shape, selected = false) {
   }
   if (shape.tipo === "rectangulo") {
     return svgEl("rect", { ...common, x: shape.x, y: -(shape.y + shape.alto), width: shape.ancho, height: shape.alto,
-      fill: shape.fill || "rgba(75,85,99,0.12)" });
+      fill: shape.fill || "rgba(200,214,229,0.10)" });
   }
   if (shape.tipo === "circulo") {
-    return svgEl("circle", { ...common, cx: shape.x, cy: -shape.y, r: shape.radio, fill: shape.fill || "rgba(75,85,99,0.12)" });
+    return svgEl("circle", { ...common, cx: shape.x, cy: -shape.y, r: shape.radio, fill: shape.fill || "rgba(200,214,229,0.10)" });
   }
   if (shape.tipo === "polilinea") {
     return svgEl("polyline", { ...common, points: shape.puntos.map((p) => `${p.x},${-p.y}`).join(" ") });
@@ -319,12 +319,12 @@ function addShapeFromDrag(start, end) {
     currentShapes().push({ ...base, tipo: "rectangulo",
       x: Math.min(start.x, end.x), y: Math.min(start.y, end.y),
       ancho: round(Math.abs(end.x - start.x), 0.01), alto: round(Math.abs(end.y - start.y), 0.01),
-      fill: state.fillColor === "none" ? "rgba(75,85,99,0.12)" : state.fillColor });
+      fill: state.fillColor === "none" ? "rgba(200,214,229,0.10)" : state.fillColor });
   }
   if (state.activeTool === "circulo") {
     currentShapes().push({ ...base, tipo: "circulo",
       x: start.x, y: start.y, radio: round(Math.hypot(end.x - start.x, end.y - start.y), 0.01),
-      fill: state.fillColor === "none" ? "rgba(75,85,99,0.12)" : state.fillColor });
+      fill: state.fillColor === "none" ? "rgba(200,214,229,0.10)" : state.fillColor });
   }
   saveSnapshot();
 }
@@ -486,17 +486,17 @@ function loadFromFile() {
 
 function loadExample() {
   state.views.alzado = [
-    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 2.57, y: 0 }, stroke: "#4b5563", strokeWidth: 0.04, fill: "none" },
-    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0.5 }, hasta: { x: 2.57, y: 0.5 }, stroke: "#4b5563", strokeWidth: 0.04, fill: "none" },
-    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 0, y: 0.5 }, stroke: "#4b5563", strokeWidth: 0.03, fill: "none" },
-    { id: uid("shape"), tipo: "linea", desde: { x: 2.57, y: 0 }, hasta: { x: 2.57, y: 0.5 }, stroke: "#4b5563", strokeWidth: 0.03, fill: "none" },
-    { id: uid("shape"), tipo: "polilinea", puntos: [{ x: 0, y: 0 }, { x: 0.64, y: 0.5 }, { x: 1.28, y: 0 }, { x: 1.93, y: 0.5 }, { x: 2.57, y: 0 }], stroke: "#4b5563", strokeWidth: 0.025, fill: "none" },
-    { id: uid("shape"), tipo: "polilinea", puntos: [{ x: 0, y: 0.5 }, { x: 0.64, y: 0 }, { x: 1.28, y: 0.5 }, { x: 1.93, y: 0 }, { x: 2.57, y: 0.5 }], stroke: "#4b5563", strokeWidth: 0.025, fill: "none" }
+    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 2.57, y: 0 }, stroke: "#c8d6e5", strokeWidth: 0.04, fill: "none" },
+    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0.5 }, hasta: { x: 2.57, y: 0.5 }, stroke: "#c8d6e5", strokeWidth: 0.04, fill: "none" },
+    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 0, y: 0.5 }, stroke: "#c8d6e5", strokeWidth: 0.03, fill: "none" },
+    { id: uid("shape"), tipo: "linea", desde: { x: 2.57, y: 0 }, hasta: { x: 2.57, y: 0.5 }, stroke: "#c8d6e5", strokeWidth: 0.03, fill: "none" },
+    { id: uid("shape"), tipo: "polilinea", puntos: [{ x: 0, y: 0 }, { x: 0.64, y: 0.5 }, { x: 1.28, y: 0 }, { x: 1.93, y: 0.5 }, { x: 2.57, y: 0 }], stroke: "#c8d6e5", strokeWidth: 0.025, fill: "none" },
+    { id: uid("shape"), tipo: "polilinea", puntos: [{ x: 0, y: 0.5 }, { x: 0.64, y: 0 }, { x: 1.28, y: 0.5 }, { x: 1.93, y: 0 }, { x: 2.57, y: 0.5 }], stroke: "#c8d6e5", strokeWidth: 0.025, fill: "none" }
   ];
   state.views.planta = [
-    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 2.57, y: 0 }, stroke: "#4b5563", strokeWidth: 0.05, fill: "none" },
-    { id: uid("shape"), tipo: "circulo", x: 0, y: 0, radio: 0.045, stroke: "#111111", strokeWidth: 0.01, fill: "#ffffff" },
-    { id: uid("shape"), tipo: "circulo", x: 2.57, y: 0, radio: 0.045, stroke: "#111111", strokeWidth: 0.01, fill: "#ffffff" }
+    { id: uid("shape"), tipo: "linea", desde: { x: 0, y: 0 }, hasta: { x: 2.57, y: 0 }, stroke: "#c8d6e5", strokeWidth: 0.05, fill: "none" },
+    { id: uid("shape"), tipo: "circulo", x: 0, y: 0, radio: 0.045, stroke: "#e0e8f0", strokeWidth: 0.01, fill: "#ffffff" },
+    { id: uid("shape"), tipo: "circulo", x: 2.57, y: 0, radio: 0.045, stroke: "#e0e8f0", strokeWidth: 0.01, fill: "#ffffff" }
   ];
   state.connections = [
     { id: "extremo_izquierdo", posicion: { x: 0, y: 0, z: 0 }, tipo: "extremo" },

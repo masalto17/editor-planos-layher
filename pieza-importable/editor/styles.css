@@ -5,7 +5,7 @@
   --line: #d8dde5;
   --panel: #ffffff;
   --page: #f4f5f7;
-  --canvas: #fbfcfd;
+  --canvas: #141a2a;
   --accent: #2563eb;
   --ok: #15803d;
   --warn: #b45309;
@@ -283,12 +283,11 @@ input[type="color"] {
 }
 
 .axis line {
-  stroke: #9aa3af;
-  stroke-width: 0.01;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 0.012;
 }
 
 .shape {
-  vector-effect: non-scaling-stroke;
   cursor: pointer;
 }
 
@@ -297,7 +296,6 @@ input[type="color"] {
 }
 
 .connection {
-  vector-effect: non-scaling-stroke;
   cursor: pointer;
 }
 
@@ -310,10 +308,10 @@ input[type="color"] {
   justify-content: space-between;
   gap: 16px;
   padding: 8px 10px;
-  border: 1px solid rgba(17, 17, 17, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #374151;
+  background: rgba(10, 14, 26, 0.88);
+  color: #c0c8d8;
   font-size: 12px;
 }
 
