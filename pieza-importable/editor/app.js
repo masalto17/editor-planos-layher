@@ -88,6 +88,14 @@ function saveSnapshot() {
   updateUndoButtons();
 }
 
+// Resetea historial: estado actual = punto cero (no se puede deshacer más atrás)
+function resetHistory() {
+  const snap = JSON.stringify({ views: state.views, connections: state.connections });
+  state.history = [snap];
+  state.historyIdx = 0;
+  updateUndoButtons();
+}
+
 function undo() {
   if (state.historyIdx <= 0) return;
   state.historyIdx--;
@@ -468,7 +476,7 @@ function loadFromFile() {
           if (json.origen?.referencia) fields.pieceReference.value = json.origen.referencia;
           if (json.origen?.estadoVerificacion) fields.verificationState.value = json.origen.estadoVerificacion;
           if (json.colocacion?.modo) fields.placementMode.value = json.colocacion.modo;
-          saveSnapshot();
+          resetHistory();
           render();
           fitToContent();
           els.statusText.textContent = `Cargado: ${json.nombre}`;
@@ -509,7 +517,7 @@ function loadExample() {
   fields.pieceWeight.value = "29.5";
   fields.pieceLength.value = "2.57";
   fields.pieceHeight.value = "0.50";
-  saveSnapshot();
+  resetHistory();
   render();
   fitToContent();
   exportJson();
@@ -520,6 +528,33 @@ function clearView() {
   state.selectedId = null;
   saveSnapshot();
   render();
+}
+
+function nuevoDiseno() {
+  if ((state.views.alzado.length || state.views.planta.length || state.connections.length) &&
+      !confirm("¿Empezar de cero? Se perderá el dibujo actual.")) return;
+  state.views = { alzado: [], planta: [] };
+  state.connections = [];
+  state.selectedId = null;
+  // Reset form
+  fields.pieceName.value = "Pieza manual 2.57m";
+  fields.pieceId.value = "EXT_PIEZA_257";
+  fields.pieceCategory.value = "piezaManual";
+  fields.pieceLength.value = "2.57";
+  fields.pieceHeight.value = "0.50";
+  fields.pieceDepth.value = "0.00";
+  fields.pieceWeight.value = "29.5";
+  fields.pieceReference.value = "SIN-REF";
+  fields.verificationState.value = "pendienteVerificacion";
+  // Reset view
+  state.viewBox = { x: -0.5, y: -0.5, w: 4, h: 2 };
+  updateViewBox();
+  resetHistory();
+  render();
+  els.jsonOutput.value = "";
+  els.validationText.textContent = "Sin exportar.";
+  els.validationText.className = "validation";
+  els.statusText.textContent = "Nuevo diseño. Dibujá formas en el canvas.";
 }
 
 function deleteSelected() {
@@ -541,6 +576,7 @@ document.querySelectorAll("[data-view]").forEach((btn) => {
 document.getElementById("exportJson").addEventListener("click", exportJson);
 document.getElementById("saveFile")?.addEventListener("click", saveAsFile);
 document.getElementById("loadFile")?.addEventListener("click", loadFromFile);
+document.getElementById("nuevoBtn")?.addEventListener("click", nuevoDiseno);
 document.getElementById("loadExample").addEventListener("click", loadExample);
 document.getElementById("clearView").addEventListener("click", clearView);
 document.getElementById("addConnection").addEventListener("click", () => setTool("connection"));
@@ -645,11 +681,67 @@ document.addEventListener("keydown", (evt) => {
   if (evt.key === "x" || evt.key === "X") setTool("connection");
 });
 
+// ─── Autoguardado (localStorage) ──────────────────────────────────
+const AUTOSAVE_KEY = "masalto:editor-piezas:autosave";
+
+function autoGuardar() {
+  try {
+    const payload = {
+      views: state.views,
+      connections: state.connections,
+      form: {
+        pieceName: fields.pieceName.value,
+        pieceId: fields.pieceId.value,
+        pieceCategory: fields.pieceCategory.value,
+        pieceLength: fields.pieceLength.value,
+        pieceHeight: fields.pieceHeight.value,
+        pieceDepth: fields.pieceDepth.value,
+        pieceWeight: fields.pieceWeight.value,
+        pieceReference: fields.pieceReference.value,
+        verificationState: fields.verificationState.value,
+      },
+      fecha: new Date().toISOString(),
+    };
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload));
+  } catch { /* localStorage lleno u otro error — ignorar */ }
+}
+
+function restaurarAutoguardado() {
+  try {
+    const raw = localStorage.getItem(AUTOSAVE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data.views || (!data.views.alzado.length && !data.views.planta.length && !data.connections?.length)) return false;
+    const fecha = data.fecha ? new Date(data.fecha) : null;
+    const hace = fecha ? Math.round((Date.now() - fecha.getTime()) / 60000) : null;
+    const desc = hace !== null ? `(hace ${hace < 60 ? hace + " min" : Math.round(hace / 60) + " hs"})` : "";
+    if (!confirm(`Hay un autoguardado ${desc}. ¿Restaurar?`)) return false;
+    state.views = data.views;
+    state.connections = data.connections || [];
+    if (data.form) {
+      Object.entries(data.form).forEach(([key, val]) => { if (fields[key]) fields[key].value = val; });
+    }
+    resetHistory();
+    render();
+    fitToContent();
+    els.statusText.textContent = "Restaurado desde autoguardado.";
+    return true;
+  } catch { return false; }
+}
+
+// Autoguardar cada 30 segundos
+setInterval(autoGuardar, 30000);
+
 // ─── Init ─────────────────────────────────────────────────────────
 updateViewBox();
 saveSnapshot();
 render();
 
 const params = new URLSearchParams(window.location.search);
-if (params.get("example") === "1") loadExample();
-if (params.get("export") === "1") exportJson();
+if (params.get("example") === "1") {
+  loadExample();
+} else if (params.get("export") === "1") {
+  exportJson();
+} else {
+  restaurarAutoguardado();
+}

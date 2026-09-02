@@ -196,6 +196,24 @@ export function useDisenoState() {
     commit([]); setPiezasSeleccionadas([]);
   }, [commit]);
 
+  const nuevoDiseno = useCallback(() => {
+    setPiezas([]);
+    setHistorial([[]]);
+    setHistorialIdx(0);
+    setPiezasSeleccionadas([]);
+    setClipboard([]);
+    setHerramientaActivaRaw(null);
+    setDiagonalOrigen(null);
+    setDiagonalPlantaOrigen(null);
+    setFilas([{ id: 'A', nombre: 'A', z: 0 }]);
+    setFilaActivaId('A');
+    setAlturaY(0);
+    setOrientacionActiva('x');
+    setNombreDiseno('Diseño sin título');
+    setMensajeGuardado('');
+    try { localStorage.removeItem('layher:autosave'); } catch {}
+  }, []);
+
   // ---------- Snap: Alzado (plano X-Y, dentro de la fila Z activa) ----------
   const calcularSnapAlzado = useCallback((wx, wy, herramienta, excluirIds = []) => {
     const { piezas, filaZ: z } = stateRef.current;
@@ -425,6 +443,41 @@ export function useDisenoState() {
     input.click();
   }, [commit]);
 
+  // ---------- Autoguardado (localStorage, cada 30s) ----------
+  const AUTOSAVE_KEY = 'layher:autosave';
+  useEffect(() => {
+    // Restaurar al montar (solo si no hay piezas)
+    try {
+      const raw = localStorage.getItem(AUTOSAVE_KEY);
+      if (raw) {
+        const d = JSON.parse(raw);
+        if (Array.isArray(d.piezas) && d.piezas.length > 0) {
+          const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
+          commit(piezasNorm);
+          if (d.nombre) setNombreDiseno(d.nombre);
+          if (Array.isArray(d.filas) && d.filas.length) {
+            setFilas(d.filas); setFilaActivaId(d.filas[0].id);
+          }
+          setMensajeGuardado('✓ Restaurado'); setTimeout(() => setMensajeGuardado(''), 2500);
+        }
+      }
+    } catch { /* ignorar */ }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const { piezas: pz, filas: fl } = stateRef.current;
+      if (pz.length === 0) return;
+      try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+          piezas: pz, filas: fl, nombre: stateRef.current.nombreDiseno || 'Diseño sin título',
+          fecha: new Date().toISOString(),
+        }));
+      } catch { /* ignorar */ }
+    }, 30000);
+    return () => clearInterval(timer);
+  }, []);
+
   // ---------- Atajos de teclado (comunes a ambas vistas) ----------
   useEffect(() => {
     const kd = (e) => {
@@ -453,7 +506,7 @@ export function useDisenoState() {
     orientacionActiva, setOrientacionActiva, toggleOrientacion,
     nombreDiseno, mensajeGuardado,
     commit, undo, redo, copiar, pegar, duplicar, eliminarSeleccion, seleccionarTodo,
-    colocarPiezaAlzado, colocarDiagonalAlzado, colocarPiezaPlanta, colocarDiagonalPlanta, borrarTodo,
+    colocarPiezaAlzado, colocarDiagonalAlzado, colocarPiezaPlanta, colocarDiagonalPlanta, borrarTodo, nuevoDiseno,
     calcularSnapAlzado, calcularSnapPlanta, moverPiezas, moverPiezasZ, commitPiezasActuales,
     guardar, cargar, listarDisenos, eliminarDiseno,
     guardarComoArchivo, cargarDesdeArchivo,

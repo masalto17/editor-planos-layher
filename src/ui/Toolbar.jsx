@@ -3,12 +3,13 @@ import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
   Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle, Menu, SaveAll, Scissors,
+  FilePlus2,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
 export default function Toolbar({
   vista, setVista, nombreDiseno, mensajeGuardado,
-  guardar, guardarComo, cargar, exportarPDF, exportando, undo, redo, historialIdx, historialLen,
+  nuevo, guardar, guardarComo, cargar, exportarPDF, exportando, undo, redo, historialIdx, historialLen,
   copiar, pegar, duplicar, seleccionarTodo, piezasSeleccionadas, clipboard,
   mostrarGrilla, setMostrarGrilla, zoomEncuadrar, borrarTodo, herramientaActiva,
   diagonalOrigen, diagonalPlantaOrigen,
@@ -101,6 +102,8 @@ export default function Toolbar({
           <>
             <div className="fixed inset-0 z-50" onClick={() => setMobileMenuOpen(false)} />
             <div className="absolute right-2 top-12 z-50 bg-white rounded-lg shadow-xl border border-gray-300 py-1 w-48">
+              <button onClick={() => { nuevo(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><FilePlus2 size={14} /> Nuevo</button>
               <button onClick={() => { guardar(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><Save size={14} /> Guardar</button>
               <button onClick={() => { guardarComo(); setMobileMenuOpen(false); }}
@@ -167,6 +170,7 @@ export default function Toolbar({
 
       {/* TOOLBAR */}
       <div className="bg-white border-b border-gray-300 px-3 py-1.5 flex items-center gap-1.5 flex-wrap">
+        <button onClick={nuevo} title="Nuevo diseño" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><FilePlus2 size={13} /> Nuevo</button>
         <button onClick={guardar} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><Save size={13} /> Guardar</button>
         <button onClick={guardarComo} title="Guardar como…" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><SaveAll size={13} /> Guardar como</button>
         <button onClick={cargar} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><FolderOpen size={13} /> Cargar</button>

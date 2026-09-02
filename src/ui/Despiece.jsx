@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { X, Copy, CopyPlus, Trash2 } from 'lucide-react';
+import { useMemo, useCallback } from 'react';
+import { X, Copy, CopyPlus, Trash2, FileSpreadsheet } from 'lucide-react';
 import { DESPIECE_ORDER } from '../catalogo/constantes.js';
 import { CAT_KEYS } from '../catalogo/piezas.js';
 
@@ -40,6 +40,24 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
   }, [piezas]);
 
   const piezaUnica = piezasSeleccionadas.length === 1 ? piezas.find(p => p.id === piezasSeleccionadas[0]) : null;
+
+  const exportarCSV = useCallback(() => {
+    if (!despiece.grupos.length) return;
+    const rows = [['Categoría', 'Pieza', 'Referencia', 'Cantidad', 'Peso unitario (kg)', 'Peso total (kg)']];
+    despiece.grupos.forEach(g => {
+      g.items.forEach(it => {
+        rows.push([g.label, it.nombre, it.ref || '', it.cantidad, it.peso, (it.cantidad * it.peso).toFixed(1)]);
+      });
+    });
+    rows.push([]);
+    rows.push(['TOTAL', '', '', despiece.cantidadTotal, '', despiece.pesoTotal.toFixed(1)]);
+    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'despiece-masalto.csv'; a.click();
+    URL.revokeObjectURL(url);
+  }, [despiece]);
 
   return (
     <div className={`${isMobile ? 'w-full' : 'w-64'} bg-white border-l border-gray-300 overflow-y-auto flex flex-col text-xs`}>
@@ -105,6 +123,9 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
               <span className="font-mono font-bold">{despiece.pesoTotal.toFixed(1)} kg</span>
             </div>
             <div className="text-[9px] text-gray-500 text-right">{despiece.cantidadTotal} piezas</div>
+            <button onClick={exportarCSV} className="mt-1.5 w-full flex items-center justify-center gap-1 py-1.5 text-[10px] bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded font-bold text-gray-700">
+              <FileSpreadsheet size={11} /> Exportar CSV
+            </button>
           </>}
       </div>
       {!isMobile && (

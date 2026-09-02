@@ -1,0 +1,163 @@
+{
+  "schemaVersion": "1.0",
+  "id": "EXT_PIEZA_LED_P4",
+  "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+  "categoria": "accesorio",
+  "origen": {
+    "tipo": "piezaPropia",
+    "referencia": "SIN-REF",
+    "estadoVerificacion": "noEstructural",
+    "notas": "Exportado desde el editor manual de piezas."
+  },
+  "dimensiones": {
+    "largo": 0.5,
+    "alto": 1,
+    "profundidad": 0.15
+  },
+  "despiece": {
+    "pesoKg": 18,
+    "unidad": "pieza"
+  },
+  "colocacion": {
+    "modo": "unClick",
+    "orientacionesPermitidas": [
+      "x"
+    ],
+    "snap": {
+      "requiereRoseta": true,
+      "pasoX": 0.01,
+      "pasoY": 0.5,
+      "pasoZ": 0.01
+    },
+    "puntosConexion": [
+      {
+        "id": "conexion_1788359591206_76z0r",
+        "posicion": {
+          "x": 0.5,
+          "y": 0,
+          "z": 0
+        },
+        "tipo": "extremo"
+      },
+      {
+        "id": "conexion_1788359599056_rx7b5",
+        "posicion": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "tipo": "extremo"
+      },
+      {
+        "id": "conexion_1788359604040_yzcc1",
+        "posicion": {
+          "x": 0.5,
+          "y": 1,
+          "z": 0
+        },
+        "tipo": "extremo"
+      },
+      {
+        "id": "conexion_1788359608290_bd2mu",
+        "posicion": {
+          "x": 0,
+          "y": 1,
+          "z": 0
+        },
+        "tipo": "extremo"
+      }
+    ]
+  },
+  "vistas": {
+    "alzado": {
+      "bounds": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 0.5,
+        "maxY": 1
+      },
+      "elementos": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ]
+    },
+    "planta": {
+      "bounds": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 0.5,
+        "maxY": 0.1
+      },
+      "elementos": [
+        {
+          "stroke": "#4d6f53",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 0.1
+        }
+      ]
+    }
+  },
+  "advertencias": [
+    "Plano esquematico preliminar realizado unicamente con fines presupuestarios y comerciales.",
+    "Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construccion."
+  ]
+}

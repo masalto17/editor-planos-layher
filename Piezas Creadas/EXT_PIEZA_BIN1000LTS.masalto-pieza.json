@@ -1,0 +1,152 @@
+{
+  "schemaVersion": "1.0",
+  "id": "EXT_PIEZA_BIN1000LTS",
+  "nombre": "Bin 1000 lts Contrapeso",
+  "categoria": "piezaManual",
+  "origen": {
+    "tipo": "catalogoFabricante",
+    "referencia": "SIN-REF",
+    "estadoVerificacion": "verificadaCatalogo",
+    "notas": "Exportado desde el editor manual de piezas."
+  },
+  "dimensiones": {
+    "largo": 1.2,
+    "alto": 1.2,
+    "profundidad": 1
+  },
+  "despiece": {
+    "pesoKg": 1000,
+    "unidad": "pieza"
+  },
+  "colocacion": {
+    "modo": "unClick",
+    "orientacionesPermitidas": [
+      "x",
+      "z"
+    ],
+    "snap": {
+      "requiereRoseta": false,
+      "pasoX": 0.01,
+      "pasoY": 0.5,
+      "pasoZ": 0.01
+    },
+    "puntosConexion": [
+      {
+        "id": "conexion_1788358056341_617f3",
+        "posicion": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "tipo": "extremo"
+      },
+      {
+        "id": "conexion_1788358059825_4p5wy",
+        "posicion": {
+          "x": 1.25,
+          "y": 0,
+          "z": 0
+        },
+        "tipo": "extremo"
+      }
+    ]
+  },
+  "vistas": {
+    "alzado": {
+      "bounds": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1.25,
+        "maxY": 1.25
+      },
+      "elementos": [
+        {
+          "stroke": "#6caef4",
+          "strokeWidth": 0.035,
+          "fill": "rgba(59,130,246,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 1.25,
+          "alto": 1.25
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            }
+          ],
+          "stroke": "#0c0f13",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ]
+    },
+    "planta": {
+      "bounds": {
+        "minX": 0,
+        "minY": 0,
+        "maxX": 1.25,
+        "maxY": 1.25
+      },
+      "elementos": [
+        {
+          "stroke": "#6caef4",
+          "strokeWidth": 0.035,
+          "fill": "rgba(59,130,246,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 1.25,
+          "alto": 1.25
+        }
+      ]
+    }
+  },
+  "advertencias": [
+    "Plano esquematico preliminar realizado unicamente con fines presupuestarios y comerciales.",
+    "Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construccion."
+  ]
+}

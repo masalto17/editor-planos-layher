@@ -58,6 +58,16 @@ export default function LayherEditor() {
     if (isMobile && h) setPaletaAbierta(false);
   }, [isMobile, modelo.setHerramientaActiva]);
 
+  const handleNuevo = () => {
+    if (modelo.piezas.length === 0) { modelo.nuevoDiseno(); return; }
+    setConfirmar({
+      mensaje: '¿Nuevo diseño?',
+      detalle: `Se descartarán ${modelo.piezas.length} pieza(s). Asegurate de guardar antes si querés conservar el diseño actual.`,
+      onConfirmar: () => { modelo.nuevoDiseno(); setConfirmar(null); },
+      label: 'Nuevo diseño',
+    });
+  };
+
   const handleBorrarTodo = () => {
     if (modelo.piezas.length === 0) return;
     setConfirmar({
@@ -115,6 +125,7 @@ export default function LayherEditor() {
       <Toolbar
         vista={vista} setVista={setVista}
         nombreDiseno={modelo.nombreDiseno} mensajeGuardado={modelo.mensajeGuardado}
+        nuevo={handleNuevo}
         guardar={() => setModal('guardar')} guardarComo={() => setModal('guardarComo')} cargar={() => setModal('cargar')}
         exportarPDF={() => setModalPDF(true)} exportando={exportando}
         zoomEncuadrar={zoomEncuadrar}
