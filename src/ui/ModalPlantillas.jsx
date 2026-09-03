@@ -12,12 +12,12 @@ export default function ModalPlantillas({ onCargar, onCerrar }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50" onClick={onCerrar}>
-      <div className="bg-white rounded-lg shadow-2xl w-[520px] max-w-[95vw] max-h-[85vh] overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-black text-white">
+      <div className="bg-white rounded-lg shadow-2xl w-[520px] max-w-[95vw] max-h-[85vh] flex flex-col" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-3 border-b border-gray-200 bg-black text-white shrink-0">
           <h2 className="text-sm font-bold">Plantillas de arranque</h2>
           <button onClick={onCerrar} className="text-white/70 hover:text-white"><X size={18} /></button>
         </div>
-        <div className="p-4">
+        <div className="p-4 overflow-y-auto">
           <p className="text-xs text-gray-500 mb-3">Elegí una estructura base y modificala a tu gusto. Cada plantilla genera un diseño completo con piezas reales del catálogo.</p>
           <div className="space-y-2">
             {plantillas.map(tpl => (
