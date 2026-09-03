@@ -3,7 +3,7 @@ import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
   Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle, Menu, SaveAll, Scissors,
-  FilePlus2, LayoutTemplate,
+  FilePlus2, LayoutTemplate, AlertTriangle,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -19,7 +19,7 @@ export default function Toolbar({
   mostrarCotas, setMostrarCotas,
   modoTecnico, setModoTecnico,
   pesoTotal, cantPiezas,
-  onAyuda, onCorte, onPlantillas,
+  onAyuda, onCorte, onPlantillas, onValidaciones,
   isMobile, onTogglePaleta, onToggleDespiece,
 }) {
   const filaActiva = filas.find(f => f.id === filaActivaId);
@@ -124,6 +124,9 @@ export default function Toolbar({
               <button onClick={() => { onCorte?.(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100">
                 <Scissors size={14} /> Vista de corte</button>
+              <button onClick={() => { onValidaciones?.(); setMobileMenuOpen(false); }}
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100">
+                <AlertTriangle size={14} /> Validar estructura</button>
               <div className="border-t border-gray-200 my-1" />
               <button onClick={() => { borrarTodo(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100 text-red-600"><Trash2 size={14} /> Borrar todo</button>
@@ -194,6 +197,7 @@ export default function Toolbar({
         <button onClick={() => setMostrarCotas(c => !c)} title="Cotas automáticas" className={`flex items-center gap-1 px-2 py-1 text-xs rounded border ${mostrarCotas ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'bg-gray-100 border-gray-300'}`}><Ruler size={13} /></button>
         <button onClick={() => setModoTecnico(m => !m)} title="Modo plano técnico" className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded border ${modoTecnico ? 'bg-gray-800 border-gray-600 text-white' : 'bg-gray-100 border-gray-300 text-gray-600'}`}><PenTool size={12} /> {modoTecnico ? 'CAD' : 'CAD'}</button>
         <button onClick={onCorte} title="Vista de corte transversal" className="flex items-center gap-1 px-2 py-1 text-[10px] rounded border bg-gray-100 border-gray-300 text-gray-600 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-700"><Scissors size={12} /> Corte</button>
+        <button onClick={onValidaciones} title="Validar estructura" className="flex items-center gap-1 px-2 py-1 text-[10px] rounded border bg-gray-100 border-gray-300 text-gray-600 hover:bg-yellow-50 hover:border-yellow-400 hover:text-yellow-700"><AlertTriangle size={12} /> Validar</button>
         <div className="w-px h-5 bg-gray-300 mx-0.5" />
         {vista === 'alzado' ? (
           <div className="flex items-center gap-1 text-[10px] text-gray-600">

@@ -378,14 +378,29 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
-  // ── Diagonal alzado → marca rombo ──
+  // ── Diagonal alzado → línea X con marca rombo + extensión visual ──
   if (pieza.categoria === 'diagonal') {
-    const midX = (pieza.x1 + pieza.x2) / 2;
-    const p = worldToScreen(midX, z);
+    const pA = worldToScreen(pieza.x1, z);
+    const pB = worldToScreen(pieza.x2, z);
+    const midX = (pA.x + pB.x) / 2, midY = (pA.y + pB.y) / 2;
+    const s = Math.max(4, zoom * 0.05);
+    const sw = Math.max(1, zoom * 0.015);
     return (
-      <g opacity={op * 0.6} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        <rect x={p.x - 4} y={p.y - 4} width="8" height="8" fill="none" stroke={sc}
-          strokeWidth="1.5" transform={`rotate(45 ${p.x} ${p.y})`} />
+      <g opacity={op * 0.7} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
+          stroke="#E30613" strokeWidth={sw + 6} opacity="0.2" strokeLinecap="round" />}
+        {/* Línea entre posiciones X de los extremos */}
+        <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
+          stroke={sc} strokeWidth={sw} strokeDasharray="4 3" strokeLinecap="round" />
+        {/* Rombo central (marca de diagonal alzado) */}
+        <rect x={midX - s} y={midY - s} width={s * 2} height={s * 2} fill={sc} fillOpacity="0.2"
+          stroke={sc} strokeWidth={sw * 0.8} transform={`rotate(45 ${midX} ${midY})`} />
+        {/* Puntos extremos */}
+        <circle cx={pA.x} cy={pA.y} r={Math.max(1.5, zoom * 0.02)} fill={sc} />
+        <circle cx={pB.x} cy={pB.y} r={Math.max(1.5, zoom * 0.02)} fill={sc} />
+        {/* Etiqueta */}
+        {zoom > 30 && <text x={midX} y={midY - s - 3} fontSize={Math.max(7, zoom * 0.06)}
+          fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">↗ diag</text>}
       </g>
     );
   }
@@ -627,18 +642,42 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           const r = 9;
           const ejeColor = modoTecnico ? '#333' : '#999';
           const ejeFill = modoTecnico ? '#444' : '#666';
-          return xs.map((xw, i) => {
-            const p1 = worldToScreen(xw, worldVisible.yMin);
-            const p2 = worldToScreen(xw, worldVisible.yMax);
-            const label = String(i + 1);
-            return (
-              <g key={`eje-x-${i}`}>
-                <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ejeColor} strokeWidth="0.4" strokeDasharray="4 6" opacity="0.3" />
-                <circle cx={p1.x} cy={8} r={r} fill="none" stroke={ejeColor} strokeWidth="1" />
-                <text x={p1.x} y={12} fontSize="10" fill={ejeFill} textAnchor="middle" fontFamily="monospace" fontWeight="bold">{label}</text>
-              </g>
-            );
-          });
+          return <>
+            {xs.map((xw, i) => {
+              const p1 = worldToScreen(xw, worldVisible.yMin);
+              const p2 = worldToScreen(xw, worldVisible.yMax);
+              const label = String(i + 1);
+              return (
+                <g key={`eje-x-${i}`}>
+                  <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ejeColor} strokeWidth="0.4" strokeDasharray="4 6" opacity="0.3" />
+                  {/* Círculo arriba */}
+                  <circle cx={p1.x} cy={8} r={r} fill="none" stroke={ejeColor} strokeWidth="1" />
+                  <text x={p1.x} y={12} fontSize="10" fill={ejeFill} textAnchor="middle" fontFamily="monospace" fontWeight="bold">{label}</text>
+                  {/* Círculo abajo */}
+                  <circle cx={p1.x} cy={dimCanvas.h - 8} r={r} fill="none" stroke={ejeColor} strokeWidth="1" />
+                  <text x={p1.x} y={dimCanvas.h - 4} fontSize="10" fill={ejeFill} textAnchor="middle" fontFamily="monospace" fontWeight="bold">{label}</text>
+                </g>
+              );
+            })}
+            {/* Etiquetas de distancia entre ejes */}
+            {xs.length > 1 && xs.slice(0, -1).map((xw, i) => {
+              const dist = (xs[i + 1] - xw).toFixed(2);
+              const pL = worldToScreen(xw, 0);
+              const pR = worldToScreen(xs[i + 1], 0);
+              const cx = (pL.x + pR.x) / 2;
+              const gap = pR.x - pL.x;
+              if (gap < 25) return null;
+              return (
+                <g key={`dist-x-${i}`}>
+                  <line x1={pL.x + 10} y1={20} x2={pR.x - 10} y2={20}
+                    stroke={ejeColor} strokeWidth="0.5" opacity="0.4" markerEnd="url(#arrowR)" markerStart="url(#arrowL)" />
+                  <rect x={cx - 18} y={16} width="36" height="10" fill="white" fillOpacity="0.85" rx="2" />
+                  <text x={cx} y={24} fontSize="8" fill={ejeFill} textAnchor="middle" fontFamily="monospace">{dist}m</text>
+                </g>
+              );
+            })}
+          </>;
+
         })()}
         {/* Guías horizontales para cada fila — ejes con círculos tipo plano profesional */}
         {filas.map(f => {
@@ -657,6 +696,28 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             </g>
           );
         })}
+        {/* Etiquetas distancia entre filas Z */}
+        {filas.length > 1 && (() => {
+          const sorted = [...filas].sort((a, b) => a.z - b.z);
+          const filaColor = modoTecnico ? '#222' : '#E30613';
+          return sorted.slice(0, -1).map((f, i) => {
+            const fNext = sorted[i + 1];
+            const dist = (fNext.z - f.z).toFixed(2);
+            const p1 = worldToScreen(worldVisible.xMin, f.z);
+            const p2 = worldToScreen(worldVisible.xMin, fNext.z);
+            const cy = (p1.y + p2.y) / 2;
+            const gap = Math.abs(p2.y - p1.y);
+            if (gap < 20) return null;
+            return (
+              <g key={`dist-z-${i}`}>
+                <line x1={18} y1={p1.y + 10} x2={18} y2={p2.y - 10}
+                  stroke={filaColor} strokeWidth="0.5" opacity="0.4" />
+                <rect x={4} y={cy - 5} width="30" height="10" fill="white" fillOpacity="0.85" rx="2" />
+                <text x={19} y={cy + 3} fontSize="8" fill={filaColor} textAnchor="middle" fontFamily="monospace">{dist}m</text>
+              </g>
+            );
+          });
+        })()}
         {piezas.map(p => (
           <g key={p.id}
             onMouseEnter={(e) => { if (!arrastrando && !herramientaActiva) setHoverPieza({ pieza: p, screenX: e.clientX, screenY: e.clientY }); }}

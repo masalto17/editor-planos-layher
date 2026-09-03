@@ -13,6 +13,7 @@ import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
 import ModalPlantillas from './ui/ModalPlantillas.jsx';
 import Onboarding from './ui/Onboarding.jsx';
+import ValidacionesEstructura from './ui/ValidacionesEstructura.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
 
 function useIsMobile(breakpoint = 768) {
@@ -40,6 +41,7 @@ export default function LayherEditor() {
   const [mostrarAyuda, setMostrarAyuda] = useState(false);
   const [mostrarCorte, setMostrarCorte] = useState(false);
   const [mostrarPlantillas, setMostrarPlantillas] = useState(false);
+  const [mostrarValidaciones, setMostrarValidaciones] = useState(false);
   // Mobile drawers
   const [paletaAbierta, setPaletaAbierta] = useState(false);
   const [despieceAbierto, setDespieceAbierto] = useState(false);
@@ -165,6 +167,7 @@ export default function LayherEditor() {
         onAyuda={() => setMostrarAyuda(true)}
         onCorte={() => setMostrarCorte(true)}
         onPlantillas={() => setMostrarPlantillas(true)}
+        onValidaciones={() => setMostrarValidaciones(v => !v)}
         isMobile={isMobile}
         onTogglePaleta={() => setPaletaAbierta(p => !p)}
         onToggleDespiece={() => setDespieceAbierto(d => !d)}
@@ -193,6 +196,14 @@ export default function LayherEditor() {
         {vista === 'alzado'
           ? <Alzado modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgAlzado} fitTrigger={fitTrigger} />
           : <Planta modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgPlanta} fitTrigger={fitTrigger} />}
+
+        {/* Panel de validaciones — overlay sobre canvas */}
+        <ValidacionesEstructura
+          piezas={modelo.piezas} filas={modelo.filas}
+          setPiezasSeleccionadas={modelo.setPiezasSeleccionadas}
+          visible={mostrarValidaciones}
+          onCerrar={() => setMostrarValidaciones(false)}
+        />
 
         {/* Desktop: despiece fijo. Mobile: drawer overlay */}
         {isMobile ? (
