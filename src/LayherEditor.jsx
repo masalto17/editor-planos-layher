@@ -31,7 +31,7 @@ export default function LayherEditor() {
   const isMobile = useIsMobile();
   const [vista, setVista] = useState('alzado');
   const [mostrarGrilla, setMostrarGrilla] = useState(true);
-  const [mostrarCotas, setMostrarCotas] = useState(false);
+  const [mostrarCotas, setMostrarCotas] = useState(true);
   const [modoTecnico, setModoTecnico] = useState(false);
   const [modal, setModal] = useState(null);
   const [modalPDF, setModalPDF] = useState(false);

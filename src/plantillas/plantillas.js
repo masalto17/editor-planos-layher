@@ -248,8 +248,12 @@ export function tribuna3Niveles() {
   };
 }
 
+// ─── PLANTILLA 4: Escenario completo (importada) ───────────
+import { escenarioCompleto } from './escenarioCompleto.js';
+
 export const PLANTILLAS = [
   { key: 'escenario', generar: escenarioBasico },
   { key: 'torre-pa', generar: torrePA },
   { key: 'tribuna', generar: tribuna3Niveles },
+  { key: 'escenario-completo', generar: escenarioCompleto },
 ];

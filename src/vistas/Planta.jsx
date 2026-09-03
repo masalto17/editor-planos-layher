@@ -801,6 +801,19 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       <div className="absolute bottom-2 right-2 bg-white/95 border border-gray-300 text-[9px] text-gray-500 px-2 py-0.5 rounded">
         Vista de planta · Z = profundidad/fila · Esquemático preliminar
       </div>
+      {/* Leyenda de símbolos */}
+      {zoom < 80 && piezas.length > 0 && (
+        <div className="absolute top-10 right-2 bg-white/95 border border-gray-200 rounded shadow-sm text-[9px] text-gray-600 px-2 py-1.5 space-y-0.5 pointer-events-none">
+          <div className="font-bold text-[10px] text-gray-700 mb-0.5">Simbología</div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 bg-blue-600 border border-black" style={{borderRadius:0}} /><span>Vertical (parante)</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-green-600" style={{borderTop:'2px solid #16a34a',borderBottom:'2px solid #16a34a',height:4}} /><span>Horizontal O (tubo)</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0.5 bg-amber-600" style={{borderTop:'2px solid #d97706',borderBottom:'2px solid #d97706',height:5}} /><span>Viga Puente U</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 bg-rose-900/20 border border-rose-800" /><span>Plataforma</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0 border-t border-dashed border-sky-500" style={{height:0}} /><span>Barandilla</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-3 bg-amber-800/50 border border-amber-900 rounded-full" style={{width:10,height:10}} /><span>Base (husillo)</span></div>
+          <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0 border-t-2 border-dashed border-purple-600" style={{height:0}} /><span>Diagonal</span></div>
+        </div>
+      )}
       {hoverPieza && !arrastrando && !herramientaActiva && (() => {
         const p = hoverPieza.pieza;
         const rect = svgRef.current?.getBoundingClientRect();
