@@ -1,6 +1,6 @@
 // Plataforma — rectángulo con rejilla metálica, borde marco, ganchos de fijación.
 // Rejilla visible a zoom medio. Efecto metálico con gradiente sutil.
-export default function Plataforma({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown }) {
+export default function Plataforma({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
   const pL = worldToScreen(x, y), pR = worldToScreen(x + largo, y);
   const w = pR.x - pL.x;
@@ -35,25 +35,35 @@ export default function Plataforma({ pieza, worldToScreen, zoom, sc, op, cur, se
       {/* Selección */}
       {seleccionada && <rect x={pL.x - 2} y={pL.y - h - 3} width={w + 4} height={h + hookH + 6}
         fill="none" stroke="#E30613" strokeWidth="2" rx="1" />}
-      {/* Sombra */}
-      <rect x={pL.x + 1} y={pL.y - h + 1} width={w} height={h}
-        fill="#000" opacity="0.06" rx="1" />
-      {/* Cuerpo plataforma */}
-      <rect x={pL.x} y={pL.y - h} width={w} height={h}
-        fill={sc} rx="1" opacity="0.9" />
-      {/* Marco/borde */}
-      <rect x={pL.x} y={pL.y - h} width={w} height={h}
-        fill="none" stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.005)} opacity="0.25" rx="1" />
-      {/* Highlight superior */}
-      <line x1={pL.x + 2} y1={pL.y - h + 1} x2={pR.x - 2} y2={pL.y - h + 1}
-        stroke="#fff" strokeWidth={Math.max(0.5, zoom * 0.004)} opacity="0.3" />
-      {/* Rejilla */}
-      {rejilla}
-      {/* Ganchos de fijación extremos */}
-      <rect x={pL.x} y={pL.y} width={hookW} height={hookH}
-        fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
-      <rect x={pR.x - hookW} y={pR.y} width={hookW} height={hookH}
-        fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
+      {modoTecnico ? <>
+        {/* Modo técnico: rectángulo con líneas diagonales internas */}
+        <rect x={pL.x} y={pL.y - h} width={w} height={h}
+          fill="none" stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} />
+        {zoom > 25 && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pL.y - h}
+          stroke={sc} strokeWidth={Math.max(0.3, zoom * 0.004)} opacity="0.3" />}
+        {zoom > 25 && <line x1={pL.x} y1={pL.y - h} x2={pR.x} y2={pL.y}
+          stroke={sc} strokeWidth={Math.max(0.3, zoom * 0.004)} opacity="0.3" />}
+      </> : <>
+        {/* Sombra */}
+        <rect x={pL.x + 1} y={pL.y - h + 1} width={w} height={h}
+          fill="#000" opacity="0.06" rx="1" />
+        {/* Cuerpo plataforma */}
+        <rect x={pL.x} y={pL.y - h} width={w} height={h}
+          fill={sc} rx="1" opacity="0.9" />
+        {/* Marco/borde */}
+        <rect x={pL.x} y={pL.y - h} width={w} height={h}
+          fill="none" stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.005)} opacity="0.25" rx="1" />
+        {/* Highlight superior */}
+        <line x1={pL.x + 2} y1={pL.y - h + 1} x2={pR.x - 2} y2={pL.y - h + 1}
+          stroke="#fff" strokeWidth={Math.max(0.5, zoom * 0.004)} opacity="0.3" />
+        {/* Rejilla */}
+        {rejilla}
+        {/* Ganchos de fijación extremos */}
+        <rect x={pL.x} y={pL.y} width={hookW} height={hookH}
+          fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
+        <rect x={pR.x - hookW} y={pR.y} width={hookW} height={hookH}
+          fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
+      </>}
     </g>
   );
 }

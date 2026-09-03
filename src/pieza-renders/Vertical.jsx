@@ -2,7 +2,7 @@ import { ROSETA_STEP } from '../catalogo/constantes.js';
 
 // Vertical (parante) — tubo Ø48.3mm con rosetas cada 0.50m.
 // Efecto 3D: sombra + highlight cilíndrico. Rosetas como discos con 8 perforaciones (zoom alto).
-export default function Vertical({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, fantasma, onMouseDown }) {
+export default function Vertical({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, fantasma, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
   const pB = worldToScreen(x, y), pT = worldToScreen(x, y + largo);
 
@@ -46,27 +46,38 @@ export default function Vertical({ pieza, worldToScreen, zoom, sc, op, cur, sele
     rosetas.push(<g key={dy}>{els}</g>);
   }
 
+  const tecW = Math.max(1.5, zoom * 0.02); // stroke fino modo técnico
+
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       {/* Selección glow */}
       {seleccionada && <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
-        stroke="#E30613" strokeWidth={tubeW + 8} opacity="0.2" strokeLinecap="round" />}
-      {/* Sombra derecha */}
-      <line x1={pT.x + hlOff} y1={pT.y} x2={pB.x + hlOff} y2={pB.y}
-        stroke="#000" strokeWidth={tubeW} strokeLinecap="round" opacity="0.07" />
+        stroke="#E30613" strokeWidth={(modoTecnico ? tecW : tubeW) + 8} opacity="0.2" strokeLinecap="round" />}
+      {!modoTecnico && <>
+        {/* Sombra derecha */}
+        <line x1={pT.x + hlOff} y1={pT.y} x2={pB.x + hlOff} y2={pB.y}
+          stroke="#000" strokeWidth={tubeW} strokeLinecap="round" opacity="0.07" />
+      </>}
       {/* Tubo principal */}
       <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
-        stroke={sc} strokeWidth={tubeW} strokeLinecap="round" />
-      {/* Highlight izquierdo (brillo cilindro) */}
-      <line x1={pT.x - hlOff} y1={pT.y} x2={pB.x - hlOff} y2={pB.y}
-        stroke="#fff" strokeWidth={tubeW * 0.28} strokeLinecap="round" opacity="0.35" />
+        stroke={sc} strokeWidth={modoTecnico ? tecW : tubeW} strokeLinecap={modoTecnico ? 'butt' : 'round'} />
+      {!modoTecnico && <>
+        {/* Highlight izquierdo (brillo cilindro) */}
+        <line x1={pT.x - hlOff} y1={pT.y} x2={pB.x - hlOff} y2={pB.y}
+          stroke="#fff" strokeWidth={tubeW * 0.28} strokeLinecap="round" opacity="0.35" />
+      </>}
       {/* Tapas extremos */}
-      <line x1={pT.x - tubeW / 2} y1={pT.y} x2={pT.x + tubeW / 2} y2={pT.y}
-        stroke={sc} strokeWidth={capH} />
-      <line x1={pB.x - tubeW / 2} y1={pB.y} x2={pB.x + tubeW / 2} y2={pB.y}
-        stroke={sc} strokeWidth={capH} />
-      {/* Rosetas */}
-      {rosetas}
+      <line x1={pT.x - (modoTecnico ? tecW * 2 : tubeW / 2)} y1={pT.y} x2={pT.x + (modoTecnico ? tecW * 2 : tubeW / 2)} y2={pT.y}
+        stroke={sc} strokeWidth={modoTecnico ? tecW : capH} />
+      <line x1={pB.x - (modoTecnico ? tecW * 2 : tubeW / 2)} y1={pB.y} x2={pB.x + (modoTecnico ? tecW * 2 : tubeW / 2)} y2={pB.y}
+        stroke={sc} strokeWidth={modoTecnico ? tecW : capH} />
+      {/* Rosetas — en modo técnico: puntos simples sin disco decorativo */}
+      {modoTecnico ? rosetas.map((_, i) => {
+        const dy = i * ROSETA_STEP;
+        if (dy > largo + 0.001) return null;
+        const pr = worldToScreen(x, y + dy);
+        return <circle key={i} cx={pr.x} cy={pr.y} r={Math.max(2, zoom * 0.025)} fill={sc} />;
+      }) : rosetas}
     </g>
   );
 }

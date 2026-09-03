@@ -1,6 +1,6 @@
 // Diagonal — tubo con extremos aplanados (bridas) y puntos de fijación.
 // Efecto 3D: sombra + highlight cilíndrico. Bridas como rectángulos aplastados.
-export default function Diagonal({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown }) {
+export default function Diagonal({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x1, y1, x2, y2 } = pieza;
   const pA = worldToScreen(x1, y1), pB = worldToScreen(x2, y2);
   const g = Math.max(1.8, zoom * 0.038);
@@ -21,28 +21,26 @@ export default function Diagonal({ pieza, worldToScreen, zoom, sc, op, cur, sele
       {/* Selección glow */}
       {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
         stroke="#E30613" strokeWidth={g + 6} opacity="0.2" strokeLinecap="round" />}
-      {/* Sombra */}
-      <line x1={pA.x + hlOff} y1={pA.y + hlOff} x2={pB.x + hlOff} y2={pB.y + hlOff}
-        stroke="#000" strokeWidth={g} strokeLinecap="round" opacity="0.06" />
-      {/* Tubo diagonal */}
+      {!modoTecnico && <line x1={pA.x + hlOff} y1={pA.y + hlOff} x2={pB.x + hlOff} y2={pB.y + hlOff}
+        stroke="#000" strokeWidth={g} strokeLinecap="round" opacity="0.06" />}
       <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
-        stroke={sc} strokeWidth={g} strokeLinecap="round" />
-      {/* Highlight */}
-      <line x1={pA.x - hlOff * nx * 0.5} y1={pA.y - hlOff * ny * 0.5}
+        stroke={sc} strokeWidth={modoTecnico ? Math.max(1, zoom * 0.012) : g} strokeLinecap="round" />
+      {!modoTecnico && <line x1={pA.x - hlOff * nx * 0.5} y1={pA.y - hlOff * ny * 0.5}
             x2={pB.x - hlOff * nx * 0.5} y2={pB.y - hlOff * ny * 0.5}
-        stroke="#fff" strokeWidth={g * 0.28} strokeLinecap="round" opacity="0.3" />
-      {/* Brida extremo A (aplastado) */}
-      <line x1={pA.x - nx * bridaR} y1={pA.y - ny * bridaR}
-            x2={pA.x + nx * bridaR} y2={pA.y + ny * bridaR}
-        stroke={sc} strokeWidth={bridaW + 1} strokeLinecap="round" />
+        stroke="#fff" strokeWidth={g * 0.28} strokeLinecap="round" opacity="0.3" />}
+      {/* Puntos extremos */}
       <circle cx={pA.x} cy={pA.y} r={Math.max(1.5, zoom * 0.018)}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} />
-      {/* Brida extremo B */}
-      <line x1={pB.x - nx * bridaR} y1={pB.y - ny * bridaR}
-            x2={pB.x + nx * bridaR} y2={pB.y + ny * bridaR}
-        stroke={sc} strokeWidth={bridaW + 1} strokeLinecap="round" />
+        fill={sc} stroke={modoTecnico ? sc : '#000'} strokeWidth={Math.max(0.3, zoom * 0.003)} />
       <circle cx={pB.x} cy={pB.y} r={Math.max(1.5, zoom * 0.018)}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} />
+        fill={sc} stroke={modoTecnico ? sc : '#000'} strokeWidth={Math.max(0.3, zoom * 0.003)} />
+      {!modoTecnico && <>
+        <line x1={pA.x - nx * bridaR} y1={pA.y - ny * bridaR}
+              x2={pA.x + nx * bridaR} y2={pA.y + ny * bridaR}
+          stroke={sc} strokeWidth={bridaW + 1} strokeLinecap="round" />
+        <line x1={pB.x - nx * bridaR} y1={pB.y - ny * bridaR}
+              x2={pB.x + nx * bridaR} y2={pB.y + ny * bridaR}
+          stroke={sc} strokeWidth={bridaW + 1} strokeLinecap="round" />
+      </>}
     </g>
   );
 }

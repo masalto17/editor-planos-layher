@@ -1,7 +1,7 @@
 // Viga Puente U — perfil abierto U representado como DOS LÍNEAS PARALELAS horizontales
 // (ala superior y alma inferior) unidas por alas verticales en extremos, como en planos
 // profesionales tipo Balastegui. Cabezales cuña en cada extremo.
-export default function VigaPuente({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown }) {
+export default function VigaPuente({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
   const pL = worldToScreen(x, y), pR = worldToScreen(x + largo, y);
   const w = pR.x - pL.x;
@@ -41,20 +41,16 @@ export default function VigaPuente({ pieza, worldToScreen, zoom, sc, op, cur, se
         fill="none" stroke="#E30613" strokeWidth="2" rx="2" opacity="0.3" />}
 
       {/* ═══ Línea superior (ala/pestaña) ═══ */}
-      {/* Sombra */}
-      <line x1={pL.x} y1={yAla + 0.7} x2={pR.x} y2={yAla + 0.7}
-        stroke="#000" strokeWidth={lineW} strokeLinecap="butt" opacity="0.06" />
-      {/* Línea */}
+      {!modoTecnico && <line x1={pL.x} y1={yAla + 0.7} x2={pR.x} y2={yAla + 0.7}
+        stroke="#000" strokeWidth={lineW} strokeLinecap="butt" opacity="0.06" />}
       <line x1={pL.x} y1={yAla} x2={pR.x} y2={yAla}
-        stroke={sc} strokeWidth={lineW} strokeLinecap="butt" />
+        stroke={sc} strokeWidth={modoTecnico ? Math.max(1, zoom * 0.012) : lineW} strokeLinecap="butt" />
 
       {/* ═══ Línea inferior (alma) ═══ */}
-      {/* Sombra */}
-      <line x1={pL.x} y1={yAlma + 0.7} x2={pR.x} y2={yAlma + 0.7}
-        stroke="#000" strokeWidth={lineW} strokeLinecap="butt" opacity="0.06" />
-      {/* Línea */}
+      {!modoTecnico && <line x1={pL.x} y1={yAlma + 0.7} x2={pR.x} y2={yAlma + 0.7}
+        stroke="#000" strokeWidth={lineW} strokeLinecap="butt" opacity="0.06" />}
       <line x1={pL.x} y1={yAlma} x2={pR.x} y2={yAlma}
-        stroke={sc} strokeWidth={lineW} strokeLinecap="butt" />
+        stroke={sc} strokeWidth={modoTecnico ? Math.max(1, zoom * 0.012) : lineW} strokeLinecap="butt" />
 
       {/* ═══ Alas verticales extremos (cierran la U) ═══ */}
       <line x1={pL.x} y1={yAla} x2={pL.x} y2={yAlma}
@@ -65,23 +61,29 @@ export default function VigaPuente({ pieza, worldToScreen, zoom, sc, op, cur, se
       {/* Alas intermedias (lectura perfil U) */}
       {alasInt}
 
-      {/* ── Cabezal cuña izquierdo ── */}
-      <rect x={pL.x - mW / 2} y={yAlma - mH / 2 + sep / 2} width={mW} height={mH}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.004)} rx={r} opacity="0.92" />
-      <rect x={pL.x - mW / 2 + 1} y={yAlma - mH / 2 + sep / 2 + 1}
-        width={Math.max(1.5, mW * 0.25)} height={mH - 2}
-        fill="#fff" opacity="0.2" rx={0.5} />
-      <rect x={pL.x - wdW / 2} y={yAlma + mH / 2 + sep / 2} width={wdW} height={wdH}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.85" rx={0.3} />
-
-      {/* ── Cabezal cuña derecho ── */}
-      <rect x={pR.x - mW / 2} y={yAlma - mH / 2 + sep / 2} width={mW} height={mH}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.004)} rx={r} opacity="0.92" />
-      <rect x={pR.x - mW / 2 + 1} y={yAlma - mH / 2 + sep / 2 + 1}
-        width={Math.max(1.5, mW * 0.25)} height={mH - 2}
-        fill="#fff" opacity="0.2" rx={0.5} />
-      <rect x={pR.x - wdW / 2} y={yAlma + mH / 2 + sep / 2} width={wdW} height={wdH}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.85" rx={0.3} />
+      {/* ── Cabezales cuña ── */}
+      {modoTecnico ? <>
+        {/* Modo técnico: marcas simples en extremos */}
+        <line x1={pL.x} y1={yAla - 2} x2={pL.x} y2={yAlma + 2} stroke={sc} strokeWidth={Math.max(1, zoom * 0.012)} />
+        <line x1={pR.x} y1={yAla - 2} x2={pR.x} y2={yAlma + 2} stroke={sc} strokeWidth={Math.max(1, zoom * 0.012)} />
+      </> : <>
+        {/* Cabezal izquierdo */}
+        <rect x={pL.x - mW / 2} y={yAlma - mH / 2 + sep / 2} width={mW} height={mH}
+          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.004)} rx={r} opacity="0.92" />
+        <rect x={pL.x - mW / 2 + 1} y={yAlma - mH / 2 + sep / 2 + 1}
+          width={Math.max(1.5, mW * 0.25)} height={mH - 2}
+          fill="#fff" opacity="0.2" rx={0.5} />
+        <rect x={pL.x - wdW / 2} y={yAlma + mH / 2 + sep / 2} width={wdW} height={wdH}
+          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.85" rx={0.3} />
+        {/* Cabezal derecho */}
+        <rect x={pR.x - mW / 2} y={yAlma - mH / 2 + sep / 2} width={mW} height={mH}
+          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.004)} rx={r} opacity="0.92" />
+        <rect x={pR.x - mW / 2 + 1} y={yAlma - mH / 2 + sep / 2 + 1}
+          width={Math.max(1.5, mW * 0.25)} height={mH - 2}
+          fill="#fff" opacity="0.2" rx={0.5} />
+        <rect x={pR.x - wdW / 2} y={yAlma + mH / 2 + sep / 2} width={wdW} height={wdH}
+          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.85" rx={0.3} />
+      </>}
     </g>
   );
 }

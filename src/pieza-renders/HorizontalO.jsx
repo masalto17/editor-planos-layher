@@ -1,7 +1,7 @@
 // Horizontal O (tubo) y Barandilla — tubo Ø48.3mm con cabezales cuña AutoLock.
 // Efecto 3D: sombra + highlight cilíndrico. Cabezales con manguito + cuña colgante.
 // Barandilla usa misma forma pero punteada.
-export default function HorizontalO({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown }) {
+export default function HorizontalO({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo, categoria } = pieza;
   const pL = worldToScreen(x, y), pR = worldToScreen(x + largo, y);
   const isDashed = categoria === 'barandilla';
@@ -16,6 +16,25 @@ export default function HorizontalO({ pieza, worldToScreen, zoom, sc, op, cur, s
   const wW = Math.max(2.5, zoom * 0.025);  // ancho cuña
   const wH = Math.max(4, zoom * 0.04);     // largo cuña colgante
   const r = Math.max(0.5, zoom * 0.005);   // radio borde manguito
+
+  const tecW = Math.max(1, zoom * 0.015); // stroke fino modo técnico
+
+  if (modoTecnico) {
+    // Modo plano técnico: línea simple con marcas en extremos
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={tecW + 6} opacity="0.2" strokeLinecap="round" />}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke={sc} strokeWidth={tecW} strokeLinecap="butt" strokeDasharray={dash} />
+        {/* Marcas cabezal simples */}
+        <line x1={pL.x} y1={pL.y - mH / 2} x2={pL.x} y2={pL.y + mH / 2}
+          stroke={sc} strokeWidth={tecW * 1.5} />
+        <line x1={pR.x} y1={pR.y - mH / 2} x2={pR.x} y2={pR.y + mH / 2}
+          stroke={sc} strokeWidth={tecW * 1.5} />
+      </g>
+    );
+  }
 
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>

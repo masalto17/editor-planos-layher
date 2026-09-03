@@ -77,7 +77,7 @@ export default function PiezaRender({ pieza, worldToScreen, zoom, seleccionada, 
   return (
     <g onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
       <Renderer pieza={pieza} worldToScreen={worldToScreen} zoom={zoom} sc={sc} op={op} cur={cur}
-        seleccionada={!!seleccionada} fantasma={!!fantasma} onMouseDown={onMouseDown} />
+        seleccionada={!!seleccionada} fantasma={!!fantasma} onMouseDown={onMouseDown} modoTecnico={modoTecnico} />
     </g>
   );
 }

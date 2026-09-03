@@ -1,6 +1,6 @@
 // Viga IPN en Alzado: perfil doble T (I-beam) con patines y alma.
 // Efecto 3D: sombra + highlight. Patines (alas) en extremos + marcas intermedias.
-export default function VigaIPN({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown }) {
+export default function VigaIPN({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
   const pL = worldToScreen(x, y), pR = worldToScreen(x + largo, y);
   const w = pR.x - pL.x;
@@ -24,15 +24,12 @@ export default function VigaIPN({ pieza, worldToScreen, zoom, sc, op, cur, selec
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       {seleccionada && <rect x={pL.x - 3} y={pL.y - alaH - 3} width={w + 6} height={alaH * 2 + 6}
         fill="none" stroke="#E30613" strokeWidth="2" rx="1" />}
-      {/* Sombra */}
-      <line x1={pL.x} y1={pL.y + hlOff} x2={pR.x} y2={pR.y + hlOff}
-        stroke="#000" strokeWidth={g} strokeLinecap="butt" opacity="0.07" />
-      {/* Alma horizontal */}
+      {!modoTecnico && <line x1={pL.x} y1={pL.y + hlOff} x2={pR.x} y2={pR.y + hlOff}
+        stroke="#000" strokeWidth={g} strokeLinecap="butt" opacity="0.07" />}
       <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
-        stroke={sc} strokeWidth={g} strokeLinecap="butt" />
-      {/* Highlight */}
-      <line x1={pL.x} y1={pL.y - hlOff} x2={pR.x} y2={pR.y - hlOff}
-        stroke="#fff" strokeWidth={g * 0.25} strokeLinecap="butt" opacity="0.3" />
+        stroke={sc} strokeWidth={modoTecnico ? Math.max(1, zoom * 0.012) : g} strokeLinecap="butt" />
+      {!modoTecnico && <line x1={pL.x} y1={pL.y - hlOff} x2={pR.x} y2={pR.y - hlOff}
+        stroke="#fff" strokeWidth={g * 0.25} strokeLinecap="butt" opacity="0.3" />}
       {/* Patín izquierdo */}
       <line x1={pL.x} y1={pL.y - alaH} x2={pL.x} y2={pL.y + alaH}
         stroke={sc} strokeWidth={alaW} />
