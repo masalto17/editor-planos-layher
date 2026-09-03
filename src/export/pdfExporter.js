@@ -1,9 +1,11 @@
 /**
- * Export a PDF con membrete corporativo MásAlto, cuadro de datos,
- * tabla de despiece y sellos legales.
+ * Export PDF con membrete corporativo MásAlto/MYD/Layout.
+ * Formato A3 apaisado (420×297mm) — layout aprobado en mockup v3.
  *
- * Usa jsPDF para generar el documento y serializa el SVG del canvas
- * a imagen PNG mediante un <canvas> temporal.
+ * Marcas:
+ *   Header-izq: másalto estructuras (marca madre, dominante) + MasAlto Layout (separador)
+ *   Header-der: MYD Estructuras S.A.S. (razón social) + datos
+ *   Footer-der: "Creado con MasAlto Layout v2.0"
  */
 import { jsPDF } from 'jspdf';
 import { DESPIECE_ORDER } from '../catalogo/constantes.js';
@@ -12,58 +14,42 @@ import { DESPIECE_ORDER } from '../catalogo/constantes.js';
 const ROJO = '#E30613';
 const NEGRO = '#000000';
 const GRIS = '#777777';
-const MARGEN = 12; // mm
-const A4_W = 297; // landscape
-const A4_H = 210;
+const GRIS_CLARO = '#E0E0E0';
+const M = 12; // margen mm
+const W = 420; // A3 landscape width
+const H = 297; // A3 landscape height
+const HEADER_H = 22; // altura header mm
+const FOOTER_H = 18; // altura footer mm
+const PANEL_W = 80; // ancho panel derecho mm
 
 // --- Helpers ---
 
-/**
- * Rasteriza un SVG (desde URL) a PNG data URL para jsPDF.
- * jsPDF no soporta SVG directo en addImage().
- */
-function rasterizeSVG(svgUrl, width = 400, height = 200) {
+/** Carga una imagen desde URL y devuelve data URL. */
+function loadImage(url) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
     img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/png'));
+      const c = document.createElement('canvas');
+      c.width = img.naturalWidth;
+      c.height = img.naturalHeight;
+      const ctx = c.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      resolve(c.toDataURL('image/png'));
     };
-    img.onerror = () => reject(new Error('No se pudo cargar el logo SVG'));
-    img.src = svgUrl;
+    img.onerror = () => reject(new Error(`No se pudo cargar: ${url}`));
+    img.src = url;
   });
 }
 
-/** Carga y rasteriza los logos de branding para el PDF. */
-async function cargarLogos() {
-  const base = import.meta.env.BASE_URL || '/';
-  try {
-    const [logoHorizontal, logoIsotipo] = await Promise.all([
-      rasterizeSVG(`${base}branding/masalto-logo-horizontal.svg`, 700, 220),
-      rasterizeSVG(`${base}branding/masalto-isotipo.svg`, 200, 200),
-    ]);
-    return { logoHorizontal, logoIsotipo };
-  } catch (err) {
-    console.warn('Error cargando logos para PDF:', err);
-    return { logoHorizontal: null, logoIsotipo: null };
-  }
-}
-
-/** Serializa un nodo SVG a un data URL PNG de alta resolución. */
-function svgToImage(svgElement, scale = 2) {
+/** Rasteriza un SVG element a PNG data URL. */
+function rasterizeSVGElement(svgEl, scale = 2) {
   return new Promise((resolve, reject) => {
     try {
-      const clone = svgElement.cloneNode(true);
-      // Forzar fondo blanco
+      const clone = svgEl.cloneNode(true);
       clone.style.backgroundColor = 'white';
       clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-      // Asegurar dimensiones explícitas
-      const rect = svgElement.getBoundingClientRect();
+      const rect = svgEl.getBoundingClientRect();
       clone.setAttribute('width', rect.width);
       clone.setAttribute('height', rect.height);
       const data = new XMLSerializer().serializeToString(clone);
@@ -71,27 +57,45 @@ function svgToImage(svgElement, scale = 2) {
       const url = URL.createObjectURL(blob);
       const img = new Image();
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = rect.width * scale;
-        canvas.height = rect.height * scale;
-        const ctx = canvas.getContext('2d');
+        const c = document.createElement('canvas');
+        c.width = rect.width * scale;
+        c.height = rect.height * scale;
+        const ctx = c.getContext('2d');
         ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
         URL.revokeObjectURL(url);
-        resolve(canvas.toDataURL('image/png'));
+        resolve(c.toDataURL('image/png'));
       };
-      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Error al rasterizar SVG')); };
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Error rasterizando SVG')); };
       img.src = url;
     } catch (err) { reject(err); }
   });
 }
 
-/** Calcula despiece agrupado igual que Despiece.jsx */
+/** Carga todos los logos de branding. */
+async function cargarLogos() {
+  const base = import.meta.env.BASE_URL || '/';
+  const results = {};
+  try {
+    const [masalto, myd, layout] = await Promise.all([
+      loadImage(`${base}branding/masalto-estructuras.png`),
+      loadImage(`${base}branding/myd-estructuras.jpg`),
+      loadImage(`${base}branding/masalto-logo-horizontal.svg`).catch(() => null),
+    ]);
+    results.masalto = masalto;
+    results.myd = myd;
+    results.layout = layout;
+  } catch (err) {
+    console.warn('Error cargando logos:', err);
+  }
+  return results;
+}
+
+/** Calcula despiece agrupado. */
 function calcularDespiece(piezas) {
   const ag = {};
   piezas.forEach(p => {
-    // Techos compuestos: desglosan en componentes reales
     if (p.categoria === 'techo' && Array.isArray(p.componentes)) {
       p.componentes.forEach(c => {
         if (!ag[c.tipoId]) ag[c.tipoId] = { nombre: c.nombre, categoria: c.tipoId.startsWith('CEL') ? 'celosia' : 'cumbrera', peso: c.peso, ref: c.ref, cantidad: 0 };
@@ -106,180 +110,265 @@ function calcularDespiece(piezas) {
   return { lista, pesoTotal: piezas.reduce((s, p) => s + p.peso, 0), cantidadTotal: piezas.length };
 }
 
-/** Dibuja el membrete (header) en la parte superior del PDF. */
-function dibujarMembrete(doc, nombreDiseno, fecha, logos) {
-  // Logo horizontal MásAlto (isotipo + nombre + LAYOUT)
-  if (logos.logoHorizontal) {
-    // Logo horizontal: 700x220 original, escalar a ~35mm alto
-    const logoH = 12;
-    const logoW = logoH * (700 / 220);
-    doc.addImage(logos.logoHorizontal, 'PNG', MARGEN, 3, logoW, logoH);
+// --- Dibujo ---
+
+/** Header con 3 marcas: másalto estructuras + Layout (izq), nombre proyecto (centro), MYD (der). */
+function dibujarHeader(doc, datos, logos) {
+  const y0 = M;
+
+  // Logo másalto estructuras (marca madre, dominante)
+  if (logos.masalto) {
+    // Original ~1200×700, mostrar ~18mm alto
+    const logoH = 18;
+    const logoW = logoH * (1200 / 700);
+    doc.addImage(logos.masalto, 'PNG', M, y0 - 2, logoW, logoH);
+
+    // Logo Layout al lado con separador
+    const sepX = M + logoW + 3;
+    doc.setDrawColor(GRIS_CLARO);
+    doc.setLineWidth(0.3);
+    doc.line(sepX, y0 + 2, sepX, y0 + 14);
+
+    if (logos.layout) {
+      // SVG 700×220 — mostrar ~8mm alto
+      const lH = 8;
+      const lW = lH * (700 / 220);
+      doc.addImage(logos.layout, 'PNG', sepX + 2, y0 + 4, lW, lH);
+    } else {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7);
+      doc.setTextColor(GRIS);
+      doc.text('MasAlto Layout', sepX + 2, y0 + 10);
+    }
   } else {
-    // Fallback texto si no carga el logo
+    // Fallback texto
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(14);
+    doc.setFontSize(16);
     doc.setTextColor(NEGRO);
-    doc.text('MasAlto', MARGEN, 10);
+    doc.text('másalto', M, y0 + 10);
     doc.setFontSize(8);
     doc.setTextColor(ROJO);
-    doc.text('LAYOUT', MARGEN + 30, 10);
+    doc.text('estructuras', M, y0 + 15);
   }
 
-  // Subtítulo empresa
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(GRIS);
-  doc.text('MYD Estructuras SAS · San Juan, Argentina', MARGEN + 50, 9);
-
-  // Nombre del diseño a la derecha
-  doc.setFontSize(10);
+  // Centro: nombre proyecto
   doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
   doc.setTextColor(NEGRO);
-  doc.text(nombreDiseno || 'Sin título', A4_W - MARGEN, 9, { align: 'right' });
-
-  // Línea debajo del membrete (acento rojo corporativo)
-  doc.setDrawColor(ROJO);
-  doc.setLineWidth(0.5);
-  doc.line(MARGEN, 17, A4_W - MARGEN, 17);
-
-  // Fecha
-  doc.setFontSize(7);
+  doc.text(datos.nombre || 'Sin título', W / 2, y0 + 7, { align: 'center' });
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(GRIS);
-  doc.text(`Fecha: ${fecha}`, MARGEN, 21);
-  doc.text('MasAlto Layout v2.0', A4_W - MARGEN, 21, { align: 'right' });
-}
-
-/** Dibuja la tabla de despiece. */
-function dibujarDespiece(doc, despiece, startY) {
-  const x0 = A4_W - MARGEN - 75; // ancho tabla 75mm, alineada a la derecha
-  const colW = 75;
-  let y = startY;
-
-  // Título
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(NEGRO);
-  doc.text('DESPIECE DE MATERIALES', x0, y);
-  y += 4;
-
-  // Encabezados
-  doc.setFillColor(240, 240, 240);
-  doc.rect(x0, y - 3, colW, 5, 'F');
   doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
   doc.setTextColor(GRIS);
-  doc.text('Pieza', x0 + 1, y);
-  doc.text('Ref.', x0 + 38, y);
-  doc.text('Cant', x0 + 55, y, { align: 'right' });
-  doc.text('kg', x0 + colW - 1, y, { align: 'right' });
-  y += 5;
+  const sub = [datos.ubicacion, datos.resumen].filter(Boolean).join(' · ');
+  if (sub) doc.text(sub, W / 2, y0 + 12, { align: 'center' });
 
-  // Filas
+  // Derecha: MYD logo + datos
+  if (logos.myd) {
+    const mH = 12;
+    const mW = mH * (2000 / 1000);
+    doc.addImage(logos.myd, 'JPEG', W - M - mW - 45, y0, mW, mH);
+  }
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6.5);
-  doc.setTextColor(NEGRO);
-  despiece.lista.forEach((it) => {
-    if (y > A4_H - 30) return; // overflow protection
-    doc.setDrawColor(230, 230, 230);
-    doc.line(x0, y + 1, x0 + colW, y + 1);
-    doc.text(it.nombre, x0 + 1, y);
-    doc.setTextColor(GRIS);
-    doc.text(it.ref || '', x0 + 38, y);
-    doc.setTextColor(NEGRO);
-    doc.text(String(it.cantidad), x0 + 55, y, { align: 'right' });
-    doc.text((it.cantidad * it.peso).toFixed(1), x0 + colW - 1, y, { align: 'right' });
-    y += 4;
-  });
+  doc.setTextColor(GRIS);
+  const derX = W - M;
+  doc.text('MYD Estructuras S.A.S.', derX, y0 + 3, { align: 'right' });
+  doc.text(`CUIT ${datos.cuit || '30-71XXXXXX-X'}`, derX, y0 + 6.5, { align: 'right' });
+  doc.text(`${datos.fecha} · Rev. ${datos.revision || '01'}`, derX, y0 + 10, { align: 'right' });
+  doc.text(`Plano Nº ${datos.planoNum || 'MA-XXXX-XXX'}`, derX, y0 + 13.5, { align: 'right' });
 
-  // Total
-  y += 1;
-  doc.setDrawColor(NEGRO);
-  doc.setLineWidth(0.4);
-  doc.line(x0, y - 2, x0 + colW, y - 2);
+  // Línea roja bajo header
+  const lineY = y0 + HEADER_H - 2;
+  doc.setDrawColor(ROJO);
+  doc.setLineWidth(0.6);
+  doc.line(M, lineY, W - M, lineY);
+
+  return lineY + 2;
+}
+
+/** Cuadro de datos técnicos del proyecto. */
+function dibujarCuadroDatos(doc, datos, x0, y0) {
+  const w = PANEL_W;
+  let y = y0;
+
+  // Header negro
+  doc.setFillColor(17, 17, 17);
+  doc.rect(x0, y, w, 5, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.text('TOTAL', x0 + 1, y + 1);
-  doc.text(`${despiece.pesoTotal.toFixed(1)} kg`, x0 + colW - 1, y + 1, { align: 'right' });
   doc.setFontSize(6);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(GRIS);
-  doc.text(`${despiece.cantidadTotal} piezas`, x0 + colW - 1, y + 5, { align: 'right' });
-
-  return y + 8;
-}
-
-/** Dibuja los sellos legales obligatorios y el footer con branding. */
-function dibujarSellosLegales(doc, logos) {
-  const y = A4_H - 14;
-  doc.setDrawColor(ROJO);
-  doc.setLineWidth(0.3);
-  doc.line(MARGEN, y - 3, A4_W - MARGEN, y - 3);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(5.5);
-  doc.setTextColor(ROJO);
-  doc.text(
-    'Plano esquemático preliminar realizado únicamente con fines presupuestarios y comerciales. No utilizar como guía de armado ni documentación técnica definitiva.',
-    MARGEN, y
-  );
-  doc.text(
-    'Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construcción.',
-    MARGEN, y + 3
-  );
-
-  // Footer: "Creado con MasAlto Layout" + isotipo pequeño
-  const footerY = A4_H - 4;
-  const textoFooter = 'Creado con MasAlto Layout';
-  doc.setFontSize(5.5);
-  doc.setTextColor(150, 150, 150);
-
-  if (logos.logoIsotipo) {
-    // Isotipo pequeño a la izquierda del texto, centrado
-    const isoH = 4;
-    const isoW = 4;
-    const textoW = doc.getTextWidth(textoFooter);
-    const totalW = isoW + 1.5 + textoW;
-    const startX = (A4_W - totalW) / 2;
-    doc.addImage(logos.logoIsotipo, 'PNG', startX, footerY - 3.2, isoW, isoH);
-    doc.text(textoFooter, startX + isoW + 1.5, footerY);
-  } else {
-    doc.text(textoFooter, A4_W / 2, footerY, { align: 'center' });
-  }
-}
-
-/** Dibuja cuadro de datos técnicos */
-function dibujarCuadroDatos(doc, datos, startY) {
-  const x0 = A4_W - MARGEN - 75;
-  let y = startY;
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8);
-  doc.setTextColor(NEGRO);
-  doc.text('DATOS DEL PROYECTO', x0, y);
-  y += 4;
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(6.5);
+  doc.setTextColor(255, 255, 255);
+  doc.text('DATOS DEL PROYECTO', x0 + 2, y + 3.5);
+  y += 6;
 
   const campos = [
     ['Proyecto', datos.nombre || 'Sin título'],
     ['Cliente', datos.cliente || '—'],
     ['Ubicación', datos.ubicacion || '—'],
     ['Fecha', datos.fecha],
-    ['Filas (profundidad)', datos.filas || '—'],
+    ['Escala', datos.escala || '1:100'],
+    ['Plano Nº', datos.planoNum || '—'],
     ['Sistema', 'Layher Allround'],
+    ['Filas', datos.filasStr || '—'],
+    ['Verificado', 'Firma ing. estructural'],
   ];
 
-  campos.forEach(([label, valor]) => {
+  campos.forEach(([label, valor], i) => {
+    // Fondo alterno
+    if (i % 2 === 0) {
+      doc.setFillColor(245, 245, 245);
+      doc.rect(x0, y - 2.5, w, 4, 'F');
+    }
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
     doc.setTextColor(GRIS);
-    doc.text(label + ':', x0 + 1, y);
+    doc.text(label, x0 + 1.5, y);
     doc.setTextColor(NEGRO);
-    doc.text(valor, x0 + 28, y);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    // Truncar valores largos
+    const maxW = w - 25;
+    let txt = valor;
+    while (doc.getTextWidth(txt) > maxW && txt.length > 3) txt = txt.slice(0, -1);
+    if (txt !== valor) txt += '…';
+    doc.text(txt, x0 + 22, y);
+    // Línea separadora
+    doc.setDrawColor(230, 230, 230);
+    doc.setLineWidth(0.15);
+    doc.line(x0, y + 1.2, x0 + w, y + 1.2);
+    y += 4;
+  });
+
+  // Borde del cuadro
+  doc.setDrawColor(NEGRO);
+  doc.setLineWidth(0.4);
+  doc.rect(x0, y0, w, y - y0 + 0.5);
+
+  return y + 2;
+}
+
+/** Tabla de despiece de materiales. */
+function dibujarDespiece(doc, despiece, x0, y0, maxH) {
+  const w = PANEL_W;
+  let y = y0;
+
+  // Header negro
+  doc.setFillColor(17, 17, 17);
+  doc.rect(x0, y, w, 5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6);
+  doc.setTextColor(255, 255, 255);
+  doc.text('DESPIECE DE MATERIALES', x0 + 2, y + 3.5);
+  y += 6;
+
+  // Encabezados columnas
+  doc.setFillColor(240, 240, 240);
+  doc.rect(x0, y - 2.5, w, 4, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(5.5);
+  doc.setTextColor(GRIS);
+  doc.text('PIEZA', x0 + 1.5, y);
+  doc.text('REF.', x0 + 38, y);
+  doc.text('CANT', x0 + 58, y, { align: 'right' });
+  doc.text('KG', x0 + w - 1.5, y, { align: 'right' });
+  y += 4;
+
+  // Filas
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.5);
+  const bottomLimit = y0 + maxH - 14;
+
+  despiece.lista.forEach((it) => {
+    if (y > bottomLimit) return;
+    doc.setDrawColor(238, 238, 238);
+    doc.setLineWidth(0.1);
+    doc.line(x0, y + 1, x0 + w, y + 1);
+    doc.setTextColor(NEGRO);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(5.5);
+    doc.text(it.nombre, x0 + 1.5, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(GRIS);
+    doc.setFontSize(5);
+    doc.text(it.ref || '', x0 + 38, y);
+    doc.setTextColor(NEGRO);
+    doc.setFontSize(5.5);
+    doc.text(String(it.cantidad), x0 + 58, y, { align: 'right' });
+    doc.text((it.cantidad * it.peso).toFixed(1), x0 + w - 1.5, y, { align: 'right' });
     y += 3.5;
   });
 
-  return y + 2;
+  // Total
+  y += 1;
+  doc.setDrawColor(NEGRO);
+  doc.setLineWidth(0.4);
+  doc.line(x0, y - 1, x0 + w, y - 1);
+  doc.setFillColor(245, 245, 245);
+  doc.rect(x0, y - 1, w, 7, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7);
+  doc.setTextColor(NEGRO);
+  doc.text('TOTAL', x0 + 1.5, y + 2.5);
+  doc.setFontSize(10);
+  doc.setTextColor(ROJO);
+  doc.text(`${despiece.pesoTotal.toFixed(1)} kg`, x0 + w - 1.5, y + 3, { align: 'right' });
+  doc.setFontSize(5.5);
+  doc.setTextColor(GRIS);
+  doc.text(`${despiece.cantidadTotal} piezas`, x0 + w - 1.5, y + 5.5, { align: 'right' });
+
+  // Borde del cuadro
+  doc.setDrawColor(NEGRO);
+  doc.setLineWidth(0.4);
+  doc.rect(x0, y0, w, y - y0 + 6);
+
+  return y + 8;
+}
+
+/** Footer: sellos legales (izq) + escala (centro) + "Creado con Layout" (der). */
+function dibujarFooter(doc, datos, logos, pagina, totalPaginas) {
+  const y0 = H - FOOTER_H;
+
+  // Línea roja
+  doc.setDrawColor(ROJO);
+  doc.setLineWidth(0.4);
+  doc.line(M, y0, W - M, y0);
+
+  // Sellos legales
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(5.5);
+  doc.setTextColor(ROJO);
+
+  const sello1 = '① Plano esquemático preliminar realizado únicamente con fines presupuestarios y comerciales. No utilizar como guía de armado ni documentación técnica definitiva.';
+  const sello2 = '② Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construcción.';
+  doc.text(sello1, M, y0 + 4, { maxWidth: W - M * 2 - 90 });
+  doc.text(sello2, M, y0 + 8, { maxWidth: W - M * 2 - 90 });
+
+  // Centro: escala + formato
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(GRIS);
+  doc.text(`Escala ${datos.escala || '1:100'} · Formato A3`, W / 2, y0 + 14, { align: 'center' });
+
+  // Derecha: "Creado con MasAlto Layout v2.0" + logo
+  const footerRight = W - M;
+  if (logos.layout) {
+    const lH = 7;
+    const lW = lH * (700 / 220);
+    doc.addImage(logos.layout, 'PNG', footerRight - lW - 18, y0 + 3, lW, lH);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5.5);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Creado con', footerRight - lW - 20, y0 + 7.5, { align: 'right' });
+    doc.text('v2.0', footerRight - 1, y0 + 7.5, { align: 'right' });
+  } else {
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Creado con MasAlto Layout v2.0', footerRight, y0 + 7, { align: 'right' });
+  }
+
+  // Paginación
+  doc.setFontSize(6);
+  doc.text(`Pág. ${pagina} / ${totalPaginas}`, footerRight, y0 + 14, { align: 'right' });
 }
 
 // ============================================================
@@ -287,94 +376,106 @@ function dibujarCuadroDatos(doc, datos, startY) {
 // ============================================================
 
 /**
- * Genera y descarga un PDF con el plano actual.
+ * Genera y descarga un PDF A3 apaisado con el plano actual.
  *
  * @param {Object} opciones
  * @param {string} opciones.nombreDiseno
  * @param {Array} opciones.piezas
  * @param {Array} opciones.filas
- * @param {SVGElement} opciones.svgAlzado — nodo SVG del canvas de alzado
- * @param {SVGElement} [opciones.svgPlanta] — nodo SVG del canvas de planta (opcional)
- * @param {Object} [opciones.datosProyecto] — { cliente, ubicacion }
+ * @param {SVGElement} opciones.svgAlzado
+ * @param {SVGElement} [opciones.svgPlanta]
+ * @param {Object} [opciones.datosProyecto] — { cliente, ubicacion, planoNum, revision, cuit }
  */
 export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgPlanta, datosProyecto = {} }) {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
   const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+  const totalPaginas = svgPlanta ? 2 : 1;
 
-  // Cargar logos de branding
+  // Cargar logos
   const logos = await cargarLogos();
 
-  // Membrete
-  dibujarMembrete(doc, nombreDiseno, fecha, logos);
+  // Datos compartidos
+  const filasStr = filas.map(f => `${f.nombre} (Z=${f.z.toFixed(2)}m)`).join(', ');
+  const datos = {
+    nombre: nombreDiseno || datosProyecto.nombre || 'Sin título',
+    cliente: datosProyecto.cliente || '',
+    ubicacion: datosProyecto.ubicacion || '',
+    fecha,
+    filasStr,
+    planoNum: datosProyecto.planoNum || '',
+    revision: datosProyecto.revision || '01',
+    cuit: datosProyecto.cuit || '',
+    escala: datosProyecto.escala || '1:100',
+    resumen: datosProyecto.resumen || '',
+  };
 
-  // Vista Alzado (imagen)
-  const imgAreaW = A4_W - MARGEN * 2 - 80; // dejo espacio para despiece a la derecha
-  const imgAreaH = A4_H - 55; // descontando header y footer
-  let imgY = 25;
+  // === PÁGINA 1: Alzado + Despiece ===
+  const contentTop = dibujarHeader(doc, datos, logos);
+  const contentBottom = H - FOOTER_H - 2;
+
+  // Panel derecho: datos + despiece
+  const panelX = W - M - PANEL_W;
+  let panelY = dibujarCuadroDatos(doc, datos, panelX, contentTop + 1);
+  const despiece = calcularDespiece(piezas);
+  const despieceMaxH = contentBottom - panelY;
+  dibujarDespiece(doc, despiece, panelX, panelY, despieceMaxH);
+
+  // Vista alzado (imagen ocupa todo el espacio izquierdo)
+  const imgAreaW = panelX - M - 4;
+  const imgAreaH = contentBottom - contentTop - 2;
 
   if (svgAlzado) {
     try {
-      const imgData = await svgToImage(svgAlzado, 2);
+      const imgData = await rasterizeSVGElement(svgAlzado, 2);
       const svgRect = svgAlzado.getBoundingClientRect();
       const aspect = svgRect.width / svgRect.height;
       let imgW = imgAreaW;
       let imgH = imgW / aspect;
       if (imgH > imgAreaH) { imgH = imgAreaH; imgW = imgH * aspect; }
-      doc.addImage(imgData, 'PNG', MARGEN, imgY, imgW, imgH);
+      // Centrar vertical
+      const imgY = contentTop + 1 + (imgAreaH - imgH) / 2;
+      doc.addImage(imgData, 'PNG', M, imgY, imgW, imgH);
 
-      // Título de la vista
+      // Título vista
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
+      doc.setFontSize(6);
       doc.setTextColor(GRIS);
-      doc.text('VISTA DE ALZADO FRONTAL', MARGEN, imgY - 1);
+      doc.text('VISTA DE ALZADO FRONTAL', M, contentTop + 4);
     } catch (err) {
-      console.warn('No se pudo rasterizar el alzado:', err);
+      console.warn('Error rasterizando alzado:', err);
       doc.setFontSize(8);
       doc.setTextColor(GRIS);
-      doc.text('(Vista de alzado no disponible)', MARGEN + 20, imgY + 30);
+      doc.text('(Vista de alzado no disponible)', M + 30, contentTop + 40);
     }
   }
 
-  // Panel derecho: datos + despiece
-  const filasStr = filas.map(f => `${f.nombre} (Z=${f.z.toFixed(2)}m)`).join(', ');
-  let panelY = dibujarCuadroDatos(doc, {
-    nombre: nombreDiseno,
-    cliente: datosProyecto.cliente,
-    ubicacion: datosProyecto.ubicacion,
-    fecha,
-    filas: filasStr,
-  }, 25);
+  dibujarFooter(doc, datos, logos, 1, totalPaginas);
 
-  const despiece = calcularDespiece(piezas);
-  dibujarDespiece(doc, despiece, panelY);
-
-  // Sellos legales + footer branding
-  dibujarSellosLegales(doc, logos);
-
-  // --- Página 2: Planta (si hay SVG disponible) ---
+  // === PÁGINA 2: Planta (si hay SVG) ===
   if (svgPlanta) {
-    doc.addPage('a4', 'landscape');
-    dibujarMembrete(doc, nombreDiseno, fecha, logos);
+    doc.addPage('a3', 'landscape');
+    const ct2 = dibujarHeader(doc, datos, logos);
 
     try {
-      const imgData = await svgToImage(svgPlanta, 2);
+      const imgData = await rasterizeSVGElement(svgPlanta, 2);
       const svgRect = svgPlanta.getBoundingClientRect();
       const aspect = svgRect.width / svgRect.height;
-      const fullW = A4_W - MARGEN * 2;
-      const fullH = A4_H - 45;
+      const fullW = W - M * 2;
+      const fullH = contentBottom - ct2 - 2;
       let imgW = fullW;
       let imgH = imgW / aspect;
       if (imgH > fullH) { imgH = fullH; imgW = imgH * aspect; }
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(7);
+      doc.setFontSize(6);
       doc.setTextColor(GRIS);
-      doc.text('VISTA DE PLANTA', MARGEN, 24);
-      doc.addImage(imgData, 'PNG', MARGEN, 25, imgW, imgH);
+      doc.text('VISTA DE PLANTA', M, ct2 + 4);
+      const imgY = ct2 + 6;
+      doc.addImage(imgData, 'PNG', M, imgY, imgW, imgH);
     } catch (err) {
-      console.warn('No se pudo rasterizar la planta:', err);
+      console.warn('Error rasterizando planta:', err);
     }
 
-    dibujarSellosLegales(doc, logos);
+    dibujarFooter(doc, datos, logos, 2, totalPaginas);
   }
 
   // Descargar
