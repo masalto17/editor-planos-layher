@@ -32,6 +32,8 @@ export const piezaBounds = p => {
   if (ES_TIPO_HORIZONTAL(p.categoria)) {
     // orientacion='z' se ve en el alzado como un punto (perpendicular al plano).
     if (p.orientacion === 'z') return { xMin: p.x, xMax: p.x, yMin: p.y, yMax: p.y };
+    // Escalera sube desde (x,y) hasta (x+largo, y+desnivel)
+    if (p.categoria === 'escalera' && p.desnivel) return { xMin: p.x, xMax: p.x + p.largo, yMin: p.y, yMax: p.y + p.desnivel };
     return { xMin: p.x, xMax: p.x + p.largo, yMin: p.y, yMax: p.y };
   }
   return { xMin: 0, xMax: 0, yMin: 0, yMax: 0 };

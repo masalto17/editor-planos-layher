@@ -87,6 +87,35 @@ export const CATALOGO = {
     { id: 'CO', nombre: 'Collarín', largo: 0.02, peso: 1.3, ref: '2603.000', color: '#78350f' },
   ],
 
+  // ─── MÉNSULAS (voladizo lateral desde vertical) ──────────
+  // Pesos ≈ — verificar contra catálogo F4-2018-SP
+  mensulas: [
+    { id: 'ME028', nombre: 'Ménsula 0.28m',      largo: 0.28, peso: 3.4,  ref: '2632.019', color: '#b45309' },
+    { id: 'ME039', nombre: 'Ménsula 0.39m',      largo: 0.39, peso: 3.9,  ref: '2632.039', color: '#b45309' },
+    { id: 'ME045', nombre: 'Ménsula 0.45m',      largo: 0.45, peso: 3.1,  ref: '2632.045', color: '#b45309' },
+    { id: 'ME073', nombre: 'Ménsula LW 0.73m',   largo: 0.73, peso: 6.4,  ref: '2632.073', color: '#b45309' },
+    { id: 'ME109', nombre: 'Ménsula 1.09m',      largo: 1.09, peso: 11.2, ref: '2630.109', color: '#b45309' },
+  ],
+
+  // ─── ESCALERAS EVENTOS (Viga Zanca 750, 8 peldaños) ────
+  // Desnivel fijo: 8 peldaños × 0.167m = 1.33m
+  // Peso ≈ por zanca (van 2 por escalera) — verificar
+  escaleras: [
+    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, peso: 28.0, ref: '2638.257', color: '#dc2626' },
+  ],
+
+  // ─── APOYA TECHOS (soporte cubierta cassette) ───────────
+  // Pesos ≈ — verificar contra catálogo
+  apoyaTechos: [
+    { id: 'AT045', nombre: 'Apoyo celosía 0.45m', largo: 0.45, peso: 4.5, ref: '2656.000', color: '#6b7280' },
+    { id: 'AT073', nombre: 'Apoyo celosía 0.73m', largo: 0.73, peso: 8.2, ref: '2656.073', color: '#6b7280' },
+  ],
+
+  // ─── PLACA FENÓLICO (no Layher, complemento) ────────────
+  fenolicos: [
+    { id: 'FEN18', nombre: 'Placa fenólico 18mm', largo: 2.44, anchoPlat: 1.22, espesor: 0.018, peso: 34.8, ref: 'FEN-1222', color: '#5D3A1A' },
+  ],
+
   // ─── COMPLEMENTOS ───────────────────────────────────────
   // Vigas IPN para rigging de sonido, pantallas, etc.
   vigasIPN: [
@@ -173,6 +202,10 @@ export const CAT_KEYS = [
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
   { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },
+  { key: 'mensulas',          cat: 'mensula',        label: '📐 Ménsulas (voladizo)' },
+  { key: 'escaleras',         cat: 'escalera',       label: '🪜 Escaleras eventos' },
+  { key: 'apoyaTechos',       cat: 'apoyaTecho',     label: '🔺 Apoya Techos' },
+  { key: 'fenolicos',         cat: 'fenolico',       label: '🪵 Placa Fenólico' },
   { key: 'celosias',          cat: 'celosia',        label: '🔺 Celosías (reticuladas)' },
   { key: 'cumbreras',         cat: 'cumbrera',       label: '⛺ Cumbreras (techo)' },
   { key: 'techos',             cat: 'techo',          label: '🏠 Techo a 2 aguas' },
