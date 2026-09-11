@@ -1,0 +1,565 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Nunito Sans', sans-serif;
+  background: #f5f5f2;
+  color: #111;
+}
+
+button,
+select,
+input {
+  font: inherit;
+}
+
+button,
+.file {
+  cursor: pointer;
+}
+
+button {
+  border: 1px solid #ccc;
+  background: transparent;
+  padding: 10px 14px;
+  border-radius: 5px;
+  color: inherit;
+  font-size: 14px;
+}
+
+button:hover {
+  background: #e5e5df;
+}
+
+button:focus-visible,
+select:focus-visible,
+#scene canvas:focus-visible,
+.file:focus-within {
+  outline: 3px solid #e30613;
+  outline-offset: 3px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: #fff;
+  padding: 24px 4%;
+  border-bottom: 1px solid #ddd;
+}
+
+header img {
+  width: 280px;
+  height: auto;
+  margin-right: 20px;
+}
+
+header > div {
+  margin-right: auto;
+}
+
+header strong,
+header span {
+  display: block;
+}
+
+header span {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.primary {
+  background: #e30613;
+  color: white;
+  padding: 12px 18px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.file input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 285px;
+  padding: 24px;
+  gap: 24px;
+}
+
+.work {
+  min-width: 0;
+}
+
+.titlebar {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+  align-items: center;
+  padding: 4px 0 20px;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.titlebar p {
+  font-size: 13px;
+  color: #666;
+  margin: 6px 0 0;
+}
+
+#count {
+  font: 12px 'IBM Plex Mono', monospace;
+  white-space: nowrap;
+}
+
+.viewport {
+  height: calc(100svh - 275px);
+  min-height: 450px;
+  background: #151515;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #333;
+  border-radius: 8px;
+}
+
+.viewport.technical {
+  background: #fff;
+  border-color: #ddd;
+}
+
+#scene,
+#scene canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#scene canvas {
+  touch-action: none;
+  cursor: grab;
+}
+
+.views {
+  display: flex;
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  padding: 4px;
+  background: #252525dd;
+  border: 1px solid #555;
+  border-radius: 7px;
+  gap: 3px;
+}
+
+.views button {
+  border: 0;
+  color: #bbb;
+  font-size: 12px;
+  padding: 9px 13px;
+}
+
+.views button[aria-pressed=true] {
+  background: #f5f5f2;
+  color: #111;
+}
+
+.views button:hover {
+  background: #777;
+  color: white;
+}
+
+.bottomcontrols {
+  position: absolute;
+  bottom: 16px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  color: #aaa;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.bottomcontrols > div {
+  pointer-events: auto;
+  display: flex;
+  background: #222;
+  border-radius: 5px;
+  flex-wrap: wrap;
+}
+
+.bottomcontrols button {
+  color: white;
+  border-color: #444;
+}
+
+.bottomcontrols button:hover {
+  background: #444;
+}
+
+.status {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #666;
+  padding: 15px 0;
+  gap: 15px;
+}
+
+.status span:first-child {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+.panel {
+  padding: 20px 0;
+  border-bottom: 1px solid #d5d5d0;
+}
+
+.panel:first-child {
+  padding-top: 8px;
+}
+
+h2 {
+  font-size: 15px;
+  margin: 0 0 12px;
+  font-weight: 700;
+}
+
+.stylebuttons {
+  display: flex;
+  gap: 6px;
+}
+
+.stylebuttons button {
+  flex: 1;
+  font-size: 13px;
+}
+
+.stylebuttons button[aria-pressed=true] {
+  background: #111;
+  color: white;
+  border-color: #111;
+}
+
+.actionbuttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.viewlist {
+  display: grid;
+  gap: 5px;
+  margin-top: 12px;
+}
+
+.viewlist button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  border: 0;
+  border-radius: 4px;
+  padding: 9px;
+  background: #fff;
+  font-size: 12px;
+}
+
+.viewlist button[aria-pressed=true] {
+  background: #e30613;
+  color: #fff;
+}
+
+.help,
+.panel p,
+.panel li {
+  font-size: 13px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.panel label {
+  font-size: 12px;
+  display: block;
+  margin-bottom: 6px;
+}
+
+select {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+input[type=range] {
+  width: 100%;
+  accent-color: #e30613;
+  margin: 4px 0 12px;
+}
+
+body.technical .viewport {
+  background: #f5f5f2;
+  border-color: #ddd;
+}
+
+body.technical .bottomcontrols > div,
+body.technical .views {
+  background: #111;
+}
+
+body.presenting {
+  background: #10100f;
+}
+
+body.presenting header,
+body.presenting aside,
+body.presenting footer,
+body.presenting .titlebar,
+body.presenting .status {
+  display: none;
+}
+
+body.presenting main {
+  display: block;
+  padding: 0;
+}
+
+body.presenting .viewport {
+  height: 100svh;
+  min-height: 100svh;
+  border: 0;
+  border-radius: 0;
+}
+
+body.presenting .views {
+  top: 24px;
+  left: 24px;
+}
+
+body.presenting .bottomcontrols {
+  left: 24px;
+  right: 24px;
+  bottom: 24px;
+}
+
+.list {
+  max-height: 260px;
+  overflow: auto;
+  margin-top: 12px;
+  display: grid;
+  gap: 3px;
+}
+
+.list button {
+  text-align: left;
+  font-size: 12px;
+  border: 0;
+  border-radius: 3px;
+  padding: 9px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.list button[aria-pressed=true] {
+  background: #e30613;
+  color: white;
+}
+
+.list button span:first-child {
+  max-width: 175px;
+}
+
+.list .unsupported {
+  opacity: .65;
+}
+
+.empty {
+  position: absolute;
+  inset: 100px 25px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  color: #aaa;
+  pointer-events: none;
+}
+
+.empty strong {
+  font-size: 30px;
+  color: #ddd;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.empty p {
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.empty[hidden] {
+  display: none;
+}
+
+#error {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  top: 78px;
+  padding: 15px;
+  background: #fff0ef;
+  border: 1px solid #e30613;
+  color: #95010b;
+  font-size: 14px;
+  z-index: 4;
+}
+
+#drop.over {
+  outline: 3px solid #e30613;
+  outline-offset: -5px;
+}
+
+summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+footer {
+  margin: 0 24px;
+  padding: 20px 0;
+  border-top: 1px solid #ccc;
+  font-size: 12px;
+  color: #666;
+}
+
+footer strong {
+  color: #333;
+}
+
+footer p {
+  margin: 8px 0;
+  line-height: 1.5;
+}
+
+.panel ul {
+  padding-left: 18px;
+}
+
+#detail {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 950px) {
+  header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  header > div {
+    min-width: 200px;
+  }
+
+  main {
+    grid-template-columns: 1fr;
+  }
+
+  aside {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .viewport {
+    height: 65svh;
+  }
+
+  .bottomcontrols > span {
+    max-width: 230px;
+  }
+
+  .titlebar {
+    align-items: start;
+  }
+}
+
+@media (max-width: 580px) {
+  header {
+    padding: 22px;
+  }
+
+  header img {
+    margin: 0;
+    width: 280px;
+  }
+
+  header > div {
+    width: 100%;
+    margin: 10px 0;
+  }
+
+  main {
+    padding: 16px;
+    gap: 10px;
+  }
+
+  aside {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .viewport {
+    min-height: 430px;
+  }
+
+  .bottomcontrols > span {
+    display: none;
+  }
+
+  .bottomcontrols {
+    justify-content: end;
+  }
+
+  .views {
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    justify-content: center;
+  }
+
+  .views button {
+    font-size: 12px;
+    padding: 9px;
+  }
+
+  .status {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .titlebar {
+    flex-direction: column;
+  }
+
+  footer {
+    margin: 0 16px;
+  }
+}
+
+.suite-home{color:inherit;font-size:12px;white-space:nowrap;text-underline-offset:4px;padding:8px}.suite-home:focus-visible{outline:2px solid #E30613;outline-offset:3px}

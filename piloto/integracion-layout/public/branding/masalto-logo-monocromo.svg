@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 700 220">
+  <g transform="translate(10,10) scale(1.05)">
+    <g stroke="#111111" stroke-width="0" stroke-linejoin="round">
+      <polygon points="64,148 152,148 168,135 80,135" fill="#111111"></polygon>
+      <polygon points="152,148 152,170 168,157 168,135" fill="#111111"></polygon>
+      <polygon points="64,148 152,148 152,170 64,170" fill="#111111"></polygon>
+      <polygon points="108,42 182,86 174,100 100,56" fill="#111111"></polygon>
+      <polyline points="100,56 108,42 182,86" fill="none" stroke="#111111" stroke-width="4" stroke-linecap="round"></polyline>
+      <polygon points="64,54 86,54 102,41 80,41" fill="#111111"></polygon>
+      <polygon points="86,54 86,148 102,135 102,41" fill="#111111"></polygon>
+      <polygon points="64,54 86,54 86,148 64,148" fill="#111111"></polygon>
+    </g>
+    
+  </g>
+  <g transform="translate(240,58)">
+    <g font-family="Nunito Sans, Arial, sans-serif" font-weight="900">
+      <text x="0" y="88" font-size="92" fill="#111111">Mas<tspan fill="#111111">Alto</tspan></text>
+      <line x1="4" y1="112" x2="404" y2="112" stroke="#111111" stroke-width="3"></line>
+      <rect x="0" y="107" width="8" height="10" fill="#111111"></rect>
+      <rect x="396" y="107" width="8" height="10" fill="#111111"></rect>
+      <text x="80" y="150" font-size="26" letter-spacing="10" fill="#111111" font-weight="700">LAYOUT</text>
+    </g></g>
+</svg>
