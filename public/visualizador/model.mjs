@@ -1,6 +1,6 @@
 import { roofGeometry } from './roof.mjs';
 import { importedGeometry } from './imported.mjs';
-export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera']);
+export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer']);
 const n=(v,key,fallback)=>{const a=v[key]??fallback;if(typeof a!=='number'||!Number.isFinite(a)||Math.abs(a)>1000)throw Error(`Dato inválido: ${key}.`);return a;};
 export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
@@ -73,7 +73,10 @@ export function parseDesign(text){
  }else if(p.categoria==='celosia'||p.categoria==='truss'){
  const h=n(p,'alto',.5);if(h<=0||h>5)throw Error('Alto de celosía inválido.');line(P(),P(len),.024);line(P(0,h),P(len,h),.024);line(P(),P(0,h));line(P(len),P(len,h));const count=Math.max(3,Math.round(len/.4));for(let j=0;j<count;j++){const u=j*len/count,v=(j+1)*len/count;line(P(u,j%2?h:0),P(v,j%2?0:h),.012,'brace');}
  }else if(p.categoria==='rodapie'){box(len,.15,.025)}
- else if(['vigaPuente','horizontalU','vigaIPN'].includes(p.categoria)){
+ else if(p.categoria==='stringer'){
+ // Caño estructural 40×80×2.50mm — rectángulo en sección
+ box(len,.08,.04);
+ }else if(['vigaPuente','horizontalU','vigaIPN'].includes(p.categoria)){
  // Schematic profiles only; not fabricated catalogue sections.
  line(P(),P(len),.012);line(P(0,.055),P(len,.055),.012);line(P(),P(0,.055),.012);line(P(len),P(len,.055),.012);
  issues.push(`${item.name}: perfil esquemático, sección real pendiente.`);

@@ -17,7 +17,7 @@ const TECNICO_COLORS_PLANTA = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
   base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
-  mensula: '#222', escalera: '#222', fenolico: '#444',
+  mensula: '#222', escalera: '#222', fenolico: '#444', stringer: '#333',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -210,6 +210,28 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
           stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
         {dobleLinea(pL, pR, sep, lineW, sc)}
+      </g>
+    );
+  }
+
+  // ── Stringer (caño 40×80) → rectángulo angosto (sección rectangular en planta) ──
+  if (pieza.categoria === 'stringer') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(2, zoom * 0.03);
+    const lineW = Math.max(0.6, zoom * 0.01);
+    const dx = pR.x - pL.x, dy = pR.y - pL.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len * sep, ny = dx / len * sep;
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
+        <polygon
+          points={`${pL.x + nx},${pL.y + ny} ${pR.x + nx},${pR.y + ny} ${pR.x - nx},${pR.y - ny} ${pL.x - nx},${pL.y - ny}`}
+          fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={lineW} />
+        {zoom > 30 && <text x={(pL.x + pR.x) / 2} y={(pL.y + pR.y) / 2}
+          textAnchor="middle" dominantBaseline="central" fontSize={Math.max(6, zoom * 0.06)} fill={sc} fontWeight="bold" opacity="0.7">STR</text>}
       </g>
     );
   }
