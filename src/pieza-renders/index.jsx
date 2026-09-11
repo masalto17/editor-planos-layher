@@ -15,6 +15,7 @@ import Mensula from './Mensula.jsx';
 import Escalera from './Escalera.jsx';
 import ApoyaTecho from './ApoyaTecho.jsx';
 import Fenolico from './Fenolico.jsx';
+import Stringer from './Stringer.jsx';
 import GenericPiezaRender from './GenericPiezaRender.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -56,7 +57,7 @@ const RENDERERS = {
   escalera: Escalera,
   apoyaTecho: ApoyaTecho,
   fenolico: Fenolico,
-  stringer: HorizontalO,
+  stringer: Stringer,
 };
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)

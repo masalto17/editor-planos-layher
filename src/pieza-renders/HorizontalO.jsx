@@ -78,6 +78,13 @@ export default function HorizontalO({ pieza, worldToScreen, zoom, sc, op, cur, s
       <rect x={pR.x - wW / 2} y={pR.y + mH / 2} width={wW} height={wH}
         fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)}
         opacity="0.85" rx={0.3} />
+
+      {/* Etiqueta largo (zoom medio+) */}
+      {zoom > 45 && (pR.x - pL.x) > 40 && (
+        <text x={(pL.x + pR.x) / 2} y={pL.y - tubeW - 3}
+          fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+          fontFamily="monospace" opacity="0.4">{largo.toFixed(2)}m</text>
+      )}
     </g>
   );
 }

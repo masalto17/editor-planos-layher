@@ -84,6 +84,13 @@ export default function VigaPuente({ pieza, worldToScreen, zoom, sc, op, cur, se
         <rect x={pR.x - wdW / 2} y={yAlma + mH / 2 + sep / 2} width={wdW} height={wdH}
           fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.85" rx={0.3} />
       </>}
+
+      {/* Etiqueta largo (zoom medio+) */}
+      {zoom > 40 && w > 40 && (
+        <text x={pL.x + w / 2} y={yAla - 3}
+          fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+          fontFamily="monospace" opacity="0.4">VP {largo.toFixed(2)}m</text>
+      )}
     </g>
   );
 }

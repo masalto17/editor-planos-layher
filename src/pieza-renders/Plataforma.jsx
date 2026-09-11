@@ -63,6 +63,12 @@ export default function Plataforma({ pieza, worldToScreen, zoom, sc, op, cur, se
           fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
         <rect x={pR.x - hookW} y={pR.y} width={hookW} height={hookH}
           fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.7" />
+        {/* Etiqueta largo × ancho (zoom medio+) */}
+        {zoom > 40 && w > 40 && (
+          <text x={pL.x + w / 2} y={pL.y - h - 2}
+            fontSize={Math.max(6, zoom * 0.045)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.4">{largo.toFixed(2)}×{(pieza.anchoPlat || 0.32).toFixed(2)}m</text>
+        )}
       </>}
     </g>
   );

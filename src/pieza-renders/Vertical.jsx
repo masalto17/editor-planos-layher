@@ -78,6 +78,13 @@ export default function Vertical({ pieza, worldToScreen, zoom, sc, op, cur, sele
         const pr = worldToScreen(x, y + dy);
         return <circle key={i} cx={pr.x} cy={pr.y} r={Math.max(2, zoom * 0.025)} fill={sc} />;
       }) : rosetas}
+      {/* Etiqueta largo (zoom medio+) — al costado del tubo */}
+      {zoom > 40 && Math.abs(pT.y - pB.y) > 30 && (
+        <text x={pB.x + tubeW + 3} y={(pB.y + pT.y) / 2}
+          fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="start"
+          fontFamily="monospace" opacity="0.35" writingMode="vertical-rl"
+          transform={`rotate(180 ${pB.x + tubeW + 3} ${(pB.y + pT.y) / 2})`}>{largo.toFixed(2)}m</text>
+      )}
     </g>
   );
 }
