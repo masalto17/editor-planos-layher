@@ -35,6 +35,8 @@ export function useDisenoState() {
   const [diagonalPlantaOrigen, setDiagonalPlantaOrigen] = useState(null); // primer clic de diagonal en Planta
   const [nombreDiseno, setNombreDiseno] = useState('Diseño sin título');
   const [mensajeGuardado, setMensajeGuardado] = useState('');
+  const [clipboardOrigY, setClipboardOrigY] = useState(0);
+  const [clipboardOrigZ, setClipboardOrigZ] = useState(0);
 
   const stateRef = useRef({});
   stateRef.current = { piezas, piezasSeleccionadas, clipboard, clipboardOrigY, clipboardOrigZ, historialIdx, historial, filaZ, alturaY, orientacionActiva, filas, filaActivaId };
@@ -109,8 +111,6 @@ export function useDisenoState() {
   // El clipboard guarda piezas normalizadas al origen 3D + las posiciones originales
   // (clipboardOrigY/Z) para poder pegar sin perder altura/profundidad cuando se pega
   // desde toolbar (sin posición de mouse).
-  const [clipboardOrigY, setClipboardOrigY] = useState(0);
-  const [clipboardOrigZ, setClipboardOrigZ] = useState(0);
   const copiar = useCallback(() => {
     const { piezas: pz, piezasSeleccionadas: sel } = stateRef.current;
     const s = pz.filter(p => sel.includes(p.id)); if (s.length === 0) return;
