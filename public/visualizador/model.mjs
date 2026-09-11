@@ -58,6 +58,9 @@ export function parseDesign(text){
  issues.push(`${item.name}: soporte y pasador esquemáticos.`);
  }else if(p.categoria==='fenolico'){
  const w=n(p,'anchoPlat');if(w<=0||w>5)throw Error('Ancho de fenólico inválido.');
+ // Fenólico apoya sobre stringers, que apoyan sobre viga puente:
+ // offset Y = perfil VP (0.055) + stringer 80mm (0.08) = 0.135m
+ y+=0.135;
  const startFaces=primitives.length;box(len,.018,w);
  for(let k=startFaces;k<primitives.length;k++)primitives[k].kind='wood';
  issues.push(`${item.name}: panel de referencia de 18 mm según catálogo de Layout.`);
@@ -68,13 +71,15 @@ export function parseDesign(text){
  }else if(p.categoria==='collarin'){line([x,y,z],[x,y+len,z],.03);for(let k=0;k<8;k++){const a=k*Math.PI/4,b=(k+1)*Math.PI/4;line([x+Math.cos(a)*.061,y+len/2,z+Math.sin(a)*.061],[x+Math.cos(b)*.061,y+len/2,z+Math.sin(b)*.061],.008,'rosette');}}
  else if(p.categoria==='plataforma'){
  const w=n(p,'anchoPlat');if(w<=0||w>5)throw Error('Falta ancho de plataforma válido.');
- // The editor centers platforms about z (or x for orientation z).
+ // Plataforma apoya sobre horizontal O / viga puente (offset +0.055m)
+ y+=0.055;
  box(len,.06,w);for(let t=.12;t<len;t+=.16)line(P(t,.061,-w/2),P(t,.061,w/2),.004,'grating');
  }else if(p.categoria==='celosia'||p.categoria==='truss'){
  const h=n(p,'alto',.5);if(h<=0||h>5)throw Error('Alto de celosía inválido.');line(P(),P(len),.024);line(P(0,h),P(len,h),.024);line(P(),P(0,h));line(P(len),P(len,h));const count=Math.max(3,Math.round(len/.4));for(let j=0;j<count;j++){const u=j*len/count,v=(j+1)*len/count;line(P(u,j%2?h:0),P(v,j%2?0:h),.012,'brace');}
  }else if(p.categoria==='rodapie'){box(len,.15,.025)}
  else if(p.categoria==='stringer'){
- // Caño estructural 40×80×2.50mm — rectángulo en sección
+ // Caño estructural 40×80×2.50mm — apoya sobre viga puente (offset +0.055m)
+ y+=0.055;
  box(len,.08,.04);
  }else if(['vigaPuente','horizontalU','vigaIPN'].includes(p.categoria)){
  // Schematic profiles only; not fabricated catalogue sections.
