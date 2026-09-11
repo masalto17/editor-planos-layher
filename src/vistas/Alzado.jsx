@@ -281,6 +281,18 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         {mouseEnCanvas && herramientaActiva && (mousePos.snapX || mousePos.snapY) && (
           <IndicadoresSnap mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} />
         )}
+        {/* Crosshair de colocación en punto de snap */}
+        {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (() => {
+          const sp = worldToScreen(mousePos.x, mousePos.y);
+          const cr = Math.max(6, zoom * 0.08);
+          return (
+            <g opacity="0.5">
+              <line x1={sp.x - cr} y1={sp.y} x2={sp.x + cr} y2={sp.y} stroke="#E30613" strokeWidth="1" />
+              <line x1={sp.x} y1={sp.y - cr} x2={sp.x} y2={sp.y + cr} stroke="#E30613" strokeWidth="1" />
+              {mousePos.snapRoseta && <circle cx={sp.x} cy={sp.y} r={cr * 0.6} fill="none" stroke="#7c3aed" strokeWidth="1.5" />}
+            </g>
+          );
+        })()}
         {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (
           <GuiasModulacion mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} vista="alzado" />
         )}
@@ -327,11 +339,15 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         if (!rect) return null;
         const left = hoverPieza.screenX - rect.left + 12;
         const top = hoverPieza.screenY - rect.top - 10;
+        const posStr = p.categoria === 'diagonal'
+          ? `(${p.x1.toFixed(2)}, ${p.y1.toFixed(2)}) → (${p.x2.toFixed(2)}, ${p.y2.toFixed(2)})`
+          : `X: ${p.x.toFixed(2)}  Y: ${p.y.toFixed(2)}`;
         return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg max-w-48 z-50"
+          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1.5 rounded shadow-lg max-w-56 z-50"
             style={{ left, top }}>
             <div className="font-bold">{p.nombre}</div>
             <div className="text-gray-300">{p.ref} · {p.peso} kg</div>
+            <div className="text-gray-400 font-mono text-[9px] mt-0.5">{posStr}</div>
           </div>
         );
       })()}

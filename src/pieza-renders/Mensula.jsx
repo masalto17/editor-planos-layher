@@ -70,6 +70,12 @@ export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, selec
         {/* Placa extremo voladizo */}
         <rect x={pE.x - placaW / 2} y={pE.y - placaH} width={placaW} height={placaH * 2}
           fill={sc} stroke="#000" strokeWidth="0.5" rx="0.5" />
+        {/* Etiqueta largo (zoom medio+) */}
+        {zoom > 40 && w > 25 && (
+          <text x={(pO.x + pE.x) / 2} y={pO.y - g - 3}
+            fontSize={Math.max(5, zoom * 0.04)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.4">M {largo.toFixed(2)}m</text>
+        )}
       </>}
     </g>
   );

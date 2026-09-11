@@ -964,11 +964,15 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         if (!rect) return null;
         const left = hoverPieza.screenX - rect.left + 12;
         const top = hoverPieza.screenY - rect.top - 10;
+        const posStr = p.categoria === 'diagonalPlanta'
+          ? `(${p.x1.toFixed(2)}, Z${p.z1.toFixed(2)}) → (${p.x2.toFixed(2)}, Z${p.z2.toFixed(2)})`
+          : `X: ${p.x.toFixed(2)}  Z: ${(p.z ?? 0).toFixed(2)}  Y: ${(p.y ?? 0).toFixed(2)}m`;
         return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg max-w-48 z-50"
+          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1.5 rounded shadow-lg max-w-56 z-50"
             style={{ left, top }}>
             <div className="font-bold">{p.nombre}</div>
-            <div className="text-gray-300">{p.ref} · {p.peso} kg · Y={p.y?.toFixed(2) ?? '0.00'}m</div>
+            <div className="text-gray-300">{p.ref} · {p.peso} kg</div>
+            <div className="text-gray-400 font-mono text-[9px] mt-0.5">{posStr}</div>
           </div>
         );
       })()}

@@ -31,6 +31,12 @@ export default function Rodapie({ pieza, worldToScreen, zoom, sc, op, cur, selec
           fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.6" />
         <rect x={pR.x - clipW} y={pR.y} width={clipW} height={clipH}
           fill={sc} stroke="#000" strokeWidth="0.3" opacity="0.6" />
+        {/* Etiqueta largo (zoom medio+) */}
+        {zoom > 45 && w > 30 && (
+          <text x={pL.x + w / 2} y={pL.y - h - foldH - 2}
+            fontSize={Math.max(5, zoom * 0.04)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.4">{largo.toFixed(2)}m</text>
+        )}
       </>}
     </g>
   );

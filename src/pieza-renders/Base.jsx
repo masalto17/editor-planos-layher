@@ -120,6 +120,13 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
         <circle cx={pB.x - holeOff} cy={pB.y + placaH / 2} r={holeR} fill="#000" opacity="0.3" />
         <circle cx={pB.x + holeOff} cy={pB.y + placaH / 2} r={holeR} fill="#000" opacity="0.3" />
       </>}
+      {/* Etiqueta largo husillo (zoom medio+) */}
+      {zoom > 45 && Math.abs(pT.y - pB.y) > 25 && (
+        <text x={pB.x + tubeW + 3} y={(pB.y + pT.y) / 2}
+          fontSize={Math.max(5, zoom * 0.04)} fill={sc} textAnchor="start"
+          fontFamily="monospace" opacity="0.35" writingMode="vertical-rl"
+          transform={`rotate(180 ${pB.x + tubeW + 3} ${(pB.y + pT.y) / 2})`}>{largo.toFixed(2)}m</text>
+      )}
     </g>
   );
 }

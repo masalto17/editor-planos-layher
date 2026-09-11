@@ -51,6 +51,12 @@ export default function HorizontalU({ pieza, worldToScreen, zoom, sc, op, cur, s
         <rect x={pR.x - wdW / 2} y={pR.y + mH / 2} width={wdW} height={wdH}
           fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.8" rx={0.3} />
       </>}
+      {/* Etiqueta largo (zoom medio+) */}
+      {zoom > 45 && w > 35 && (
+        <text x={pL.x + w / 2} y={pL.y - alaH - 3}
+          fontSize={Math.max(6, zoom * 0.045)} fill={sc} textAnchor="middle"
+          fontFamily="monospace" opacity="0.4">U {largo.toFixed(2)}m</text>
+      )}
     </g>
   );
 }

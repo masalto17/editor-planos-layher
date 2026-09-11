@@ -41,6 +41,20 @@ export default function Diagonal({ pieza, worldToScreen, zoom, sc, op, cur, sele
               x2={pB.x + nx * bridaR} y2={pB.y + ny * bridaR}
           stroke={sc} strokeWidth={bridaW + 1} strokeLinecap="round" />
       </>}
+      {/* Etiqueta: largo real de la diagonal (zoom medio+) */}
+      {zoom > 40 && len > 30 && (() => {
+        const largo = pieza.largo || Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        const midX = (pA.x + pB.x) / 2;
+        const midY = (pA.y + pB.y) / 2;
+        // Offset perpendicular a la diagonal para que el texto no tape la línea
+        const offDist = Math.max(8, zoom * 0.06);
+        return (
+          <text x={midX + nx * offDist} y={midY + ny * offDist}
+            fontSize={Math.max(6, zoom * 0.045)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.4"
+            dominantBaseline="middle">{largo.toFixed(2)}m</text>
+        );
+      })()}
     </g>
   );
 }
