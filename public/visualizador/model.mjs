@@ -1,6 +1,6 @@
 import { roofGeometry } from './roof.mjs';
 import { importedGeometry } from './imported.mjs';
-export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico']);
+export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera']);
 const n=(v,key,fallback)=>{const a=v[key]??fallback;if(typeof a!=='number'||!Number.isFinite(a)||Math.abs(a)>1000)throw Error(`Dato inválido: ${key}.`);return a;};
 export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
@@ -41,8 +41,18 @@ export function parseDesign(text){
  roofGeometry(p,len,P,line);
  issues.push(`${item.name}: geometría esquemática de Layout, pendiente de 11°; sin cubierta ni uniones verificadas.`);
  }else if(p.categoria==='mensula'){
- line(P(),P(len));line(P(0,-.5),P(len),.016,'brace');
+ const dir=p.flip?-1:1;const Pm=(u=0,v=0,w=0)=>p.orientacion==='z'?[x+w,y+v,z+u*dir]:[x+u*dir,y+v,z+w];
+ line(Pm(),Pm(len));line(Pm(0,-.5),Pm(len),.016,'brace');
  issues.push(`${item.name}: brazo y diagonal según esquema de Layout; detalles de fabricación simplificados.`);
+ }else if(p.categoria==='escalera'){
+ const desn=n(p,'desnivel',1.33);const anchoE=n(p,'anchoEscalera',.75);const hw=anchoE/2;
+ // Zancas (stringers laterales inclinados)
+ line(P(0,0,-hw),P(len,desn,-hw),.018,'tube');line(P(0,0,hw),P(len,desn,hw),.018,'tube');
+ // Peldaños (8 travesaños)
+ const nPeld=8;for(let k=0;k<nPeld;k++){const t=(k+1)/(nPeld+1);line(P(t*len,t*desn,-hw),P(t*len,t*desn,hw),.012);}
+ // Pasamanos
+ line(P(0,.9,-hw),P(len,desn+.9,-hw),.008,'rail');line(P(0,.9,hw),P(len,desn+.9,hw),.008,'rail');
+ issues.push(`${item.name}: zancas, peldaños y pasamanos esquemáticos; ancho ${anchoE}m.`);
  }else if(p.categoria==='apoyaTecho'){
  line(P(),P(0,len));line(P(-.05,len),P(.05,len),.008,'head');
  issues.push(`${item.name}: soporte y pasador esquemáticos.`);

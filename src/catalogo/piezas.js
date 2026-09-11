@@ -198,7 +198,7 @@ export const CAT_KEYS = [
   { key: 'diagonales',       cat: 'diagonal',       label: '📏 Diagonales (alzado)',  vistas: ['alzado'] },
   { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: '📏 Diagonales (planta)',  vistas: ['planta'] },
   { key: 'vigasPuente',      cat: 'vigaPuente',     label: '🟠 Vigas Puente U' },
-  { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U', tooltip: 'También usada como larguero (stringer) entre vigas puente para apoyo de pisos' },
+  { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U' },
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
   { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },
