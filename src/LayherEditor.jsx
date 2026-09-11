@@ -1,3 +1,4 @@
+import { abrirVisualizador } from './export/visualizador.js';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { CAT_KEYS } from './catalogo/piezas.js';
 import { useDisenoState } from './modelo/estado.js';
@@ -145,6 +146,10 @@ export default function LayherEditor() {
         nombreDiseno={modelo.nombreDiseno} mensajeGuardado={modelo.mensajeGuardado}
         nuevo={handleNuevo}
         guardar={() => setModal('guardar')} guardarComo={() => setModal('guardarComo')} cargar={() => setModal('cargar')}
+        verEn3D={() => {
+          try { abrirVisualizador(modelo, import.meta.env.BASE_URL); }
+          catch (error) { window.alert(error.message); }
+        }}
         exportarPDF={() => setModalPDF(true)} exportando={exportando}
         zoomEncuadrar={zoomEncuadrar}
         undo={modelo.undo} redo={modelo.redo}

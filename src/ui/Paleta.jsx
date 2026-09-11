@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle } from 'lucide-react';
 import { CATALOGO, CAT_KEYS } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
@@ -112,6 +112,11 @@ function SeccionImportadas({ piezasImportadas, activa, onSelect, onEliminar, onI
 export default function Paleta({ herramientaActiva, setHerramientaActiva, vista, piezas, embedded }) {
   const secciones = CAT_KEYS.filter(ck => !ck.vistas || ck.vistas.includes(vista));
   const [importadas, setImportadas] = useState(() => cargarPiezasImportadas());
+  useEffect(() => {
+    const refresh = event => { if (event.key === 'layher:piezas-importadas') setImportadas(cargarPiezasImportadas()); };
+    window.addEventListener('storage', refresh);
+    return () => window.removeEventListener('storage', refresh);
+  }, []);
   const cantPorCat = useMemo(() => {
     const m = {};
     (piezas || []).forEach(p => { m[p.categoria] = (m[p.categoria] || 0) + 1; });
@@ -146,6 +151,7 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
 
   const content = (
     <div className="p-2">
+      <a href={`${import.meta.env.BASE_URL}piezas/index.html`} target="_blank" rel="noopener noreferrer" className="block mb-2 px-2 py-2 text-xs text-center rounded border border-amber-400 text-amber-800">Crear pieza ↗</a>
       <button onClick={() => setHerramientaActiva(null)}
         className={`w-full flex items-center gap-2 px-2 py-1.5 mb-2 text-xs rounded border ${!herramientaActiva ? 'bg-red-600 text-white border-red-700' : 'bg-gray-100 border-gray-300 hover:bg-gray-200'}`}>
         <MousePointer2 size={13} /> Seleccionar / mover

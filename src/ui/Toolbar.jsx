@@ -9,7 +9,7 @@ import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
 export default function Toolbar({
   vista, setVista, nombreDiseno, mensajeGuardado,
-  nuevo, guardar, guardarComo, cargar, exportarPDF, exportando, undo, redo, historialIdx, historialLen,
+  nuevo, guardar, guardarComo, cargar, verEn3D, exportarPDF, exportando, undo, redo, historialIdx, historialLen,
   copiar, pegar, duplicar, seleccionarTodo, piezasSeleccionadas, clipboard,
   mostrarGrilla, setMostrarGrilla, zoomEncuadrar, borrarTodo, herramientaActiva,
   diagonalOrigen, diagonalPlantaOrigen,
@@ -62,7 +62,7 @@ export default function Toolbar({
               <Rows3 size={12} /> Planta
             </button>
           </div>
-          <button onClick={() => setMobileMenuOpen(m => !m)} className="p-1 text-gray-300 hover:text-white">
+          <button aria-label="Menú de herramientas" aria-expanded={mobileMenuOpen} onClick={() => setMobileMenuOpen(m => !m)} className="p-1 text-gray-300 hover:text-white">
             <Menu size={20} />
           </button>
         </div>
@@ -112,6 +112,8 @@ export default function Toolbar({
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><SaveAll size={14} /> Guardar como</button>
               <button onClick={() => { cargar(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><FolderOpen size={14} /> Cargar</button>
+              <a href={`${import.meta.env.BASE_URL}inicio/index.html`} target="_blank" rel="noopener noreferrer" className="px-3 py-2 text-sm text-left rounded hover:bg-gray-100">Inicio ↗</a>
+              <button onClick={() => { verEn3D(); setMobileMenuOpen(false); }} className="px-3 py-2 text-sm text-left rounded hover:bg-gray-100">Ver en 3D ↗</button>
               <button onClick={() => { exportarPDF(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100 text-red-700"><FileDown size={14} /> Exportar PDF</button>
               <div className="border-t border-gray-200 my-1" />
@@ -179,6 +181,8 @@ export default function Toolbar({
         <button onClick={guardar} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><Save size={13} /> Guardar</button>
         <button onClick={guardarComo} title="Guardar como…" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><SaveAll size={13} /> Guardar como</button>
         <button onClick={cargar} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><FolderOpen size={13} /> Cargar</button>
+        <a href={`${import.meta.env.BASE_URL}inicio/index.html`} target="_blank" rel="noopener noreferrer" title="Abrir Inicio conservando este plano" className="px-2.5 py-1 text-xs text-gray-700 border border-gray-300 rounded">Inicio ↗</a>
+        <button onClick={verEn3D} title="Abrir una vista del diseño actual; podés seguir editando en esta pestaña" className="px-2.5 py-1 text-xs bg-black text-white rounded">Ver en 3D ↗</button>
         <button onClick={exportarPDF} disabled={exportando} className="flex items-center gap-1 px-2.5 py-1 text-xs bg-red-600 hover:bg-red-700 text-white rounded border border-red-700 disabled:opacity-50"><FileDown size={13} /> {exportando ? 'Exportando…' : 'PDF'}</button>
         <button onClick={onPlantillas} title="Plantillas de arranque" className="flex items-center gap-1 px-2.5 py-1 text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 rounded border border-amber-300"><LayoutTemplate size={13} /> Plantillas</button>
         <div className="w-px h-5 bg-gray-300 mx-0.5" />
