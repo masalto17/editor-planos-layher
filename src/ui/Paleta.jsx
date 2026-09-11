@@ -3,12 +3,12 @@ import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle
 import { CATALOGO, CAT_KEYS } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 
-function SeccionPaleta({ titulo, piezas, activa, onSelect, cantColocadas }) {
+function SeccionPaleta({ titulo, piezas, activa, onSelect, cantColocadas, tooltip }) {
   const [abierta, setAbierta] = useState(true);
   const tieneActiva = piezas.some(p => activa?.id === p.id);
   return (
     <div className="mb-2">
-      <button onClick={() => setAbierta(!abierta)}
+      <button onClick={() => setAbierta(!abierta)} title={tooltip || ''}
         className={`w-full flex items-center gap-1 px-1 py-1 text-[10px] uppercase tracking-wide font-bold rounded hover:bg-gray-100 min-w-0 ${tieneActiva ? 'text-red-700' : 'text-gray-500'}`}>
         {abierta ? <ChevronDown size={10} className="shrink-0" /> : <ChevronRight size={10} className="shrink-0" />}
         <span className="truncate">{titulo}</span>
@@ -157,7 +157,7 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
         <MousePointer2 size={13} /> Seleccionar / mover
       </button>
       {secciones.map(ck => (
-        <SeccionPaleta key={ck.key} titulo={ck.label}
+        <SeccionPaleta key={ck.key} titulo={ck.label} tooltip={ck.tooltip}
           piezas={CATALOGO[ck.key].map(p => ({ ...p, categoria: ck.cat }))}
           activa={herramientaActiva} onSelect={setHerramientaActiva}
           cantColocadas={cantPorCat[ck.cat] || 0} />

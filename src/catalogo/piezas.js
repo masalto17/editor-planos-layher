@@ -101,7 +101,7 @@ export const CATALOGO = {
   // Desnivel fijo: 8 peldaños × 0.167m = 1.33m
   // Peso ≈ por zanca (van 2 por escalera) — verificar
   escaleras: [
-    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, peso: 28.0, ref: '2638.257', color: '#dc2626' },
+    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, anchoEscalera: 0.75, peso: 28.0, ref: '2638.257', color: '#dc2626' },
   ],
 
   // ─── APOYA TECHOS (soporte cubierta cassette) ───────────
@@ -198,7 +198,7 @@ export const CAT_KEYS = [
   { key: 'diagonales',       cat: 'diagonal',       label: '📏 Diagonales (alzado)',  vistas: ['alzado'] },
   { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: '📏 Diagonales (planta)',  vistas: ['planta'] },
   { key: 'vigasPuente',      cat: 'vigaPuente',     label: '🟠 Vigas Puente U' },
-  { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U' },
+  { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U', tooltip: 'También usada como larguero (stringer) entre vigas puente para apoyo de pisos' },
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
   { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },

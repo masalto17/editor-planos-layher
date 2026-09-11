@@ -13,7 +13,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     piezas, herramientaActiva, setHerramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     diagonalOrigen, setDiagonalOrigen, clipboard, filaZ, orientacionActiva,
     filas, setFilaActivaId,
-    commit, copiar, pegar, duplicar, eliminarSeleccion,
+    commit, copiar, pegar, duplicar, eliminarSeleccion, flipMensulas,
     colocarPiezaAlzado, colocarDiagonalAlzado, calcularSnapAlzado, moverPiezas, commitPiezasActuales,
   } = modelo;
 
@@ -86,11 +86,12 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       if (e.key === 'ArrowUp') { e.preventDefault(); setPan(p => ({ ...p, y: p.y + PAN_STEP })); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); setPan(p => ({ ...p, y: p.y - PAN_STEP })); return; }
       if (ctrl && e.key.toLowerCase() === 'v') { e.preventDefault(); pegar(stateRef.current.mousePos, 'alzado'); }
+      if (e.key.toLowerCase() === 'f' && !ctrl) { flipMensulas(); }
     };
     const ku = (e) => { if (e.key === ' ') spaceHeld.current = false; };
     window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
     return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
-  }, [pegar]);
+  }, [pegar, flipMensulas]);
 
   const onMouseMove = (e) => {
     const rect = svgRef.current.getBoundingClientRect();

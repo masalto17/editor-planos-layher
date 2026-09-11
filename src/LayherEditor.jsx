@@ -155,8 +155,9 @@ export default function LayherEditor() {
         undo={modelo.undo} redo={modelo.redo}
         historialIdx={modelo.historialIdx} historialLen={modelo.historial.length}
         copiar={modelo.copiar} pegar={pegarEnVista} duplicar={duplicarEnVista}
-        seleccionarTodo={modelo.seleccionarTodo}
+        seleccionarTodo={modelo.seleccionarTodo} flipMensulas={modelo.flipMensulas}
         piezasSeleccionadas={modelo.piezasSeleccionadas} clipboard={modelo.clipboard}
+        piezas={modelo.piezas}
         mostrarGrilla={mostrarGrilla} setMostrarGrilla={setMostrarGrilla}
         borrarTodo={handleBorrarTodo}
         herramientaActiva={modelo.herramientaActiva} diagonalOrigen={modelo.diagonalOrigen}

@@ -17,6 +17,7 @@ const TECNICO_COLORS_PLANTA = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
   base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
+  mensula: '#222', escalera: '#222', fenolico: '#444',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -435,6 +436,127 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
       </g>
     );
   }
+
+  // ── Ménsula (voladizo) → triángulo/flecha indicando dirección del voladizo ──
+  if (pieza.categoria === 'mensula') {
+    const dir = pieza.flip ? -1 : 1;
+    const pBase = worldToScreen(pieza.x, z);
+    const pTip = worldToScreen(pieza.x + pieza.largo * dir, z);
+    const prof = Math.max(4, zoom * 0.06); // profundidad visual del triángulo
+    const sw = Math.max(0.8, zoom * 0.012);
+    // Triángulo: base en el vertical, punta en el extremo del voladizo
+    const pTop = { x: pBase.x, y: pBase.y - prof };
+    const pBot = { x: pBase.x, y: pBase.y + prof };
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={Math.min(pBase.x, pTip.x) - 3} y={pBase.y - prof - 3}
+          width={Math.abs(pTip.x - pBase.x) + 6} height={prof * 2 + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Triángulo del voladizo */}
+        <polygon points={`${pTop.x},${pTop.y} ${pBot.x},${pBot.y} ${pTip.x},${pTip.y}`}
+          fill={sc} fillOpacity="0.15" stroke={sc} strokeWidth={sw} />
+        {/* Línea central (eje del brazo) */}
+        <line x1={pBase.x} y1={pBase.y} x2={pTip.x} y2={pTip.y}
+          stroke={sc} strokeWidth={sw} strokeDasharray="4 2" />
+        {/* Punto de conexión al vertical */}
+        <circle cx={pBase.x} cy={pBase.y} r={Math.max(2, zoom * 0.025)} fill={sc} />
+        {/* Etiqueta */}
+        {zoom > 30 && <text x={(pBase.x + pTip.x) / 2} y={pBase.y - prof - 3}
+          fontSize={Math.max(6, zoom * 0.055)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
+          ▸ {pieza.largo}m
+        </text>}
+      </g>
+    );
+  }
+
+  // ── Escalera → rectángulo con flecha de subida y peldaños transversales ──
+  if (pieza.categoria === 'escalera') {
+    const anchoEsc = pieza.anchoEscalera || 0.75; // ancho real ~750mm
+    const pBL = worldToScreen(pieza.x, z - anchoEsc / 2);
+    const pBR = worldToScreen(pieza.x + pieza.largo, z - anchoEsc / 2);
+    const pTL = worldToScreen(pieza.x, z + anchoEsc / 2);
+    const pTR = worldToScreen(pieza.x + pieza.largo, z + anchoEsc / 2);
+    const w = pBR.x - pBL.x;
+    const h = Math.abs(pTL.y - pBL.y);
+    const px = Math.min(pBL.x, pTL.x);
+    const py = Math.min(pBL.y, pTL.y);
+    const sw = Math.max(0.8, zoom * 0.012);
+    // Peldaños transversales
+    const numPeld = 8;
+    const peldanos = [];
+    for (let i = 1; i <= numPeld; i++) {
+      const t = i / (numPeld + 1);
+      const lx = px + w * t;
+      peldanos.push(<line key={i} x1={lx} y1={py} x2={lx} y2={py + h}
+        stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
+    }
+    // Flecha de subida (triángulo al final)
+    const arrowX = px + w * 0.85;
+    const arrowMidY = py + h / 2;
+    const arrowSize = Math.max(3, zoom * 0.035);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Contorno del tramo */}
+        <rect x={px} y={py} width={w} height={h}
+          fill={sc} fillOpacity="0.1" stroke={sc} strokeWidth={sw} />
+        {/* Peldaños */}
+        {peldanos}
+        {/* Línea central con flecha (dirección subida) */}
+        <line x1={px + w * 0.15} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
+          stroke={sc} strokeWidth={sw * 1.2} />
+        <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowX + arrowSize * 1.5},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
+          fill={sc} />
+        {/* Etiqueta */}
+        {zoom > 25 && <text x={px + w / 2} y={py - 3}
+          fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
+          🪜 {pieza.largo}m
+        </text>}
+      </g>
+    );
+  }
+
+  // ── Fenólico → rectángulo marrón con achurado y texto "FEN" ──
+  if (pieza.categoria === 'fenolico') {
+    const anchoFen = pieza.anchoPlat || 1.22;
+    const hor = pieza.orientacion !== 'z';
+    let px, py, w, h;
+    if (hor) {
+      const pL = worldToScreen(pieza.x, z - anchoFen / 2);
+      const pR = worldToScreen(pieza.x + pieza.largo, z + anchoFen / 2);
+      px = pL.x; py = Math.min(pL.y, pR.y);
+      w = pR.x - pL.x; h = Math.abs(pR.y - pL.y);
+    } else {
+      const pL = worldToScreen(pieza.x - anchoFen / 2, z);
+      const pR = worldToScreen(pieza.x + anchoFen / 2, z + pieza.largo);
+      px = Math.min(pL.x, pR.x); py = Math.min(pL.y, pR.y);
+      w = Math.abs(pR.x - pL.x); h = Math.abs(pR.y - pL.y);
+    }
+    const sw = Math.max(0.6, zoom * 0.008);
+    const fenColor = modoTecnico ? sc : '#5D3A1A';
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Panel fenólico */}
+        <rect x={px} y={py} width={w} height={h}
+          fill={fenColor} fillOpacity="0.18" stroke={fenColor} strokeWidth={sw} />
+        {/* Achurado diagonal (textura madera) */}
+        {achuradoDiagonal(px, py, w, h, fenColor, zoom)}
+        {/* Diagonales X (marca de panel) */}
+        <line x1={px} y1={py} x2={px + w} y2={py + h}
+          stroke={fenColor} strokeWidth={sw * 0.7} opacity="0.25" />
+        <line x1={px + w} y1={py} x2={px} y2={py + h}
+          stroke={fenColor} strokeWidth={sw * 0.7} opacity="0.25" />
+        {/* Texto FEN */}
+        {w > 20 && h > 10 && <text x={px + w / 2} y={py + h / 2 + 3}
+          fontSize={Math.max(6, Math.min(h * 0.5, zoom * 0.06))} fill={fenColor} textAnchor="middle"
+          fontFamily="monospace" fontWeight="bold" opacity="0.45">FEN</text>}
+      </g>
+    );
+  }
+
   return null;
 }
 

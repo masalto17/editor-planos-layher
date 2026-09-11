@@ -1,14 +1,16 @@
 // Ménsula — voladizo lateral desde vertical con diagonal de apoyo.
 // En alzado: brazo horizontal + diagonal triangular de refuerzo.
+// Soporta `flip`: false = derecha (default), true = izquierda.
 // Efecto 3D: sombra + highlight. Modo técnico: líneas finas sin decoración.
 export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
+  const dir = pieza.flip ? -1 : 1; // dirección del voladizo
   // Punto de conexión (roseta en vertical) y extremo del voladizo
   const pO = worldToScreen(x, y);
-  const pE = worldToScreen(x + largo, y);
+  const pE = worldToScreen(x + largo * dir, y);
   // Punto inferior de la diagonal de apoyo (una roseta abajo, 0.50m)
   const pD = worldToScreen(x, y - 0.50);
-  const w = pE.x - pO.x;
+  const w = Math.abs(pE.x - pO.x);
 
   const g = Math.max(2, zoom * 0.04);     // grosor brazo
   const gd = Math.max(1.5, zoom * 0.025); // grosor diagonal
@@ -19,11 +21,17 @@ export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, selec
   const placaH = Math.max(4, zoom * 0.04);
   const placaW = Math.max(2, zoom * 0.02);
 
+  // Bounds de selección: cubrir brazo + diagonal
+  const minScreenX = Math.min(pO.x, pE.x, pD.x);
+  const maxScreenX = Math.max(pO.x, pE.x, pD.x);
+  const minScreenY = Math.min(pO.y, pE.y, pD.y);
+  const maxScreenY = Math.max(pO.y, pE.y, pD.y);
+
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       {/* Selección glow */}
-      {seleccionada && <rect x={Math.min(pO.x, pD.x) - 4} y={Math.min(pO.y, pD.y) - 4}
-        width={w + 8} height={Math.abs(pD.y - pO.y) + 8}
+      {seleccionada && <rect x={minScreenX - 4} y={minScreenY - 4}
+        width={maxScreenX - minScreenX + 8} height={maxScreenY - minScreenY + 8}
         fill="none" stroke="#E30613" strokeWidth="2" rx="2" />}
 
       {modoTecnico ? <>

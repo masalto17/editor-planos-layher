@@ -3,14 +3,14 @@ import {
   Save, FolderOpen, Trash2, Grid3x3, Undo2, Redo2, Info, Copy, ClipboardPaste,
   CopyPlus, CheckSquare, LayoutPanelTop, Rows3, RotateCw, Plus, Minus, Pencil,
   Ruler, PenTool, Check, X, FileDown, Maximize2, HelpCircle, Menu, SaveAll, Scissors,
-  FilePlus2, LayoutTemplate, AlertTriangle,
+  FilePlus2, LayoutTemplate, AlertTriangle, FlipHorizontal2,
 } from 'lucide-react';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
 export default function Toolbar({
   vista, setVista, nombreDiseno, mensajeGuardado,
   nuevo, guardar, guardarComo, cargar, verEn3D, exportarPDF, exportando, undo, redo, historialIdx, historialLen,
-  copiar, pegar, duplicar, seleccionarTodo, piezasSeleccionadas, clipboard,
+  copiar, pegar, duplicar, seleccionarTodo, flipMensulas, piezasSeleccionadas, clipboard, piezas,
   mostrarGrilla, setMostrarGrilla, zoomEncuadrar, borrarTodo, herramientaActiva,
   diagonalOrigen, diagonalPlantaOrigen,
   filas, filaActivaId, setFilaActivaId, agregarFila, eliminarFila, renombrarFila, moverFila,
@@ -195,6 +195,12 @@ export default function Toolbar({
         </button>
         <button onClick={duplicar} disabled={piezasSeleccionadas.length === 0} title="Ctrl+D" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><CopyPlus size={13} /></button>
         <button onClick={seleccionarTodo} title="Ctrl+A" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><CheckSquare size={13} /></button>
+        {/* Voltear ménsula: solo visible si hay ménsulas seleccionadas */}
+        {piezasSeleccionadas.length > 0 && piezas && piezas.some(p => piezasSeleccionadas.includes(p.id) && p.categoria === 'mensula') && (
+          <button onClick={flipMensulas} title="Voltear ménsula (F)" className="flex items-center gap-0.5 px-1.5 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 text-amber-800 text-[10px]">
+            <FlipHorizontal2 size={13} /> ↔
+          </button>
+        )}
         <div className="w-px h-5 bg-gray-300 mx-0.5" />
         <button onClick={zoomEncuadrar} title="Encuadrar todo" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><Maximize2 size={13} /></button>
         <button onClick={() => setMostrarGrilla(g => !g)} title="Grilla" className={`flex items-center gap-1 px-2 py-1 text-xs rounded border ${mostrarGrilla ? 'bg-red-50 border-red-300 text-red-700' : 'bg-gray-100 border-gray-300'}`}><Grid3x3 size={13} /></button>
