@@ -15,6 +15,8 @@ import AyudaRapida from './ui/AyudaRapida.jsx';
 import ModalPlantillas from './ui/ModalPlantillas.jsx';
 import Onboarding from './ui/Onboarding.jsx';
 import ValidacionesEstructura from './ui/ValidacionesEstructura.jsx';
+import AtajosPanel from './ui/AtajosPanel.jsx';
+import StatusBar from './ui/StatusBar.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
 
 function useIsMobile(breakpoint = 768) {
@@ -43,6 +45,9 @@ export default function LayherEditor() {
   const [mostrarCorte, setMostrarCorte] = useState(false);
   const [mostrarPlantillas, setMostrarPlantillas] = useState(false);
   const [mostrarValidaciones, setMostrarValidaciones] = useState(false);
+  const [mostrarAtajos, setMostrarAtajos] = useState(false);
+  const [mousePos, setMousePos] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(60);
   // Mobile drawers
   const [paletaAbierta, setPaletaAbierta] = useState(false);
   const [despieceAbierto, setDespieceAbierto] = useState(false);
@@ -119,6 +124,24 @@ export default function LayherEditor() {
     const sec = CAT_KEYS.find(ck => ck.cat === h.categoria);
     if (sec?.vistas && !sec.vistas.includes(vista)) modelo.setHerramientaActiva(null);
   }, [vista, modelo.herramientaActiva]);
+
+  // Atajo global: ? para atajos, G para grilla, T para técnico
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setMostrarAtajos(v => !v);
+      } else if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+        setMostrarGrilla(v => !v);
+      } else if (e.key === 't' && !e.ctrlKey && !e.metaKey) {
+        setModoTecnico(v => !v);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const handleExportPDF = async (datosProyecto) => {
     setExportando(true);
@@ -200,8 +223,10 @@ export default function LayherEditor() {
 
         {/* Canvas — siempre full flex-1 */}
         {vista === 'alzado'
-          ? <Alzado modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgAlzado} fitTrigger={fitTrigger} />
-          : <Planta modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgPlanta} fitTrigger={fitTrigger} />}
+          ? <Alzado modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgAlzado} fitTrigger={fitTrigger}
+              onStatusUpdate={({ mousePos: mp, zoom: z }) => { setMousePos(mp); setZoomLevel(z); }} />
+          : <Planta modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgPlanta} fitTrigger={fitTrigger}
+              onStatusUpdate={({ mousePos: mp, zoom: z }) => { setMousePos(mp); setZoomLevel(z); }} />}
 
         {/* Panel de validaciones — overlay sobre canvas */}
         <ValidacionesEstructura
@@ -312,6 +337,19 @@ export default function LayherEditor() {
       )}
 
       <Onboarding />
+
+      {/* Barra de estado inferior (solo desktop) */}
+      {!isMobile && (
+        <StatusBar
+          zoom={zoomLevel} mousePos={mousePos} vista={vista}
+          piezasSeleccionadas={modelo.piezasSeleccionadas} piezas={modelo.piezas}
+          pesoTotal={pesoTotal} cantPiezas={cantPiezas}
+          herramientaActiva={modelo.herramientaActiva}
+        />
+      )}
+
+      {/* Panel de atajos de teclado */}
+      {mostrarAtajos && <AtajosPanel onClose={() => setMostrarAtajos(false)} />}
 
       {confirmar && (
         <ModalConfirmar

@@ -8,7 +8,7 @@ import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
 
 // Vista de alzado frontal: plano X (horizontal) - Y (altura), a la profundidad `filaZ` activa.
-export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger }) {
+export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
   const {
     piezas, herramientaActiva, setHerramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     diagonalOrigen, setDiagonalOrigen, clipboard, filaZ, orientacionActiva,
@@ -44,6 +44,11 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const spaceHeld = useRef(false);
   const stateRef = useRef({});
   stateRef.current = { piezas: piezasFila, mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas };
+
+  // Reportar estado al padre (StatusBar)
+  useEffect(() => {
+    onStatusUpdate?.({ mousePos, zoom });
+  }, [mousePos.x, mousePos.y, mousePos.snapRoseta, mousePos.snapModulo, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const act = () => { if (svgRef.current) { const r = svgRef.current.getBoundingClientRect(); setDimCanvas({ w: r.width, h: r.height }); } };

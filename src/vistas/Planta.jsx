@@ -588,7 +588,7 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
 
 // Vista de planta: plano X (horizontal) - Z (profundidad/fila). Comparte piezas, selección
 // e historial con el Alzado — es el mismo modelo de datos visto desde arriba.
-export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger }) {
+export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
   const {
     piezas, herramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     clipboard, orientacionActiva, filas, alturaY,
@@ -611,6 +611,11 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const spaceHeld = useRef(false);
   const stateRef = useRef({});
   stateRef.current = { mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas };
+
+  // Reportar estado al padre (StatusBar)
+  useEffect(() => {
+    onStatusUpdate?.({ mousePos, zoom });
+  }, [mousePos.x, mousePos.z, mousePos.snapRoseta, mousePos.snapModulo, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const act = () => { if (svgRef.current) { const r = svgRef.current.getBoundingClientRect(); setDimCanvas({ w: r.width, h: r.height }); } };
