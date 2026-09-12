@@ -46,12 +46,13 @@ export function parseDesign(text){
  issues.push(`${item.name}: brazo y diagonal según esquema de Layout; detalles de fabricación simplificados.`);
  }else if(p.categoria==='escalera'){
  const desn=n(p,'desnivel',1.33);const anchoE=n(p,'anchoEscalera',.75);const hw=anchoE/2;
+ const eDir=p.flip?-1:1;const eLen=len*eDir;
  // Zancas (stringers laterales inclinados)
- line(P(0,0,-hw),P(len,desn,-hw),.018,'tube');line(P(0,0,hw),P(len,desn,hw),.018,'tube');
+ line(P(0,0,-hw),P(eLen,desn,-hw),.018,'tube');line(P(0,0,hw),P(eLen,desn,hw),.018,'tube');
  // Peldaños (8 travesaños)
- const nPeld=8;for(let k=0;k<nPeld;k++){const t=(k+1)/(nPeld+1);line(P(t*len,t*desn,-hw),P(t*len,t*desn,hw),.012);}
+ const nPeld=8;for(let k=0;k<nPeld;k++){const t=(k+1)/(nPeld+1);line(P(t*eLen,t*desn,-hw),P(t*eLen,t*desn,hw),.012);}
  // Pasamanos
- line(P(0,.9,-hw),P(len,desn+.9,-hw),.008,'rail');line(P(0,.9,hw),P(len,desn+.9,hw),.008,'rail');
+ line(P(0,.9,-hw),P(eLen,desn+.9,-hw),.008,'rail');line(P(0,.9,hw),P(eLen,desn+.9,hw),.008,'rail');
  issues.push(`${item.name}: zancas, peldaños y pasamanos esquemáticos; ancho ${anchoE}m.`);
  }else if(p.categoria==='apoyaTecho'){
  line(P(),P(0,len));line(P(-.05,len),P(.05,len),.008,'head');

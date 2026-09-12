@@ -1,19 +1,21 @@
 // Escalera eventos — Viga Zanca 750 con peldaños y pasamanos.
 // En alzado: 2 zancas inclinadas + peldaños horizontales + pasamanos laterales.
-// Se coloca en (x, y) = base inferior izquierda. Sube hacia (x+largo, y+desnivel).
+// Se coloca en (x, y) = base inferior. Sube hacia (x+largo, y+desnivel).
+// Soporta `flip`: false = sube a la derecha (default), true = sube a la izquierda.
 export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
   const desnivel = pieza.desnivel || 1.33;
+  const dir = pieza.flip ? -1 : 1; // dirección horizontal
   const numPeldanos = 8;
   const alturaPasamanos = 0.90; // 900mm pasamanos
 
   // Esquinas del tramo
-  const pBL = worldToScreen(x, y);               // base izquierda (abajo)
-  const pTR = worldToScreen(x + largo, y + desnivel); // tope derecha (arriba)
+  const pBL = worldToScreen(x, y);                            // base (abajo)
+  const pTR = worldToScreen(x + largo * dir, y + desnivel);   // tope (arriba)
 
   // Pasamanos: corre paralelo a las zancas pero 0.90m por encima
   const pPasBase = worldToScreen(x, y + alturaPasamanos);
-  const pPasTop = worldToScreen(x + largo, y + desnivel + alturaPasamanos);
+  const pPasTop = worldToScreen(x + largo * dir, y + desnivel + alturaPasamanos);
 
   const tecW = Math.max(1, zoom * 0.012);
   const g = Math.max(2, zoom * 0.035);  // grosor zanca
@@ -22,12 +24,13 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
 
   // Offset lateral para las 2 zancas (separación visual)
   const zancaOff = Math.max(1.5, zoom * 0.012);
+  const zancaDir = dir; // offset en la misma dirección que la escalera
 
   // Peldaños: distribuidos uniformemente entre base y tope
   const peldanos = [];
   for (let i = 1; i <= numPeldanos; i++) {
     const t = i / (numPeldanos + 1);
-    const px = x + largo * t;
+    const px = x + largo * dir * t;
     const py = y + desnivel * t;
     // Cada peldaño es un travesaño horizontal corto
     const peldW = largo / (numPeldanos + 1) * 0.8;
@@ -42,7 +45,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
     const nMont = Math.max(2, Math.round(largo / 0.5));
     for (let i = 0; i <= nMont; i++) {
       const t = i / nMont;
-      const mx = x + largo * t;
+      const mx = x + largo * dir * t;
       const myBot = y + desnivel * t;
       const myTop = myBot + alturaPasamanos;
       const pmB = worldToScreen(mx, myBot);
@@ -50,6 +53,9 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
       montantes.push({ pmB, pmT });
     }
   }
+
+  // Flecha indicando dirección de subida
+  const arrowLabel = pieza.flip ? '↖' : '↗';
 
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
@@ -66,7 +72,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
         <line x1={pBL.x} y1={pBL.y} x2={pTR.x} y2={pTR.y}
           stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
         {/* Zanca derecha (offset visual) */}
-        <line x1={pBL.x + zancaOff} y1={pBL.y + zancaOff} x2={pTR.x + zancaOff} y2={pTR.y + zancaOff}
+        <line x1={pBL.x + zancaOff * zancaDir} y1={pBL.y + zancaOff} x2={pTR.x + zancaOff * zancaDir} y2={pTR.y + zancaOff}
           stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
         {/* Peldaños */}
         {peldanos.map((p, i) => (
@@ -99,7 +105,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
         <line x1={pBL.x} y1={pBL.y} x2={pTR.x} y2={pTR.y}
           stroke={sc} strokeWidth={g} strokeLinecap="round" />
         {/* Zanca derecha */}
-        <line x1={pBL.x + zancaOff * 2} y1={pBL.y + zancaOff} x2={pTR.x + zancaOff * 2} y2={pTR.y + zancaOff}
+        <line x1={pBL.x + zancaOff * 2 * zancaDir} y1={pBL.y + zancaOff} x2={pTR.x + zancaOff * 2 * zancaDir} y2={pTR.y + zancaOff}
           stroke={sc} strokeWidth={g} strokeLinecap="round" />
         {/* Highlight */}
         <line x1={pBL.x} y1={pBL.y - g * 0.2} x2={pTR.x} y2={pTR.y - g * 0.2}
@@ -120,9 +126,9 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
           fill={sc} stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.005)} />
       </>}
       {/* Etiqueta */}
-      {zoom > 30 && <text x={(pBL.x + pTR.x) / 2 + 8} y={(pBL.y + pTR.y) / 2 - 4}
+      {zoom > 30 && <text x={(pBL.x + pTR.x) / 2 + 8 * dir} y={(pBL.y + pTR.y) / 2 - 4}
         fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="start" fontFamily="monospace" opacity="0.5">
-        🪜 {largo.toFixed(2)}m ↗{desnivel.toFixed(2)}m
+        🪜 {largo.toFixed(2)}m {arrowLabel}{desnivel.toFixed(2)}m
       </text>}
     </g>
   );

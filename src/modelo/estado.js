@@ -303,12 +303,13 @@ export function useDisenoState() {
   }, []);
   const commitPiezasActuales = useCallback(() => { commit(stateRef.current.piezas); }, [commit]);
 
-  // ---------- Flip ménsulas (voltear dirección del voladizo) ----------
+  // ---------- Flip ménsulas y escaleras (voltear dirección) ----------
+  const FLIP_CATS = new Set(['mensula', 'escalera']);
   const flipMensulas = useCallback(() => {
     const { piezas: pz, piezasSeleccionadas: sel } = stateRef.current;
-    const mensulas = pz.filter(p => sel.includes(p.id) && p.categoria === 'mensula');
-    if (mensulas.length === 0) return;
-    commit(pz.map(p => (sel.includes(p.id) && p.categoria === 'mensula') ? { ...p, flip: !p.flip } : p));
+    const volteables = pz.filter(p => sel.includes(p.id) && FLIP_CATS.has(p.categoria));
+    if (volteables.length === 0) return;
+    commit(pz.map(p => (sel.includes(p.id) && FLIP_CATS.has(p.categoria)) ? { ...p, flip: !p.flip } : p));
   }, [commit]);
 
   // ---------- Persistencia ----------

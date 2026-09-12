@@ -492,15 +492,17 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
   }
 
   // ── Escalera → rectángulo con flecha de subida y peldaños transversales ──
+  // Soporta flip: sube a la derecha (default) o a la izquierda
   if (pieza.categoria === 'escalera') {
+    const eDir = pieza.flip ? -1 : 1;
     const anchoEsc = pieza.anchoEscalera || 0.75; // ancho real ~750mm
     const pBL = worldToScreen(pieza.x, z - anchoEsc / 2);
-    const pBR = worldToScreen(pieza.x + pieza.largo, z - anchoEsc / 2);
+    const pBR = worldToScreen(pieza.x + pieza.largo * eDir, z - anchoEsc / 2);
     const pTL = worldToScreen(pieza.x, z + anchoEsc / 2);
-    const pTR = worldToScreen(pieza.x + pieza.largo, z + anchoEsc / 2);
-    const w = pBR.x - pBL.x;
+    const pTR = worldToScreen(pieza.x + pieza.largo * eDir, z + anchoEsc / 2);
+    const w = Math.abs(pBR.x - pBL.x);
     const h = Math.abs(pTL.y - pBL.y);
-    const px = Math.min(pBL.x, pTL.x);
+    const px = Math.min(pBL.x, pBR.x, pTL.x, pTR.x);
     const py = Math.min(pBL.y, pTL.y);
     const sw = Math.max(0.8, zoom * 0.012);
     // Peldaños transversales
@@ -512,10 +514,12 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
       peldanos.push(<line key={i} x1={lx} y1={py} x2={lx} y2={py + h}
         stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
     }
-    // Flecha de subida (triángulo al final)
-    const arrowX = px + w * 0.85;
+    // Flecha de subida (triángulo apuntando en la dirección correcta)
     const arrowMidY = py + h / 2;
     const arrowSize = Math.max(3, zoom * 0.035);
+    const arrowX = pieza.flip ? px + w * 0.15 : px + w * 0.85;
+    const arrowTipX = pieza.flip ? arrowX - arrowSize * 1.5 : arrowX + arrowSize * 1.5;
+    const lineStartX = pieza.flip ? px + w * 0.85 : px + w * 0.15;
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
@@ -526,9 +530,9 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Peldaños */}
         {peldanos}
         {/* Línea central con flecha (dirección subida) */}
-        <line x1={px + w * 0.15} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
+        <line x1={lineStartX} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
           stroke={sc} strokeWidth={sw * 1.2} />
-        <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowX + arrowSize * 1.5},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
+        <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowTipX},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
           fill={sc} />
         {/* Etiqueta */}
         {zoom > 25 && <text x={px + w / 2} y={py - 3}

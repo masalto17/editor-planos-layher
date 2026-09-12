@@ -195,9 +195,9 @@ export default function Toolbar({
         </button>
         <button onClick={duplicar} disabled={piezasSeleccionadas.length === 0} title="Ctrl+D" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><CopyPlus size={13} /></button>
         <button onClick={seleccionarTodo} title="Ctrl+A" className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><CheckSquare size={13} /></button>
-        {/* Voltear ménsula: solo visible si hay ménsulas seleccionadas */}
-        {piezasSeleccionadas.length > 0 && piezas && piezas.some(p => piezasSeleccionadas.includes(p.id) && p.categoria === 'mensula') && (
-          <button onClick={flipMensulas} title="Voltear ménsula (F)" className="flex items-center gap-0.5 px-1.5 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 text-amber-800 text-[10px]">
+        {/* Voltear ménsula/escalera: visible si hay ménsulas o escaleras seleccionadas */}
+        {piezasSeleccionadas.length > 0 && piezas && piezas.some(p => piezasSeleccionadas.includes(p.id) && (p.categoria === 'mensula' || p.categoria === 'escalera')) && (
+          <button onClick={flipMensulas} title="Voltear pieza (F)" className="flex items-center gap-0.5 px-1.5 py-1 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 text-amber-800 text-[10px]">
             <FlipHorizontal2 size={13} /> ↔
           </button>
         )}
