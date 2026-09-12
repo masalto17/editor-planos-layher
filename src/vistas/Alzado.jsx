@@ -6,14 +6,15 @@ import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartid
 import Cotas from './Cotas.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
+import PiezaTooltip from '../ui/PiezaTooltip.jsx';
 
 // Vista de alzado frontal: plano X (horizontal) - Y (altura), a la profundidad `filaZ` activa.
-export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger }) {
+export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
   const {
     piezas, herramientaActiva, setHerramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     diagonalOrigen, setDiagonalOrigen, clipboard, filaZ, orientacionActiva,
     filas, setFilaActivaId,
-    commit, copiar, pegar, duplicar, eliminarSeleccion,
+    commit, copiar, pegar, duplicar, eliminarSeleccion, flipMensulas,
     colocarPiezaAlzado, colocarDiagonalAlzado, calcularSnapAlzado, moverPiezas, commitPiezasActuales,
   } = modelo;
 
@@ -44,6 +45,11 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const spaceHeld = useRef(false);
   const stateRef = useRef({});
   stateRef.current = { piezas: piezasFila, mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas };
+
+  // Reportar estado al padre (StatusBar)
+  useEffect(() => {
+    onStatusUpdate?.({ mousePos, zoom });
+  }, [mousePos.x, mousePos.y, mousePos.snapRoseta, mousePos.snapModulo, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const act = () => { if (svgRef.current) { const r = svgRef.current.getBoundingClientRect(); setDimCanvas({ w: r.width, h: r.height }); } };
@@ -86,11 +92,12 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       if (e.key === 'ArrowUp') { e.preventDefault(); setPan(p => ({ ...p, y: p.y + PAN_STEP })); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); setPan(p => ({ ...p, y: p.y - PAN_STEP })); return; }
       if (ctrl && e.key.toLowerCase() === 'v') { e.preventDefault(); pegar(stateRef.current.mousePos, 'alzado'); }
+      if (e.key.toLowerCase() === 'f' && !ctrl) { flipMensulas(); }
     };
     const ku = (e) => { if (e.key === ' ') spaceHeld.current = false; };
     window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
     return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
-  }, [pegar]);
+  }, [pegar, flipMensulas]);
 
   const onMouseMove = (e) => {
     const rect = svgRef.current.getBoundingClientRect();
@@ -280,6 +287,18 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         {mouseEnCanvas && herramientaActiva && (mousePos.snapX || mousePos.snapY) && (
           <IndicadoresSnap mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} />
         )}
+        {/* Crosshair de colocación en punto de snap */}
+        {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (() => {
+          const sp = worldToScreen(mousePos.x, mousePos.y);
+          const cr = Math.max(6, zoom * 0.08);
+          return (
+            <g opacity="0.5">
+              <line x1={sp.x - cr} y1={sp.y} x2={sp.x + cr} y2={sp.y} stroke="#E30613" strokeWidth="1" />
+              <line x1={sp.x} y1={sp.y - cr} x2={sp.x} y2={sp.y + cr} stroke="#E30613" strokeWidth="1" />
+              {mousePos.snapRoseta && <circle cx={sp.x} cy={sp.y} r={cr * 0.6} fill="none" stroke="#7c3aed" strokeWidth="1.5" />}
+            </g>
+          );
+        })()}
         {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && (
           <GuiasModulacion mousePos={mousePos} worldToScreen={worldToScreen} dimCanvas={dimCanvas} zoom={zoom} vista="alzado" />
         )}
@@ -320,20 +339,9 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           ))}
         </div>
       )}
-      {hoverPieza && !arrastrando && !herramientaActiva && (() => {
-        const p = hoverPieza.pieza;
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (!rect) return null;
-        const left = hoverPieza.screenX - rect.left + 12;
-        const top = hoverPieza.screenY - rect.top - 10;
-        return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg max-w-48 z-50"
-            style={{ left, top }}>
-            <div className="font-bold">{p.nombre}</div>
-            <div className="text-gray-300">{p.ref} · {p.peso} kg</div>
-          </div>
-        );
-      })()}
+      {hoverPieza && !arrastrando && !herramientaActiva && (
+        <PiezaTooltip hoverPieza={hoverPieza} svgRef={svgRef.current} vista="alzado" />
+      )}
     </div>
   );
 }

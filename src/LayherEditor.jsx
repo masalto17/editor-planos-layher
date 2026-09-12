@@ -1,3 +1,4 @@
+import { abrirVisualizador } from './export/visualizador.js';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { CAT_KEYS } from './catalogo/piezas.js';
 import { useDisenoState } from './modelo/estado.js';
@@ -12,9 +13,14 @@ import ModalConfirmar from './ui/ModalConfirmar.jsx';
 import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
 import ModalPlantillas from './ui/ModalPlantillas.jsx';
+import ModalImportDXF from './ui/ModalImportDXF.jsx';
 import Onboarding from './ui/Onboarding.jsx';
 import ValidacionesEstructura from './ui/ValidacionesEstructura.jsx';
+import AtajosPanel from './ui/AtajosPanel.jsx';
+import StatusBar from './ui/StatusBar.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
+import { CATALOGO } from './catalogo/piezas.js';
+import { uid } from './modelo/operaciones.js';
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpoint);
@@ -42,6 +48,10 @@ export default function LayherEditor() {
   const [mostrarCorte, setMostrarCorte] = useState(false);
   const [mostrarPlantillas, setMostrarPlantillas] = useState(false);
   const [mostrarValidaciones, setMostrarValidaciones] = useState(false);
+  const [mostrarAtajos, setMostrarAtajos] = useState(false);
+  const [mostrarImportDXF, setMostrarImportDXF] = useState(false);
+  const [mousePos, setMousePos] = useState(null);
+  const [zoomLevel, setZoomLevel] = useState(60);
   // Mobile drawers
   const [paletaAbierta, setPaletaAbierta] = useState(false);
   const [despieceAbierto, setDespieceAbierto] = useState(false);
@@ -112,12 +122,85 @@ export default function LayherEditor() {
     setTimeout(() => setFitTrigger(t => t + 1), 100);
   };
 
+  // Mapea categoría DXF + largo a la pieza real del catálogo más cercana
+  const buscarPiezaCatalogo = useCallback((categoria, largo) => {
+    const catMap = {
+      vertical: 'verticales',
+      horizontalO: 'horizontalesO',
+      plataforma: 'plataformas',
+    };
+    const catKey = catMap[categoria];
+    if (!catKey || !CATALOGO[catKey]) return null;
+    const lista = CATALOGO[catKey];
+    let mejor = lista[0];
+    let mejorDist = Math.abs(mejor.largo - largo);
+    for (const p of lista) {
+      const d = Math.abs(p.largo - largo);
+      if (d < mejorDist) { mejor = p; mejorDist = d; }
+    }
+    return mejorDist < 0.2 ? mejor : null;
+  }, []);
+
+  const handleImportarDXF = useCallback((piezasDXF) => {
+    const filaZ = modelo.filaZ ?? 0;
+    const nuevas = [];
+    for (const p of piezasDXF) {
+      if (p.categoria === 'diagonal') {
+        // Diagonales no se mapean por catálogo aquí — se importan como geometría
+        continue;
+      }
+      const cat = buscarPiezaCatalogo(p.categoria, p.largo);
+      if (!cat) continue;
+      const pieza = {
+        id: uid(),
+        tipoId: cat.id,
+        nombre: cat.nombre,
+        categoria: p.categoria === 'horizontalO' ? 'horizontalO' : p.categoria === 'plataforma' ? 'plataforma' : 'vertical',
+        largo: cat.largo,
+        peso: cat.peso,
+        ref: cat.ref,
+        color: cat.color,
+        x: parseFloat((p.x ?? 0).toFixed(3)),
+        y: parseFloat((p.y ?? 0).toFixed(3)),
+        z: filaZ,
+        _importadaDXF: true,
+      };
+      if (cat.anchoPlat) pieza.anchoPlat = cat.anchoPlat;
+      if (p.categoria === 'horizontalO' || p.categoria === 'plataforma') pieza.orientacion = 'x';
+      nuevas.push(pieza);
+    }
+    if (nuevas.length > 0) {
+      modelo.commit([...modelo.piezas, ...nuevas]);
+      modelo.setPiezasSeleccionadas(nuevas.map(n => n.id));
+      setTimeout(() => setFitTrigger(t => t + 1), 100);
+    }
+    setMostrarImportDXF(false);
+  }, [modelo, buscarPiezaCatalogo]);
+
   useEffect(() => {
     const h = modelo.herramientaActiva;
     if (!h) return;
     const sec = CAT_KEYS.find(ck => ck.cat === h.categoria);
     if (sec?.vistas && !sec.vistas.includes(vista)) modelo.setHerramientaActiva(null);
   }, [vista, modelo.herramientaActiva]);
+
+  // Atajo global: ? para atajos, G para grilla, T para técnico
+  useEffect(() => {
+    const handler = (e) => {
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+        e.preventDefault();
+        setMostrarAtajos(v => !v);
+      } else if (e.key === 'g' && !e.ctrlKey && !e.metaKey) {
+        setMostrarGrilla(v => !v);
+      } else if (e.key === 't' && !e.ctrlKey && !e.metaKey) {
+        setModoTecnico(v => !v);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
 
   const handleExportPDF = async (datosProyecto) => {
     setExportando(true);
@@ -127,7 +210,7 @@ export default function LayherEditor() {
         piezas: modelo.piezas,
         filas: modelo.filas,
         svgAlzado: svgAlzadoRef.current,
-        svgPlanta: svgPlantaRef.current,
+        svgPlanta: datosProyecto.incluirPlanta ? svgPlantaRef.current : null,
         datosProyecto,
       });
       setModalPDF(false);
@@ -145,13 +228,18 @@ export default function LayherEditor() {
         nombreDiseno={modelo.nombreDiseno} mensajeGuardado={modelo.mensajeGuardado}
         nuevo={handleNuevo}
         guardar={() => setModal('guardar')} guardarComo={() => setModal('guardarComo')} cargar={() => setModal('cargar')}
+        verEn3D={() => {
+          try { abrirVisualizador(modelo, import.meta.env.BASE_URL); }
+          catch (error) { window.alert(error.message); }
+        }}
         exportarPDF={() => setModalPDF(true)} exportando={exportando}
         zoomEncuadrar={zoomEncuadrar}
         undo={modelo.undo} redo={modelo.redo}
         historialIdx={modelo.historialIdx} historialLen={modelo.historial.length}
         copiar={modelo.copiar} pegar={pegarEnVista} duplicar={duplicarEnVista}
-        seleccionarTodo={modelo.seleccionarTodo}
+        seleccionarTodo={modelo.seleccionarTodo} flipMensulas={modelo.flipMensulas}
         piezasSeleccionadas={modelo.piezasSeleccionadas} clipboard={modelo.clipboard}
+        piezas={modelo.piezas}
         mostrarGrilla={mostrarGrilla} setMostrarGrilla={setMostrarGrilla}
         borrarTodo={handleBorrarTodo}
         herramientaActiva={modelo.herramientaActiva} diagonalOrigen={modelo.diagonalOrigen}
@@ -167,6 +255,7 @@ export default function LayherEditor() {
         onAyuda={() => setMostrarAyuda(true)}
         onCorte={() => setMostrarCorte(true)}
         onPlantillas={() => setMostrarPlantillas(true)}
+        onImportDXF={() => setMostrarImportDXF(true)}
         onValidaciones={() => setMostrarValidaciones(v => !v)}
         isMobile={isMobile}
         onTogglePaleta={() => setPaletaAbierta(p => !p)}
@@ -194,8 +283,10 @@ export default function LayherEditor() {
 
         {/* Canvas — siempre full flex-1 */}
         {vista === 'alzado'
-          ? <Alzado modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgAlzado} fitTrigger={fitTrigger} />
-          : <Planta modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgPlanta} fitTrigger={fitTrigger} />}
+          ? <Alzado modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgAlzado} fitTrigger={fitTrigger}
+              onStatusUpdate={({ mousePos: mp, zoom: z }) => { setMousePos(mp); setZoomLevel(z); }} />
+          : <Planta modelo={modelo} mostrarGrilla={mostrarGrilla} mostrarCotas={mostrarCotas} modoTecnico={modoTecnico} svgRefCb={setSvgPlanta} fitTrigger={fitTrigger}
+              onStatusUpdate={({ mousePos: mp, zoom: z }) => { setMousePos(mp); setZoomLevel(z); }} />}
 
         {/* Panel de validaciones — overlay sobre canvas */}
         <ValidacionesEstructura
@@ -282,9 +373,11 @@ export default function LayherEditor() {
       {modalPDF && (
         <ModalExportPDF
           nombreActual={modelo.nombreDiseno}
+          piezas={modelo.piezas}
           onExportar={handleExportPDF}
           onCerrar={() => setModalPDF(false)}
           exportando={exportando}
+          tienePlanta={!!svgPlantaRef.current}
         />
       )}
 
@@ -305,7 +398,27 @@ export default function LayherEditor() {
         />
       )}
 
+      {mostrarImportDXF && (
+        <ModalImportDXF
+          onImportar={handleImportarDXF}
+          onClose={() => setMostrarImportDXF(false)}
+        />
+      )}
+
       <Onboarding />
+
+      {/* Barra de estado inferior (solo desktop) */}
+      {!isMobile && (
+        <StatusBar
+          zoom={zoomLevel} mousePos={mousePos} vista={vista}
+          piezasSeleccionadas={modelo.piezasSeleccionadas} piezas={modelo.piezas}
+          pesoTotal={pesoTotal} cantPiezas={cantPiezas}
+          herramientaActiva={modelo.herramientaActiva}
+        />
+      )}
+
+      {/* Panel de atajos de teclado */}
+      {mostrarAtajos && <AtajosPanel onClose={() => setMostrarAtajos(false)} />}
 
       {confirmar && (
         <ModalConfirmar

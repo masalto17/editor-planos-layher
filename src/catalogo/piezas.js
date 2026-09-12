@@ -101,7 +101,7 @@ export const CATALOGO = {
   // Desnivel fijo: 8 peldaños × 0.167m = 1.33m
   // Peso ≈ por zanca (van 2 por escalera) — verificar
   escaleras: [
-    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, peso: 28.0, ref: '2638.257', color: '#dc2626' },
+    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, anchoEscalera: 0.75, peso: 28.0, ref: '2638.257', color: '#dc2626' },
   ],
 
   // ─── APOYA TECHOS (soporte cubierta cassette) ───────────
@@ -114,6 +114,19 @@ export const CATALOGO = {
   // ─── PLACA FENÓLICO (no Layher, complemento) ────────────
   fenolicos: [
     { id: 'FEN18', nombre: 'Placa fenólico 18mm', largo: 2.44, anchoPlat: 1.22, espesor: 0.018, peso: 34.8, ref: 'FEN-1222', color: '#5D3A1A' },
+  ],
+
+  // ─── STRINGERS (suplemento entre viga puente y fenólico) ──
+  // Caño estructural 40×80×2.50mm — peso 4.45 kg/m (no Layher, complemento comercial)
+  // Van perpendiculares a las vigas puente, separados 0.60m, soportan el fenólico.
+  // 5 stringers por cada viga puente de 2.57m (datos plano Ing. Balastegui).
+  stringers: [
+    { id: 'STR073', nombre: 'Stringer 0.73m',  largo: 0.73, peso: 3.2,  ref: 'STR-40x80-073', color: '#6b5b3a' },
+    { id: 'STR109', nombre: 'Stringer 1.09m',  largo: 1.09, peso: 4.8,  ref: 'STR-40x80-109', color: '#6b5b3a' },
+    { id: 'STR140', nombre: 'Stringer 1.40m',  largo: 1.40, peso: 6.2,  ref: 'STR-40x80-140', color: '#6b5b3a' },
+    { id: 'STR157', nombre: 'Stringer 1.57m',  largo: 1.57, peso: 7.0,  ref: 'STR-40x80-157', color: '#6b5b3a' },
+    { id: 'STR207', nombre: 'Stringer 2.07m',  largo: 2.07, peso: 9.2,  ref: 'STR-40x80-207', color: '#6b5b3a' },
+    { id: 'STR257', nombre: 'Stringer 2.57m',  largo: 2.57, peso: 11.4, ref: 'STR-40x80-257', color: '#6b5b3a' },
   ],
 
   // ─── COMPLEMENTOS ───────────────────────────────────────
@@ -199,6 +212,7 @@ export const CAT_KEYS = [
   { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: '📏 Diagonales (planta)',  vistas: ['planta'] },
   { key: 'vigasPuente',      cat: 'vigaPuente',     label: '🟠 Vigas Puente U' },
   { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U' },
+  { key: 'stringers',        cat: 'stringer',       label: '📏 Stringers (40×80)', tooltip: 'Caño estr. 40×80×2.50mm entre viga puente y fenólico, sep. 0.60m' },
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },
   { key: 'barandillas',      cat: 'barandilla',     label: '🔵 Barandillas' },

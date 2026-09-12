@@ -5,6 +5,7 @@ import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
 import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartidos.jsx';
 import CotasPlanta from './CotasPlanta.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
+import PiezaTooltip from '../ui/PiezaTooltip.jsx';
 
 // Extremos de una horizontal en X-Z, respetando su orientacion.
 function extremosXZ(pieza) {
@@ -17,6 +18,7 @@ const TECNICO_COLORS_PLANTA = {
   vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
   base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
+  mensula: '#222', escalera: '#222', fenolico: '#444', stringer: '#333',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -209,6 +211,28 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
           stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
         {dobleLinea(pL, pR, sep, lineW, sc)}
+      </g>
+    );
+  }
+
+  // ── Stringer (caño 40×80) → rectángulo angosto (sección rectangular en planta) ──
+  if (pieza.categoria === 'stringer') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(2, zoom * 0.03);
+    const lineW = Math.max(0.6, zoom * 0.01);
+    const dx = pR.x - pL.x, dy = pR.y - pL.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const nx = -dy / len * sep, ny = dx / len * sep;
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
+        <polygon
+          points={`${pL.x + nx},${pL.y + ny} ${pR.x + nx},${pR.y + ny} ${pR.x - nx},${pR.y - ny} ${pL.x - nx},${pL.y - ny}`}
+          fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={lineW} />
+        {zoom > 30 && <text x={(pL.x + pR.x) / 2} y={(pL.y + pR.y) / 2}
+          textAnchor="middle" dominantBaseline="central" fontSize={Math.max(6, zoom * 0.06)} fill={sc} fontWeight="bold" opacity="0.7">STR</text>}
       </g>
     );
   }
@@ -435,12 +459,137 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
       </g>
     );
   }
+
+  // ── Ménsula (voladizo) → triángulo/flecha indicando dirección del voladizo ──
+  if (pieza.categoria === 'mensula') {
+    const dir = pieza.flip ? -1 : 1;
+    const pBase = worldToScreen(pieza.x, z);
+    const pTip = worldToScreen(pieza.x + pieza.largo * dir, z);
+    const prof = Math.max(4, zoom * 0.06); // profundidad visual del triángulo
+    const sw = Math.max(0.8, zoom * 0.012);
+    // Triángulo: base en el vertical, punta en el extremo del voladizo
+    const pTop = { x: pBase.x, y: pBase.y - prof };
+    const pBot = { x: pBase.x, y: pBase.y + prof };
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={Math.min(pBase.x, pTip.x) - 3} y={pBase.y - prof - 3}
+          width={Math.abs(pTip.x - pBase.x) + 6} height={prof * 2 + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Triángulo del voladizo */}
+        <polygon points={`${pTop.x},${pTop.y} ${pBot.x},${pBot.y} ${pTip.x},${pTip.y}`}
+          fill={sc} fillOpacity="0.15" stroke={sc} strokeWidth={sw} />
+        {/* Línea central (eje del brazo) */}
+        <line x1={pBase.x} y1={pBase.y} x2={pTip.x} y2={pTip.y}
+          stroke={sc} strokeWidth={sw} strokeDasharray="4 2" />
+        {/* Punto de conexión al vertical */}
+        <circle cx={pBase.x} cy={pBase.y} r={Math.max(2, zoom * 0.025)} fill={sc} />
+        {/* Etiqueta */}
+        {zoom > 30 && <text x={(pBase.x + pTip.x) / 2} y={pBase.y - prof - 3}
+          fontSize={Math.max(6, zoom * 0.055)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
+          ▸ {pieza.largo}m
+        </text>}
+      </g>
+    );
+  }
+
+  // ── Escalera → rectángulo con flecha de subida y peldaños transversales ──
+  // Soporta flip: sube a la derecha (default) o a la izquierda
+  if (pieza.categoria === 'escalera') {
+    const eDir = pieza.flip ? -1 : 1;
+    const anchoEsc = pieza.anchoEscalera || 0.75; // ancho real ~750mm
+    const pBL = worldToScreen(pieza.x, z - anchoEsc / 2);
+    const pBR = worldToScreen(pieza.x + pieza.largo * eDir, z - anchoEsc / 2);
+    const pTL = worldToScreen(pieza.x, z + anchoEsc / 2);
+    const pTR = worldToScreen(pieza.x + pieza.largo * eDir, z + anchoEsc / 2);
+    const w = Math.abs(pBR.x - pBL.x);
+    const h = Math.abs(pTL.y - pBL.y);
+    const px = Math.min(pBL.x, pBR.x, pTL.x, pTR.x);
+    const py = Math.min(pBL.y, pTL.y);
+    const sw = Math.max(0.8, zoom * 0.012);
+    // Peldaños transversales
+    const numPeld = 8;
+    const peldanos = [];
+    for (let i = 1; i <= numPeld; i++) {
+      const t = i / (numPeld + 1);
+      const lx = px + w * t;
+      peldanos.push(<line key={i} x1={lx} y1={py} x2={lx} y2={py + h}
+        stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
+    }
+    // Flecha de subida (triángulo apuntando en la dirección correcta)
+    const arrowMidY = py + h / 2;
+    const arrowSize = Math.max(3, zoom * 0.035);
+    const arrowX = pieza.flip ? px + w * 0.15 : px + w * 0.85;
+    const arrowTipX = pieza.flip ? arrowX - arrowSize * 1.5 : arrowX + arrowSize * 1.5;
+    const lineStartX = pieza.flip ? px + w * 0.85 : px + w * 0.15;
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Contorno del tramo */}
+        <rect x={px} y={py} width={w} height={h}
+          fill={sc} fillOpacity="0.1" stroke={sc} strokeWidth={sw} />
+        {/* Peldaños */}
+        {peldanos}
+        {/* Línea central con flecha (dirección subida) */}
+        <line x1={lineStartX} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
+          stroke={sc} strokeWidth={sw * 1.2} />
+        <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowTipX},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
+          fill={sc} />
+        {/* Etiqueta */}
+        {zoom > 25 && <text x={px + w / 2} y={py - 3}
+          fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
+          🪜 {pieza.largo}m
+        </text>}
+      </g>
+    );
+  }
+
+  // ── Fenólico → rectángulo marrón con achurado y texto "FEN" ──
+  if (pieza.categoria === 'fenolico') {
+    const anchoFen = pieza.anchoPlat || 1.22;
+    const hor = pieza.orientacion !== 'z';
+    let px, py, w, h;
+    if (hor) {
+      const pL = worldToScreen(pieza.x, z - anchoFen / 2);
+      const pR = worldToScreen(pieza.x + pieza.largo, z + anchoFen / 2);
+      px = pL.x; py = Math.min(pL.y, pR.y);
+      w = pR.x - pL.x; h = Math.abs(pR.y - pL.y);
+    } else {
+      const pL = worldToScreen(pieza.x - anchoFen / 2, z);
+      const pR = worldToScreen(pieza.x + anchoFen / 2, z + pieza.largo);
+      px = Math.min(pL.x, pR.x); py = Math.min(pL.y, pR.y);
+      w = Math.abs(pR.x - pL.x); h = Math.abs(pR.y - pL.y);
+    }
+    const sw = Math.max(0.6, zoom * 0.008);
+    const fenColor = modoTecnico ? sc : '#5D3A1A';
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Panel fenólico */}
+        <rect x={px} y={py} width={w} height={h}
+          fill={fenColor} fillOpacity="0.18" stroke={fenColor} strokeWidth={sw} />
+        {/* Achurado diagonal (textura madera) */}
+        {achuradoDiagonal(px, py, w, h, fenColor, zoom)}
+        {/* Diagonales X (marca de panel) */}
+        <line x1={px} y1={py} x2={px + w} y2={py + h}
+          stroke={fenColor} strokeWidth={sw * 0.7} opacity="0.25" />
+        <line x1={px + w} y1={py} x2={px} y2={py + h}
+          stroke={fenColor} strokeWidth={sw * 0.7} opacity="0.25" />
+        {/* Texto FEN */}
+        {w > 20 && h > 10 && <text x={px + w / 2} y={py + h / 2 + 3}
+          fontSize={Math.max(6, Math.min(h * 0.5, zoom * 0.06))} fill={fenColor} textAnchor="middle"
+          fontFamily="monospace" fontWeight="bold" opacity="0.45">FEN</text>}
+      </g>
+    );
+  }
+
   return null;
 }
 
 // Vista de planta: plano X (horizontal) - Z (profundidad/fila). Comparte piezas, selección
 // e historial con el Alzado — es el mismo modelo de datos visto desde arriba.
-export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger }) {
+export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
   const {
     piezas, herramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     clipboard, orientacionActiva, filas, alturaY,
@@ -463,6 +612,11 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const spaceHeld = useRef(false);
   const stateRef = useRef({});
   stateRef.current = { mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas };
+
+  // Reportar estado al padre (StatusBar)
+  useEffect(() => {
+    onStatusUpdate?.({ mousePos, zoom });
+  }, [mousePos.x, mousePos.z, mousePos.snapRoseta, mousePos.snapModulo, zoom]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const act = () => { if (svgRef.current) { const r = svgRef.current.getBoundingClientRect(); setDimCanvas({ w: r.width, h: r.height }); } };
@@ -814,20 +968,9 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0 border-t-2 border-dashed border-purple-600" style={{height:0}} /><span>Diagonal</span></div>
         </div>
       )}
-      {hoverPieza && !arrastrando && !herramientaActiva && (() => {
-        const p = hoverPieza.pieza;
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (!rect) return null;
-        const left = hoverPieza.screenX - rect.left + 12;
-        const top = hoverPieza.screenY - rect.top - 10;
-        return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1 rounded shadow-lg max-w-48 z-50"
-            style={{ left, top }}>
-            <div className="font-bold">{p.nombre}</div>
-            <div className="text-gray-300">{p.ref} · {p.peso} kg · Y={p.y?.toFixed(2) ?? '0.00'}m</div>
-          </div>
-        );
-      })()}
+      {hoverPieza && !arrastrando && !herramientaActiva && (
+        <PiezaTooltip hoverPieza={hoverPieza} svgRef={svgRef.current} vista="planta" />
+      )}
     </div>
   );
 }

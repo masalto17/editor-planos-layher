@@ -12,6 +12,8 @@ export const roundTo = (v, step) => Math.round(v / step) * step;
 export const piezaMinX = p => {
   if (p.categoria === 'diagonal') return Math.min(p.x1, p.x2);
   if (p.categoria === 'diagonalPlanta') return Math.min(p.x1, p.x2);
+  // Ménsula/escalera con flip extiende hacia la izquierda
+  if ((p.categoria === 'mensula' || p.categoria === 'escalera') && p.flip) return p.x - p.largo;
   return p.x;
 };
 export const piezaMinY = p => {
@@ -32,8 +34,17 @@ export const piezaBounds = p => {
   if (ES_TIPO_HORIZONTAL(p.categoria)) {
     // orientacion='z' se ve en el alzado como un punto (perpendicular al plano).
     if (p.orientacion === 'z') return { xMin: p.x, xMax: p.x, yMin: p.y, yMax: p.y };
-    // Escalera sube desde (x,y) hasta (x+largo, y+desnivel)
-    if (p.categoria === 'escalera' && p.desnivel) return { xMin: p.x, xMax: p.x + p.largo, yMin: p.y, yMax: p.y + p.desnivel };
+    // Escalera sube desde (x,y) hasta (x+largo, y+desnivel); flip invierte dirección X
+    if (p.categoria === 'escalera' && p.desnivel) {
+      const dir = p.flip ? -1 : 1;
+      const xEnd = p.x + p.largo * dir;
+      return { xMin: Math.min(p.x, xEnd), xMax: Math.max(p.x, xEnd), yMin: p.y, yMax: p.y + p.desnivel };
+    }
+    // Ménsula: flip invierte dirección; diagonal baja 0.50m
+    if (p.categoria === 'mensula') {
+      const dir = p.flip ? -1 : 1;
+      return { xMin: Math.min(p.x, p.x + p.largo * dir), xMax: Math.max(p.x, p.x + p.largo * dir), yMin: p.y - 0.50, yMax: p.y };
+    }
     return { xMin: p.x, xMax: p.x + p.largo, yMin: p.y, yMax: p.y };
   }
   return { xMin: 0, xMax: 0, yMin: 0, yMax: 0 };
@@ -47,6 +58,23 @@ export const piezaBoundsXZ = p => {
   if (ES_TIPO_VERTICAL(p.categoria)) return { xMin: p.x, xMax: p.x, zMin: z, zMax: z };
   if (ES_TIPO_HORIZONTAL(p.categoria)) {
     if (p.orientacion === 'z') return { xMin: p.x, xMax: p.x, zMin: z, zMax: z + p.largo };
+    // Ménsula: flip invierte dirección en X
+    if (p.categoria === 'mensula') {
+      const dir = p.flip ? -1 : 1;
+      return { xMin: Math.min(p.x, p.x + p.largo * dir), xMax: Math.max(p.x, p.x + p.largo * dir), zMin: z, zMax: z };
+    }
+    // Escalera: tiene ancho en Z (anchoEscalera); flip invierte dirección X
+    if (p.categoria === 'escalera') {
+      const aE = (p.anchoEscalera || 0.75) / 2;
+      const dir = p.flip ? -1 : 1;
+      const xEnd = p.x + p.largo * dir;
+      return { xMin: Math.min(p.x, xEnd), xMax: Math.max(p.x, xEnd), zMin: z - aE, zMax: z + aE };
+    }
+    // Fenólico: tiene ancho en Z (anchoPlat)
+    if (p.categoria === 'fenolico') {
+      const aF = (p.anchoPlat || 1.22) / 2;
+      return { xMin: p.x, xMax: p.x + p.largo, zMin: z - aF, zMax: z + aF };
+    }
     return { xMin: p.x, xMax: p.x + p.largo, zMin: z, zMax: z };
   }
   return { xMin: 0, xMax: 0, zMin: 0, zMax: 0 };

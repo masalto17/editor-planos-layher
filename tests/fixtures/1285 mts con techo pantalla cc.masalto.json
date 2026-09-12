@@ -1,0 +1,4854 @@
+{
+  "nombre": "12,85 mts con techo pantalla cc",
+  "piezas": [
+    {
+      "id": "p_1788358306895_fd05tg",
+      "tipoId": "EXT_PIEZA_BIN1000LTS",
+      "nombre": "Bin 1000 lts Contrapeso",
+      "categoria": "importada",
+      "largo": 1.2,
+      "peso": 1000,
+      "ref": "SIN-REF",
+      "color": "#6caef4",
+      "x": -1.8400000000000003,
+      "y": 0.7015002328411484,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#6caef4",
+          "strokeWidth": 0.035,
+          "fill": "rgba(59,130,246,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 1.25,
+          "alto": 1.25
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            }
+          ],
+          "stroke": "#0c0f13",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "verificadaCatalogo",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788358380562_809f36",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788358385379_fb58z0",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 2.57,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788358407213_lcqjwu",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 0,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788358409462_8ubs8i",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 2.57,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788358423079_0q6xyv",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 0,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788358425429_2ih49b",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.57,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788358442896_ijsaif",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": -2.5700000000000003,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788358481912_ei48si",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 0,
+      "y": 2.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788358493097_vbbpar",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 0,
+      "y1": 0.5,
+      "x2": 2.57,
+      "y2": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362846850_bmkusq",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -2.1700000000000004,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362849717_vhzkjr",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.6700000000000004,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362851751_t44y39",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.1700000000000004,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362854217_h8915k",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -0.6900000000000008,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362862384_pe9hxn",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.6700000000000004,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362864067_s05gmc",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -2.1700000000000004,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362867167_f9pwwa",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.1700000000000004,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362869384_0j3l4f",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -0.69,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_vbrj6w",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -2.1700000000000004,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_tltbvx",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.6700000000000004,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_f6r7xo",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.1700000000000004,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_urt03u",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -0.6900000000000008,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_1s137b",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.6700000000000004,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_7h0kje",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -2.1700000000000004,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_8djclb",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -1.1700000000000004,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362886968_ka3bap",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": -0.69,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362988959_7d18wo",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 0,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362988959_4z7la6",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.5700000000000003,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362988959_evsmsq",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 0,
+      "y": 4.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362988960_nd05qq",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 0,
+      "y1": 2.5,
+      "x2": 2.5700000000000003,
+      "y2": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362995089_5yd6t1",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 0,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362995089_mhbibn",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.5700000000000003,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788362995089_emf0kq",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 0,
+      "y": 6.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788362995089_dlvv3c",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 0,
+      "y1": 4.5,
+      "x2": 2.5700000000000003,
+      "y2": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363003827_hksffo",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 0,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363003827_1ikm5k",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.57,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363003827_7x0mna",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 0,
+      "y": 8.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363003827_2h06kp",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 0,
+      "y1": 6.5,
+      "x2": 2.57,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363016650_pkk89p",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 4.440892098500626e-16,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363016650_dqew2p",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.5700000000000007,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363016650_e9fsqc",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 4.440892098500626e-16,
+      "y1": 8.5,
+      "x2": 2.5700000000000007,
+      "y2": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363057283_377760",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": 0,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363088384_kqdc23",
+      "tipoId": "IPN200_3",
+      "nombre": "Viga IPN 200 × 3m",
+      "categoria": "vigaIPN",
+      "largo": 3,
+      "peso": 78,
+      "ref": "IPN-200-3",
+      "color": "#374151",
+      "x": 1.4,
+      "y": 10.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363136127_gf0qff",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": -2.5700000000000003,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_qgvj56",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": -2.5700000000000003,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_45e91c",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": -2.5700000000000003,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_vbnzuu",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": -2.5700000000000003,
+      "y": 2.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363136127_27jcd0",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 0.5,
+      "x2": 0,
+      "y2": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_va539p",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": -2.5700000000000003,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_b4rsgd",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": -2.5700000000000003,
+      "y": 4.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363136127_4srsux",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 2.5,
+      "x2": 0,
+      "y2": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_0boww5",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": -2.5700000000000003,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_746wj7",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": -2.5700000000000003,
+      "y": 6.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363136127_2pz8o2",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 4.5,
+      "x2": 0,
+      "y2": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_4fbj30",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": -2.5700000000000003,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_aq8sup",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": -2.5700000000000003,
+      "y": 8.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363136127_64e1n8",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 6.5,
+      "x2": 0,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_l7zww9",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": -2.5700000000000003,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_y14bsv",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 8.5,
+      "x2": 0,
+      "y2": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363136127_n9fsv5",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": -2.5700000000000003,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363136127_meiye4",
+      "tipoId": "IPN200_3",
+      "nombre": "Viga IPN 200 × 3m",
+      "categoria": "vigaIPN",
+      "largo": 3,
+      "peso": 78,
+      "ref": "IPN-200-3",
+      "color": "#374151",
+      "x": -1.17,
+      "y": 10.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363167599_p6goaf",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": -2.57,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363182284_b04tmj",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": -2.57,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363185915_1pzzz9",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": -2.57,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363204800_s4v02d",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": -2.57,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363210516_j57u9f",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 0,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363213549_2b4vb0",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 0,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363276166_levwu1",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": -1.84,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363281766_uq6hco",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": -1,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363308908_574jp2",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 8.881784197001252e-16,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363308908_nawyqi",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 0.7300000000000013,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363308908_ldo60w",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 1.5700000000000012,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_tn9y9f",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 17.990000000000002,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_umh5il",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 20.560000000000002,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_zxlxen",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 17.990000000000002,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_63pkbt",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 20.560000000000002,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_nnzmzr",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.990000000000002,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_lj5b8c",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 20.560000000000002,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_kpuyad",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_37uvzt",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 17.990000000000002,
+      "y": 2.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_maomjg",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.990000000000002,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_lhppj6",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 20.560000000000002,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_xga5g4",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 17.990000000000002,
+      "y": 4.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_9goajg",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.990000000000002,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_u4kw72",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 20.560000000000002,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_5xa7z5",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 17.990000000000002,
+      "y": 6.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_czjeii",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.990000000000002,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_qyzzgw",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 20.560000000000002,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_w2swdd",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 17.990000000000002,
+      "y": 8.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_f8bdj6",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.990000000000002,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_s5p8z3",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 20.560000000000002,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_g9ldu3",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": 17.990000000000002,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_ec1w1y",
+      "tipoId": "IPN200_3",
+      "nombre": "Viga IPN 200 × 3m",
+      "categoria": "vigaIPN",
+      "largo": 3,
+      "peso": 78,
+      "ref": "IPN-200-3",
+      "color": "#374151",
+      "x": 19.39,
+      "y": 10.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_ncth5x",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 15.42,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_wz2nz6",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_gx9qdr",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_kkmcrx",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 15.42,
+      "y": 2.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_mqxje4",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_81bzb5",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 15.42,
+      "y": 4.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_dopagl",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_mwchar",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 15.42,
+      "y": 6.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_s9u2e9",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_l2qkpi",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 15.42,
+      "y": 8.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_o7evj1",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363329034_xwig7i",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": 15.42,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_rj9iv9",
+      "tipoId": "IPN200_3",
+      "nombre": "Viga IPN 200 × 3m",
+      "categoria": "vigaIPN",
+      "largo": 3,
+      "peso": 78,
+      "ref": "IPN-200-3",
+      "color": "#374151",
+      "x": 16.82,
+      "y": 12.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_keyssv",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_egcekv",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_4hni0r",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_34anlt",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 15.42,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_kjv46q",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 17.990000000000002,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_5kacxx",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 17.990000000000002,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_48sut0",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 16.15,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_pyl9rv",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 16.990000000000002,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_s6oyq9",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 17.990000000000002,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363329034_cbtyo3",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 18.72,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363329034_4opql9",
+      "tipoId": "PL061_257",
+      "nombre": "Plataforma 0.61×2.57m",
+      "categoria": "plataforma",
+      "largo": 2.57,
+      "peso": 20.5,
+      "ref": "3835.257",
+      "color": "#7f1d1d",
+      "x": 19.560000000000002,
+      "y": 0.5,
+      "z": 0,
+      "anchoPlat": 0.61,
+      "orientacion": "z"
+    },
+    {
+      "id": "p_1788363436432_biwagg",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 5.14,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363443148_282y6k",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 5.14,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363449440_5ym7gq",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 7.709999999999999,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363449440_q6xlp0",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 7.709999999999999,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363459702_uucga5",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 10.28,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363459702_acs8ye",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 10.28,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363466616_pltice",
+      "tipoId": "HUS080",
+      "nombre": "Tornillón regulable 0.80m",
+      "categoria": "base",
+      "largo": 0.8,
+      "peso": 5.8,
+      "ref": "4001.080",
+      "color": "#7c2d12",
+      "x": 12.85,
+      "y": 0,
+      "z": 0
+    },
+    {
+      "id": "p_1788363466616_odpopb",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 12.85,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363577341_i1gzqf",
+      "tipoId": "HU109",
+      "nombre": "Horizontal U 1.09m",
+      "categoria": "horizontalU",
+      "largo": 1.09,
+      "peso": 4.4,
+      "ref": "2613.108",
+      "color": "#92400e",
+      "x": 2.57,
+      "y": 10.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363582808_7amy5j",
+      "tipoId": "HU109",
+      "nombre": "Horizontal U 1.09m",
+      "categoria": "horizontalU",
+      "largo": 1.09,
+      "peso": 4.4,
+      "ref": "2613.108",
+      "color": "#92400e",
+      "x": 14.33,
+      "y": 10.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363599207_llsuuz",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 3.66,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363604389_nj03ni",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 14.33,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363622457_edmgop",
+      "tipoId": "D109x200",
+      "nombre": "Diagonal 1.09×2.00m",
+      "categoria": "diagonal",
+      "ancho": 1.09,
+      "alto": 2,
+      "peso": 5.8,
+      "ref": "2620.109",
+      "color": "#7c3aed",
+      "x1": 14.33,
+      "y1": 10.5,
+      "x2": 15.42,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363629973_sqcmeu",
+      "tipoId": "D109x200",
+      "nombre": "Diagonal 1.09×2.00m",
+      "categoria": "diagonal",
+      "ancho": 1.09,
+      "alto": 2,
+      "peso": 5.8,
+      "ref": "2620.109",
+      "color": "#7c3aed",
+      "x1": 3.66,
+      "y1": 10.5,
+      "x2": 2.5700000000000007,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363660573_4hmicb",
+      "tipoId": "TECHO_5",
+      "nombre": "Techo 2 aguas 12.85m",
+      "categoria": "techo",
+      "largo": 12.85,
+      "peso": 138.6,
+      "ref": "TECHO-1285",
+      "color": "#555",
+      "x": 2.57,
+      "y": 11,
+      "z": 0,
+      "componentes": [
+        {
+          "tipoId": "CEL257",
+          "nombre": "Celosía U 2.57m",
+          "ref": "2.656.257",
+          "peso": 24.9,
+          "cantidad": 4
+        },
+        {
+          "tipoId": "CUMB257",
+          "nombre": "Cumbrera 2.57m",
+          "ref": "CUMB-257",
+          "peso": 35,
+          "cantidad": 1
+        },
+        {
+          "tipoId": "V050",
+          "nombre": "Parante 0.50m (unión)",
+          "ref": "2601.050",
+          "peso": 2,
+          "cantidad": 2
+        }
+      ],
+      "modulosAncho": 5,
+      "celosiasPorLado": 2,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363693705_gkxvuq",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 2.57,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363695639_vxkazo",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 0,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363698088_3yn1d5",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 17.99,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363700255_8mf7he",
+      "tipoId": "V200",
+      "nombre": "Vertical 2.00m",
+      "categoria": "vertical",
+      "largo": 2,
+      "peso": 7.7,
+      "ref": "2601.200",
+      "color": "#1e40af",
+      "x": 15.42,
+      "y": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363725622_oimenn",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 4.440892098500626e-16,
+      "y1": 10.5,
+      "x2": 2.57,
+      "y2": 12.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363730672_q2jna3",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.42,
+      "y1": 12.5,
+      "x2": 17.99,
+      "y2": 10.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363741322_j3agbs",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 17.990000000000002,
+      "y1": 10.5,
+      "x2": 20.560000000000002,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363746288_y6itr0",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 20.560000000000002,
+      "y1": 10.5,
+      "x2": 17.99,
+      "y2": 12.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363802671_whrojm",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": 0,
+      "y": 12,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363806953_pfw19k",
+      "tipoId": "CEL257",
+      "nombre": "Celosía U 2.57m",
+      "categoria": "celosia",
+      "largo": 2.57,
+      "peso": 24.9,
+      "ref": "2.656.257",
+      "color": "#4b5563",
+      "x": 15.42,
+      "y": 12,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788363871177_2lcpsm",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.419999999999998,
+      "y1": 10.5,
+      "x2": 17.99,
+      "y2": 8.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363878844_s6tzcm",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.420000000000002,
+      "y1": 8.5,
+      "x2": 17.990000000000002,
+      "y2": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363887690_hsk3fu",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 17.99,
+      "y1": 8.5,
+      "x2": 20.56,
+      "y2": 6.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363900268_zwniow",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.420000000000002,
+      "y1": 6.5,
+      "x2": 17.990000000000002,
+      "y2": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363905737_wh8qhh",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 17.99,
+      "y1": 6.5,
+      "x2": 20.56,
+      "y2": 4.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363929984_66lbqt",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.419999999999998,
+      "y1": 4.5,
+      "x2": 17.99,
+      "y2": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363936653_y59iie",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 17.99,
+      "y1": 4.5,
+      "x2": 20.56,
+      "y2": 2.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363947158_wg7nxw",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 15.419999999999998,
+      "y1": 2.5,
+      "x2": 17.99,
+      "y2": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363953628_msk0od",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": 17.99,
+      "y1": 2.5,
+      "x2": 20.56,
+      "y2": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788363967605_bnbnx4",
+      "tipoId": "EXT_PIEZA_BIN1000LTS",
+      "nombre": "Bin 1000 lts Contrapeso",
+      "categoria": "importada",
+      "largo": 1.2,
+      "peso": 1000,
+      "ref": "SIN-REF",
+      "color": "#6caef4",
+      "x": 18.490000000000002,
+      "y": 0.6902484865325356,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#6caef4",
+          "strokeWidth": 0.035,
+          "fill": "rgba(59,130,246,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 1.25,
+          "alto": 1.25
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            },
+            {
+              "x": 1.25,
+              "y": 0
+            }
+          ],
+          "stroke": "#0c0f13",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "verificadaCatalogo",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364067034_43nrvv",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 2.57,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364068968_4yzbil",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 5.14,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364070717_969zya",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 7.71,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364074134_lbmddu",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 10.28,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364076817_7erqv4",
+      "tipoId": "HO257",
+      "nombre": "Horizontal O 2.57m",
+      "categoria": "horizontalO",
+      "largo": 2.57,
+      "peso": 9.7,
+      "ref": "2607.257",
+      "color": "#059669",
+      "x": 12.85,
+      "y": 0.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364088567_7bg8n4",
+      "tipoId": "V100",
+      "nombre": "Vertical 1.00m",
+      "categoria": "vertical",
+      "largo": 1,
+      "peso": 3.9,
+      "ref": "2601.100",
+      "color": "#1e40af",
+      "x": 12.85,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364090734_j5ekyv",
+      "tipoId": "V100",
+      "nombre": "Vertical 1.00m",
+      "categoria": "vertical",
+      "largo": 1,
+      "peso": 3.9,
+      "ref": "2601.100",
+      "color": "#1e40af",
+      "x": 10.28,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364095818_l2glnc",
+      "tipoId": "V100",
+      "nombre": "Vertical 1.00m",
+      "categoria": "vertical",
+      "largo": 1,
+      "peso": 3.9,
+      "ref": "2601.100",
+      "color": "#1e40af",
+      "x": 7.71,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364101266_rvkptl",
+      "tipoId": "V100",
+      "nombre": "Vertical 1.00m",
+      "categoria": "vertical",
+      "largo": 1,
+      "peso": 3.9,
+      "ref": "2601.100",
+      "color": "#1e40af",
+      "x": 5.14,
+      "y": 0.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364108917_2tefwd",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 5.14,
+      "y": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364110685_520zf8",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 7.71,
+      "y": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364114084_g8v7ia",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 10.28,
+      "y": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364115917_jwqyld",
+      "tipoId": "CO",
+      "nombre": "Collarín",
+      "categoria": "collarin",
+      "largo": 0.02,
+      "peso": 1.3,
+      "ref": "2603.000",
+      "color": "#78350f",
+      "x": 12.85,
+      "y": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364130700_zy9mqj",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 12.85,
+      "y": 1.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364132733_y73mbt",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 10.28,
+      "y": 1.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364134834_d05ewy",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 7.71,
+      "y": 1.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364138367_do9lhn",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 5.14,
+      "y": 1.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364141500_8paz2p",
+      "tipoId": "VP257",
+      "nombre": "Viga Puente U 2.57m",
+      "categoria": "vigaPuente",
+      "largo": 2.57,
+      "peso": 15.2,
+      "ref": "2624.257",
+      "color": "#b45309",
+      "x": 2.57,
+      "y": 1.5,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364183150_p2n9vc",
+      "tipoId": "D257x100",
+      "nombre": "Diagonal 2.57×1.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 1,
+      "peso": 6,
+      "ref": "2620.256",
+      "color": "#7c3aed",
+      "x1": 2.57,
+      "y1": 0.5,
+      "x2": 5.14,
+      "y2": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364188767_hng5qe",
+      "tipoId": "D257x100",
+      "nombre": "Diagonal 2.57×1.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 1,
+      "peso": 6,
+      "ref": "2620.256",
+      "color": "#7c3aed",
+      "x1": 5.14,
+      "y1": 0.5,
+      "x2": 7.71,
+      "y2": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364194784_k5dkt0",
+      "tipoId": "D257x100",
+      "nombre": "Diagonal 2.57×1.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 1,
+      "peso": 6,
+      "ref": "2620.256",
+      "color": "#7c3aed",
+      "x1": 15.42,
+      "y1": 0.5,
+      "x2": 12.85,
+      "y2": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364197700_f45yqt",
+      "tipoId": "D257x100",
+      "nombre": "Diagonal 2.57×1.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 1,
+      "peso": 6,
+      "ref": "2620.256",
+      "color": "#7c3aed",
+      "x1": 12.85,
+      "y1": 0.5,
+      "x2": 10.28,
+      "y2": 1.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364242649_csfgif",
+      "tipoId": "D257x200",
+      "nombre": "Diagonal 2.57×2.00m",
+      "categoria": "diagonal",
+      "ancho": 2.57,
+      "alto": 2,
+      "peso": 8.5,
+      "ref": "2620.257",
+      "color": "#7c3aed",
+      "x1": -2.5700000000000003,
+      "y1": 10.5,
+      "x2": 0,
+      "y2": 12.5,
+      "z": 0
+    },
+    {
+      "id": "p_1788364267900_jkcj2p",
+      "tipoId": "TRUSS200",
+      "nombre": "Truss 30×30 × 2m",
+      "categoria": "truss",
+      "largo": 2,
+      "peso": 15,
+      "ref": "TRUSS-30-2",
+      "color": "#333333",
+      "x": -2.2502230406711616,
+      "y": 9,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_kh1l9d",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.389999999999997,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_pk0t90",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.889999999999997,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_mkkp8e",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.389999999999997,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_iv115w",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.869999999999997,
+      "y": 5,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_i1jvbx",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.889999999999997,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_xp3cb8",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.389999999999997,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_90hl8o",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.389999999999997,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_tb0ful",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.869999999999997,
+      "y": 6,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_xaaaud",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.389999999999997,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_laadnr",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.889999999999997,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_1i310r",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.389999999999997,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_83ue55",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.869999999999997,
+      "y": 7,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_vuu6mc",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.889999999999997,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_6r6eft",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 18.389999999999997,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_j20h5w",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.389999999999997,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_9sefot",
+      "tipoId": "EXT_PIEZA_LED_P4",
+      "nombre": "Modulo Panta P4 (0,50 x 1 mts)",
+      "categoria": "importada",
+      "largo": 0.5,
+      "peso": 18,
+      "ref": "SIN-REF",
+      "color": "#56c8a6",
+      "x": 19.869999999999997,
+      "y": 8,
+      "z": 0,
+      "_visual": [
+        {
+          "stroke": "#56c8a6",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0,
+          "y": 0,
+          "ancho": 0.5,
+          "alto": 1
+        },
+        {
+          "stroke": "#48ea63",
+          "strokeWidth": 0.035,
+          "fill": "rgba(16,185,129,0.20)",
+          "tipo": "rectangulo",
+          "x": 0.1,
+          "y": 0.2,
+          "ancho": 0.3,
+          "alto": 0.6
+        },
+        {
+          "tipo": "polilinea",
+          "puntos": [
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 1
+            },
+            {
+              "x": 0.5,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            },
+            {
+              "x": 0,
+              "y": 0
+            }
+          ],
+          "stroke": "#74dc86",
+          "strokeWidth": 0.03,
+          "fill": "none"
+        }
+      ],
+      "_importada": true,
+      "_verificacion": "noEstructural",
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364379752_q277xs",
+      "tipoId": "TRUSS200",
+      "nombre": "Truss 30×30 × 2m",
+      "categoria": "truss",
+      "largo": 2,
+      "peso": 15,
+      "ref": "TRUSS-30-2",
+      "color": "#333333",
+      "x": 18.309776959328836,
+      "y": 9,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364408213_bs47up",
+      "tipoId": "TRUSS300",
+      "nombre": "Truss 30×30 × 3m",
+      "categoria": "truss",
+      "largo": 3,
+      "peso": 22,
+      "ref": "TRUSS-30-3",
+      "color": "#333333",
+      "x": 3.57,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364411297_kn13qm",
+      "tipoId": "TRUSS300",
+      "nombre": "Truss 30×30 × 3m",
+      "categoria": "truss",
+      "largo": 3,
+      "peso": 22,
+      "ref": "TRUSS-30-3",
+      "color": "#333333",
+      "x": 6.54,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364413380_sif3ty",
+      "tipoId": "TRUSS300",
+      "nombre": "Truss 30×30 × 3m",
+      "categoria": "truss",
+      "largo": 3,
+      "peso": 22,
+      "ref": "TRUSS-30-3",
+      "color": "#333333",
+      "x": 9.55,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    },
+    {
+      "id": "p_1788364423863_6mlipb",
+      "tipoId": "TRUSS200",
+      "nombre": "Truss 30×30 × 2m",
+      "categoria": "truss",
+      "largo": 2,
+      "peso": 15,
+      "ref": "TRUSS-30-2",
+      "color": "#333333",
+      "x": 12.58,
+      "y": 10,
+      "z": 0,
+      "orientacion": "x"
+    }
+  ],
+  "filas": [
+    {
+      "id": "A",
+      "nombre": "A",
+      "z": 0
+    }
+  ],
+  "fecha": "2026-09-02T15:55:27.884Z",
+  "version": "2.0",
+  "app": "MasAlto Layout"
+}

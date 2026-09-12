@@ -1,3 +1,4 @@
+import { datosImportados } from './datosImportados.js';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { elegirDiagonal, elegirDiagonalPlanta } from '../catalogo/piezas.js';
 import {
@@ -34,9 +35,11 @@ export function useDisenoState() {
   const [diagonalPlantaOrigen, setDiagonalPlantaOrigen] = useState(null); // primer clic de diagonal en Planta
   const [nombreDiseno, setNombreDiseno] = useState('Diseño sin título');
   const [mensajeGuardado, setMensajeGuardado] = useState('');
+  const [clipboardOrigY, setClipboardOrigY] = useState(0);
+  const [clipboardOrigZ, setClipboardOrigZ] = useState(0);
 
   const stateRef = useRef({});
-  stateRef.current = { piezas, piezasSeleccionadas, clipboard, historialIdx, historial, filaZ, alturaY, orientacionActiva, filas, filaActivaId };
+  stateRef.current = { piezas, piezasSeleccionadas, clipboard, clipboardOrigY, clipboardOrigZ, historialIdx, historial, filaZ, alturaY, orientacionActiva, filas, filaActivaId };
 
   const setHerramientaActiva = useCallback((h) => { setHerramientaActivaRaw(h); setDiagonalOrigen(null); setDiagonalPlantaOrigen(null); }, []);
   const toggleOrientacion = useCallback(() => { setOrientacionActiva(o => (o === 'x' ? 'z' : 'x')); }, []);
@@ -105,22 +108,27 @@ export function useDisenoState() {
   }, []);
 
   // ---------- Clipboard ----------
-  // El clipboard guarda piezas normalizadas al origen 3D — al pegar se aplica offset
-  // según la vista activa (Alzado suma en X+Y, Planta suma en X+Z). Esto arregla el
-  // bug de V2.0 inicial: duplicar en Planta movía la copia en altura en vez de en fila.
+  // El clipboard guarda piezas normalizadas al origen 3D + las posiciones originales
+  // (clipboardOrigY/Z) para poder pegar sin perder altura/profundidad cuando se pega
+  // desde toolbar (sin posición de mouse).
   const copiar = useCallback(() => {
     const { piezas: pz, piezasSeleccionadas: sel } = stateRef.current;
     const s = pz.filter(p => sel.includes(p.id)); if (s.length === 0) return;
     const minX = Math.min(...s.map(piezaMinX));
     const minY = Math.min(...s.map(piezaMinY));
     const minZ = Math.min(...s.map(piezaMinZ));
+    setClipboardOrigY(minY);
+    setClipboardOrigZ(minZ);
     setClipboard(s.map(p => desplazarPieza(p, -minX, -minY, -minZ)));
   }, []);
   const pegar = useCallback((puntoBase, vista = 'alzado') => {
-    const { clipboard: cl, piezas: pz } = stateRef.current; if (cl.length === 0) return;
-    const bx = roundTo(puntoBase?.x ?? 0, ROSETA_STEP);
-    const by = vista === 'alzado' ? Math.max(0, roundTo(puntoBase?.y ?? 0, ROSETA_STEP)) : 0;
-    const bz = vista === 'planta' ? roundTo(puntoBase?.z ?? 0, ROSETA_STEP) : 0;
+    const { clipboard: cl, piezas: pz, clipboardOrigY: origY, clipboardOrigZ: origZ } = stateRef.current;
+    if (cl.length === 0) return;
+    // Si no hay puntoBase (ej: botón toolbar), usar posición original de las piezas copiadas
+    const hasPunto = puntoBase && (puntoBase.x != null || puntoBase.y != null || puntoBase.z != null);
+    const bx = roundTo(hasPunto ? (puntoBase.x ?? 0) : 0, ROSETA_STEP);
+    const by = vista === 'alzado' ? Math.max(0, roundTo(hasPunto ? (puntoBase.y ?? 0) : origY, ROSETA_STEP)) : origY;
+    const bz = vista === 'planta' ? roundTo(hasPunto ? (puntoBase.z ?? 0) : origZ, ROSETA_STEP) : origZ;
     const n = cl.map(p => ({ ...desplazarPieza(p, bx, by, bz), id: uid() }));
     commit([...pz, ...n]); setPiezasSeleccionadas(n.map(p => p.id));
   }, [commit]);
@@ -147,15 +155,15 @@ export function useDisenoState() {
     const { piezas: pz, filaZ: z, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y: parseFloat(y.toFixed(3)), z };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+    if (h.desnivel) n.desnivel = h.desnivel;
+    if (h.anchoEscalera) n.anchoEscalera = h.anchoEscalera;
     // Techo compuesto: copiar metadata para despiece y render
     if (h.componentes) n.componentes = h.componentes;
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
     // Pieza importada: copiar datos de render genérico
-    if (h._visual) n._visual = h._visual;
-    if (h._importada) n._importada = true;
-    if (h._verificacion) n._verificacion = h._verificacion;
+    Object.assign(n, datosImportados(h));
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
@@ -177,14 +185,14 @@ export function useDisenoState() {
     const { piezas: pz, alturaY: y, orientacionActiva: ori } = stateRef.current;
     const n = { id: uid(), tipoId: h.id, nombre: h.nombre, categoria: h.categoria, largo: h.largo, peso: h.peso, ref: h.ref, color: h.color, x: parseFloat(x.toFixed(3)), y, z: parseFloat(z.toFixed(3)) };
     if (h.anchoPlat) n.anchoPlat = h.anchoPlat;
+    if (h.desnivel) n.desnivel = h.desnivel;
+    if (h.anchoEscalera) n.anchoEscalera = h.anchoEscalera;
     if (h.componentes) n.componentes = h.componentes;
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
     // Pieza importada: copiar datos de render genérico
-    if (h._visual) n._visual = h._visual;
-    if (h._importada) n._importada = true;
-    if (h._verificacion) n._verificacion = h._verificacion;
+    Object.assign(n, datosImportados(h));
 
     if (TIENE_ORIENTACION(h.categoria)) n.orientacion = ori;
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
@@ -294,6 +302,15 @@ export function useDisenoState() {
     }));
   }, []);
   const commitPiezasActuales = useCallback(() => { commit(stateRef.current.piezas); }, [commit]);
+
+  // ---------- Flip ménsulas y escaleras (voltear dirección) ----------
+  const FLIP_CATS = new Set(['mensula', 'escalera']);
+  const flipMensulas = useCallback(() => {
+    const { piezas: pz, piezasSeleccionadas: sel } = stateRef.current;
+    const volteables = pz.filter(p => sel.includes(p.id) && FLIP_CATS.has(p.categoria));
+    if (volteables.length === 0) return;
+    commit(pz.map(p => (sel.includes(p.id) && FLIP_CATS.has(p.categoria)) ? { ...p, flip: !p.flip } : p));
+  }, [commit]);
 
   // ---------- Persistencia ----------
   const listarDisenos = useCallback(() => {
@@ -511,7 +528,7 @@ export function useDisenoState() {
     alturaY, setAlturaY,
     orientacionActiva, setOrientacionActiva, toggleOrientacion,
     nombreDiseno, setNombreDiseno, mensajeGuardado,
-    commit, undo, redo, copiar, pegar, duplicar, eliminarSeleccion, seleccionarTodo,
+    commit, undo, redo, copiar, pegar, duplicar, eliminarSeleccion, seleccionarTodo, flipMensulas,
     colocarPiezaAlzado, colocarDiagonalAlzado, colocarPiezaPlanta, colocarDiagonalPlanta, borrarTodo, nuevoDiseno,
     calcularSnapAlzado, calcularSnapPlanta, moverPiezas, moverPiezasZ, commitPiezasActuales,
     guardar, cargar, listarDisenos, eliminarDiseno,

@@ -3,16 +3,26 @@
 
 export function Grilla({ worldVisible, worldToScreen, zoom }) {
   const ls = []; const step = zoom < 30 ? 1 : zoom < 80 ? 0.5 : 0.25;
+  const MODULO = 2.57; // Módulo estándar Layher
+  const isModulo = v => { const r = v / MODULO; return Math.abs(r - Math.round(r)) < 0.02 && Math.abs(v) > 0.01; };
+  const isRoseta = v => Math.abs((v * 2) - Math.round(v * 2)) < 0.02; // cada 0.50m
+
   for (let x = Math.floor(worldVisible.xMin / step) * step; x <= Math.ceil(worldVisible.xMax / step) * step; x += step) {
     const p1 = worldToScreen(x, worldVisible.yMax), p2 = worldToScreen(x, worldVisible.yMin);
     const ent = Math.abs(x - Math.round(x)) < 0.01;
-    ls.push(<line key={`v${x.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ent ? '#c0c4cc' : '#e8eaed'} strokeWidth={ent ? 0.7 : 0.3} />);
-    if (ent && zoom > 25) ls.push(<text key={`vt${x.toFixed(3)}`} x={p1.x + 2} y={12} fontSize="9" fill="#94a3b8" fontFamily="monospace">{x.toFixed(0)}</text>);
+    const mod = isModulo(x);
+    const ros = isRoseta(x) && !ent;
+    const stroke = mod ? '#E3061340' : ent ? '#c0c4cc' : ros && zoom > 60 ? '#ddd6fe' : '#e8eaed';
+    const sw = mod ? 1 : ent ? 0.7 : 0.3;
+    ls.push(<line key={`v${x.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={stroke} strokeWidth={sw}
+      strokeDasharray={mod ? '4 3' : 'none'} />);
+    if (ent && zoom > 25) ls.push(<text key={`vt${x.toFixed(3)}`} x={p1.x + 2} y={12} fontSize="9" fill={mod ? '#E30613' : '#94a3b8'} fontFamily="monospace" fontWeight={mod ? 'bold' : 'normal'} opacity={mod ? 0.6 : 1}>{x.toFixed(0)}</text>);
   }
   for (let y = Math.floor(worldVisible.yMin / step) * step; y <= Math.ceil(worldVisible.yMax / step) * step; y += step) {
     const p1 = worldToScreen(worldVisible.xMin, y), p2 = worldToScreen(worldVisible.xMax, y);
     const ent = Math.abs(y - Math.round(y)) < 0.01;
-    ls.push(<line key={`h${y.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ent ? '#c0c4cc' : '#e8eaed'} strokeWidth={ent ? 0.7 : 0.3} />);
+    const ros = isRoseta(y) && !ent;
+    ls.push(<line key={`h${y.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ent ? '#c0c4cc' : ros && zoom > 60 ? '#ddd6fe' : '#e8eaed'} strokeWidth={ent ? 0.7 : 0.3} />);
     if (ent && zoom > 25) ls.push(<text key={`ht${y.toFixed(3)}`} x={4} y={p1.y - 2} fontSize="9" fill="#94a3b8" fontFamily="monospace">{y.toFixed(0)}</text>);
   }
   return <g>{ls}</g>;
