@@ -186,61 +186,151 @@ function dibujarHeader(doc, datos, logos) {
   return lineY + 2;
 }
 
-/** Cuadro de datos técnicos del proyecto. */
-function dibujarCuadroDatos(doc, datos, x0, y0) {
-  const w = PANEL_W;
-  let y = y0;
+// ──────────────────────────────────────────────────
+// Cuadro de datos técnicos completo (estilo Balastegui)
+// ──────────────────────────────────────────────────
 
-  // Header negro
-  doc.setFillColor(17, 17, 17);
-  doc.rect(x0, y, w, 5, 'F');
+/** Helper: dibuja un bloque sección dentro del cuadro.
+ *  Retorna la nueva posición Y. */
+function _seccionCuadro(doc, titulo, campos, x0, y, w, opts = {}) {
+  const labelW = opts.labelW || 22;
+  // Sub-header rojo
+  doc.setFillColor(227, 6, 19); // ROJO
+  doc.rect(x0, y, w, 4.2, 'F');
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(6);
+  doc.setFontSize(5);
   doc.setTextColor(255, 255, 255);
-  doc.text('DATOS DEL PROYECTO', x0 + 2, y + 3.5);
-  y += 6;
-
-  const campos = [
-    ['Proyecto', datos.nombre || 'Sin título'],
-    ['Cliente', datos.cliente || '—'],
-    ['Ubicación', datos.ubicacion || '—'],
-    ['Fecha', datos.fecha],
-    ['Escala', datos.escala || '1:100'],
-    ['Plano Nº', datos.planoNum || '—'],
-    ['Sistema', 'Layher Allround'],
-    ['Filas', datos.filasStr || '—'],
-    ['Verificado', 'Firma ing. estructural'],
-  ];
+  doc.text(titulo, x0 + 1.5, y + 3);
+  y += 5;
 
   campos.forEach(([label, valor], i) => {
+    if (!valor && valor !== 0) return; // omitir vacíos
+    const valStr = String(valor);
     // Fondo alterno
     if (i % 2 === 0) {
-      doc.setFillColor(245, 245, 245);
-      doc.rect(x0, y - 2.5, w, 4, 'F');
+      doc.setFillColor(248, 248, 248);
+      doc.rect(x0, y - 2.5, w, 3.8, 'F');
     }
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(6);
+    doc.setFontSize(5.5);
     doc.setTextColor(GRIS);
     doc.text(label, x0 + 1.5, y);
     doc.setTextColor(NEGRO);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(6);
-    // Truncar valores largos
-    const maxW = w - 25;
-    let txt = valor;
+    doc.setFontSize(5.5);
+    // Truncar si excede ancho
+    const maxW = w - labelW - 3;
+    let txt = valStr;
     while (doc.getTextWidth(txt) > maxW && txt.length > 3) txt = txt.slice(0, -1);
-    if (txt !== valor) txt += '…';
-    doc.text(txt, x0 + 22, y);
-    // Línea separadora
-    doc.setDrawColor(230, 230, 230);
-    doc.setLineWidth(0.15);
-    doc.line(x0, y + 1.2, x0 + w, y + 1.2);
-    y += 4;
+    if (txt !== valStr) txt += '…';
+    doc.text(txt, x0 + labelW, y);
+    // Separador
+    doc.setDrawColor(235, 235, 235);
+    doc.setLineWidth(0.12);
+    doc.line(x0, y + 1, x0 + w, y + 1);
+    y += 3.5;
   });
 
-  // Borde del cuadro
+  return y + 0.5;
+}
+
+/** Cuadro de datos técnicos del proyecto — versión completa. */
+function dibujarCuadroDatos(doc, datos, x0, y0) {
+  const w = PANEL_W;
+  let y = y0;
+
+  // ─── Header principal negro ───
+  doc.setFillColor(17, 17, 17);
+  doc.rect(x0, y, w, 5.5, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6);
+  doc.setTextColor(255, 255, 255);
+  doc.text('DATOS DEL PROYECTO', x0 + 2, y + 3.8);
+  y += 6.5;
+
+  // ─── Sección 1: Identificación ───
+  y = _seccionCuadro(doc, 'IDENTIFICACIÓN', [
+    ['Proyecto', datos.nombre || 'Sin título'],
+    ['Cliente', datos.cliente],
+    ['Evento', datos.evento],
+    ['Ubicación', datos.ubicacion],
+    ['Plano Nº', datos.planoNum],
+    ['Revisión', datos.revision],
+    ['Fecha', datos.fecha],
+    ['Escala', datos.escala || '1:100'],
+  ], x0, y, w);
+
+  // ─── Sección 2: Estructura ───
+  const estrCampos = [
+    ['Sistema', 'Layher Allround'],
+    ['Dimensiones', datos.dimensiones],
+    ['Peso total', datos.pesoTotal ? `${datos.pesoTotal} kg` : null],
+    ['Piezas', datos.cantPiezas ? String(datos.cantPiezas) : null],
+    ['Verticales', datos.cantVerts ? String(datos.cantVerts) : null],
+    ['Niveles piso', datos.cantNiveles ? String(datos.cantNiveles) : null],
+    ['Alt. pisos', datos.altPisos],
+    ['Filas', datos.filasStr],
+  ].filter(([, v]) => v);
+  y = _seccionCuadro(doc, 'ESTRUCTURA', estrCampos, x0, y, w);
+
+  // ─── Sección 3: Datos técnicos / Normativa ───
+  const tecCampos = [
+    ['Sobrecarga uso', datos.sobrecargaUso ? `${datos.sobrecargaUso} kg/m²` : null],
+    ['Peso piso', '19.50 kg/m²'],
+    ['Carga máx vert.', '4.000 kg (catálogo)'],
+    ['Clasif. viento', datos.clasificacionViento],
+    ['Normativa', 'CIRSOC 301-2005 / 102'],
+    ['Tubo vertical', 'Ø48.3mm e=3.20mm'],
+    ['Rosetas', 'cada 0.50m (8 perf.)'],
+  ].filter(([, v]) => v);
+  if (tecCampos.length > 0) {
+    y = _seccionCuadro(doc, 'DATOS TÉCNICOS', tecCampos, x0, y, w);
+  }
+
+  // ─── Sección 4: Responsable técnico ───
+  const respCampos = [
+    ['Responsable', datos.responsable],
+    ['Matrícula', datos.matricula],
+  ].filter(([, v]) => v);
+  if (respCampos.length > 0) {
+    y = _seccionCuadro(doc, 'VERIFICACIÓN', respCampos, x0, y, w);
+  }
+
+  // Bloque firma (siempre presente)
+  doc.setDrawColor(200, 200, 200);
+  doc.setLineWidth(0.2);
+  doc.setLineDashPattern([1, 0.8], 0);
+  doc.line(x0 + 4, y + 6, x0 + w - 4, y + 6);
+  doc.setLineDashPattern([], 0);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(4.5);
+  doc.setTextColor(GRIS);
+  doc.text('Firma y sello Ing. Estructural', x0 + w / 2, y + 9, { align: 'center' });
+  y += 12;
+
+  // ─── Observaciones (si hay) ───
+  if (datos.observaciones) {
+    doc.setFillColor(255, 255, 240);
+    doc.rect(x0, y, w, 3.5, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(4.5);
+    doc.setTextColor(GRIS);
+    doc.text('OBSERVACIONES', x0 + 1.5, y + 2.5);
+    y += 4;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(5);
+    doc.setTextColor(NEGRO);
+    const lines = doc.splitTextToSize(datos.observaciones, w - 3);
+    lines.slice(0, 5).forEach(ln => {
+      doc.text(ln, x0 + 1.5, y + 1);
+      y += 2.8;
+    });
+    y += 1;
+  }
+
+  // ─── Borde exterior del cuadro completo ───
   doc.setDrawColor(NEGRO);
-  doc.setLineWidth(0.4);
+  doc.setLineWidth(0.5);
   doc.rect(x0, y0, w, y - y0 + 0.5);
 
   return y + 2;
@@ -703,19 +793,48 @@ export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgP
   // Cargar logos
   const logos = await cargarLogos();
 
-  // Datos compartidos
+  // Datos compartidos — calculamos métricas de la estructura
   const filasStr = filas.map(f => `${f.nombre} (Z=${f.z.toFixed(2)}m)`).join(', ');
+
+  // Auto-calcular métricas de la estructura
+  const verts = piezas.filter(p => p.categoria === 'vertical');
+  const allXpos = verts.map(p => p.x);
+  const allYpos = verts.map(p => p.y + (p.largo || 0));
+  const allZpos = [...new Set(piezas.map(p => p.z ?? 0))];
+  const pesoTotal = piezas.reduce((s, p) => s + (p.peso || 0), 0);
+  const anchoEst = allXpos.length ? (Math.max(...allXpos) - Math.min(...allXpos)) : 0;
+  const altoEst = allYpos.length ? Math.max(...allYpos) : 0;
+  const profEst = allZpos.length > 1 ? (Math.max(...allZpos) - Math.min(...allZpos)) : 0;
+  const altPisos = [...new Set(
+    piezas.filter(p => p.categoria === 'plataforma').map(p => p.y)
+  )].sort((a, b) => a - b);
+
+  const dimStr = `${anchoEst.toFixed(2)} × ${altoEst.toFixed(2)}${profEst > 0 ? ` × ${profEst.toFixed(2)}` : ''}m`;
+  const altPisosStr = altPisos.length > 0 ? altPisos.map(a => `+${a.toFixed(2)}m`).join(', ') : '';
+
   const datos = {
     nombre: nombreDiseno || datosProyecto.nombre || 'Sin título',
     cliente: datosProyecto.cliente || '',
+    evento: datosProyecto.evento || '',
     ubicacion: datosProyecto.ubicacion || '',
     fecha,
     filasStr,
     planoNum: datosProyecto.planoNum || '',
     revision: datosProyecto.revision || '01',
-    cuit: datosProyecto.cuit || '',
     escala: datosProyecto.escala || '1:100',
-    resumen: datosProyecto.resumen || '',
+    // Métricas calculadas
+    dimensiones: dimStr,
+    pesoTotal: pesoTotal > 0 ? pesoTotal.toFixed(0) : '',
+    cantPiezas: piezas.length,
+    cantVerts: verts.length,
+    cantNiveles: altPisos.length,
+    altPisos: altPisosStr,
+    // Datos técnicos del modal
+    responsable: datosProyecto.responsable || '',
+    matricula: datosProyecto.matricula || '',
+    sobrecargaUso: datosProyecto.sobrecargaUso || 150,
+    clasificacionViento: datosProyecto.clasificacionViento || '',
+    observaciones: datosProyecto.observaciones || '',
   };
 
   // === PÁGINA 1: Alzado + Despiece ===

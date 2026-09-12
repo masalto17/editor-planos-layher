@@ -374,6 +374,7 @@ export default function LayherEditor() {
         <ModalExportPDF
           nombreActual={modelo.nombreDiseno}
           piezas={modelo.piezas}
+          filas={modelo.filas}
           onExportar={handleExportPDF}
           onCerrar={() => setModalPDF(false)}
           exportando={exportando}
