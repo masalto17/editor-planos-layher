@@ -1,11 +1,10 @@
 // Base — Husillo regulable: rosca visible, placa base con agujeros, tuerca de regulación.
 // Collarín: anillo con tornillo de ajuste.
+// Efecto galvanizado: gradiente metálico, reflejos especulares en placa y tuerca.
 export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo, tipoId } = pieza;
 
   // ── Collarín ── Aro de acero que abraza el tubo vertical sobre el husillo.
-  // En alzado se ve como un rectángulo horizontal ancho (más ancho que el tubo vertical)
-  // con ranura central y tornillo de apriete a un lado.
   if (tipoId === 'CO') {
     const p = worldToScreen(x, y);
     const ancho = Math.max(18, zoom * 0.24);
@@ -14,9 +13,9 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
     const boltOff = ancho / 2 + boltR * 1.8;
     const sw = Math.max(0.4, zoom * 0.005);
     const ranuraW = Math.max(2, zoom * 0.025);
+    const gid = `cog-${pieza.id}`;
 
     if (modoTecnico) {
-      // Modo técnico: rectángulo simple sin relleno
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
           {seleccionada && <rect x={p.x - ancho / 2 - 3} y={p.y - alto / 2 - 3}
@@ -29,22 +28,42 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
 
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        <defs>
+          <linearGradient id={gid} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.25" />
+            <stop offset="40%" stopColor="#fff" stopOpacity="0.05" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.1" />
+          </linearGradient>
+        </defs>
+
         {seleccionada && <rect x={p.x - ancho / 2 - 5} y={p.y - alto / 2 - 3}
           width={ancho + boltR * 4 + 6} height={alto + 6} fill="none" stroke="#E30613" strokeWidth="2" rx="1" />}
+        {/* Sombra */}
         <rect x={p.x - ancho / 2 + 1} y={p.y - alto / 2 + 1} width={ancho} height={alto}
           fill="#000" opacity="0.07" rx="2.5" />
+        {/* Mitad izquierda */}
         <rect x={p.x - ancho / 2} y={p.y - alto / 2} width={ancho / 2 - ranuraW / 2} height={alto}
           fill={sc} stroke="#000" strokeWidth={sw} rx="1.5" opacity="0.92" />
+        {/* Mitad derecha */}
         <rect x={p.x + ranuraW / 2} y={p.y - alto / 2} width={ancho / 2 - ranuraW / 2} height={alto}
           fill={sc} stroke="#000" strokeWidth={sw} rx="1.5" opacity="0.92" />
+        {/* Overlay galvanizado */}
+        <rect x={p.x - ancho / 2} y={p.y - alto / 2} width={ancho} height={alto}
+          fill={`url(#${gid})`} rx="1.5" />
+        {/* Brillo metálico superior */}
         <rect x={p.x - ancho / 2 + 1.5} y={p.y - alto / 2 + 1} width={ancho - 3} height={alto * 0.3}
           fill="#fff" opacity="0.25" rx="1" />
+        {/* Ranura central */}
         <line x1={p.x} y1={p.y - alto / 2 - 0.5} x2={p.x} y2={p.y + alto / 2 + 0.5}
           stroke="#000" strokeWidth={ranuraW * 0.5} opacity="0.15" />
+        {/* Tornillo */}
         <line x1={p.x + ancho / 2} y1={p.y} x2={p.x + boltOff} y2={p.y}
           stroke="#555" strokeWidth={Math.max(1, zoom * 0.012)} />
         <circle cx={p.x + boltOff} cy={p.y} r={boltR}
           fill="#666" stroke="#333" strokeWidth={sw} />
+        {/* Brillo tornillo */}
+        {zoom > 25 && <circle cx={p.x + boltOff - boltR * 0.2} cy={p.y - boltR * 0.2}
+          r={boltR * 0.25} fill="#fff" opacity="0.3" />}
         {zoom > 30 && <circle cx={p.x + boltOff} cy={p.y} r={boltR * 0.45}
           fill="none" stroke="#333" strokeWidth={0.5} />}
       </g>
@@ -55,6 +74,7 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
   const pB = worldToScreen(x, y), pT = worldToScreen(x, y + largo);
   const tubeW = Math.max(3, zoom * 0.05);
   const hlOff = tubeW * 0.2;
+  const gid = `bg-${pieza.id}`;
 
   // Placa base
   const placaW = Math.max(16, zoom * 0.2);
@@ -65,7 +85,6 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
   // Tuerca de regulación
   const tuercaW = Math.max(5, zoom * 0.06);
   const tuercaH = Math.max(3, zoom * 0.03);
-  // Posición tuerca: ~30% desde abajo
   const tuercaY = pB.y + (pT.y - pB.y) * 0.3;
 
   // Rosca: marcas horizontales en la barra
@@ -89,10 +108,8 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
           stroke="#E30613" strokeWidth={tecW + 6} opacity="0.2" strokeLinecap="round" />}
-        {/* Barra husillo */}
         <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
           stroke={sc} strokeWidth={tecW} strokeLinecap="butt" />
-        {/* Placa base: rectángulo sin relleno */}
         <rect x={pB.x - placaW / 2} y={pB.y - 1} width={placaW} height={placaH}
           fill="none" stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} />
       </g>
@@ -101,25 +118,72 @@ export default function Base({ pieza, worldToScreen, zoom, sc, op, cur, seleccio
 
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+      {/* Gradiente galvanizado */}
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.1" />
+          <stop offset="25%" stopColor="#fff" stopOpacity="0.15" />
+          <stop offset="50%" stopColor="#fff" stopOpacity="0.04" />
+          <stop offset="75%" stopColor="#000" stopOpacity="0.06" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.12" />
+        </linearGradient>
+      </defs>
+
+      {/* Selección glow */}
       {seleccionada && <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
         stroke="#E30613" strokeWidth={tubeW + 8} opacity="0.2" strokeLinecap="round" />}
-      <line x1={pT.x + hlOff} y1={pT.y} x2={pB.x + hlOff} y2={pB.y}
+
+      {/* Sombra */}
+      <line x1={pT.x + hlOff * 1.3} y1={pT.y} x2={pB.x + hlOff * 1.3} y2={pB.y}
         stroke="#000" strokeWidth={tubeW} strokeLinecap="round" opacity="0.06" />
+
+      {/* Barra husillo */}
       <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
         stroke={sc} strokeWidth={tubeW} strokeLinecap="round" />
+
+      {/* Overlay galvanizado */}
+      <line x1={pT.x} y1={pT.y} x2={pB.x} y2={pB.y}
+        stroke={`url(#${gid})`} strokeWidth={tubeW} strokeLinecap="round" />
+
+      {/* Highlight izquierdo */}
       <line x1={pT.x - hlOff} y1={pT.y} x2={pB.x - hlOff} y2={pB.y}
-        stroke="#fff" strokeWidth={tubeW * 0.28} strokeLinecap="round" opacity="0.3" />
+        stroke="#fff" strokeWidth={tubeW * 0.22} strokeLinecap="round" opacity="0.35" />
+
+      {/* Edge light derecho */}
+      <line x1={pT.x + hlOff * 0.5} y1={pT.y} x2={pB.x + hlOff * 0.5} y2={pB.y}
+        stroke="#fff" strokeWidth={tubeW * 0.06} strokeLinecap="round" opacity="0.12" />
+
+      {/* Marcas de rosca */}
       {roscas}
+
+      {/* Tuerca de regulación (mejorada) */}
+      <rect x={pB.x - tuercaW / 2 + 0.5} y={tuercaY - tuercaH / 2 + 0.5} width={tuercaW} height={tuercaH}
+        fill="#000" opacity="0.06" rx="0.5" />
       <rect x={pB.x - tuercaW / 2} y={tuercaY - tuercaH / 2} width={tuercaW} height={tuercaH}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="0.5" opacity="0.85" />
+        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="0.5" opacity="0.88" />
+      {/* Brillo tuerca */}
+      <line x1={pB.x - tuercaW / 2 + 1} y1={tuercaY - tuercaH / 2 + 0.5}
+        x2={pB.x + tuercaW / 2 - 1} y2={tuercaY - tuercaH / 2 + 0.5}
+        stroke="#fff" strokeWidth={0.5} opacity="0.3" />
+
+      {/* Placa base (mejorada) */}
+      <rect x={pB.x - placaW / 2 + 0.7} y={pB.y - 0.5} width={placaW} height={placaH}
+        fill="#000" opacity="0.07" rx="0.5" />
       <rect x={pB.x - placaW / 2} y={pB.y - 1} width={placaW} height={placaH}
         fill={sc} stroke="#000" strokeWidth={Math.max(0.4, zoom * 0.004)} rx="0.5" />
-      <line x1={pB.x - placaW / 2 + 2} y1={pB.y} x2={pB.x + placaW / 2 - 2} y2={pB.y}
-        stroke="#fff" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.25" />
+      {/* Brillo placa */}
+      <line x1={pB.x - placaW / 2 + 2} y1={pB.y - 0.5}
+        x2={pB.x + placaW / 2 - 2} y2={pB.y - 0.5}
+        stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.004)} opacity="0.3" />
+
+      {/* Agujeros placa */}
       {zoom > 30 && <>
-        <circle cx={pB.x - holeOff} cy={pB.y + placaH / 2} r={holeR} fill="#000" opacity="0.3" />
-        <circle cx={pB.x + holeOff} cy={pB.y + placaH / 2} r={holeR} fill="#000" opacity="0.3" />
+        <circle cx={pB.x - holeOff} cy={pB.y + placaH / 2} r={holeR}
+          fill="#000" opacity="0.3" />
+        <circle cx={pB.x + holeOff} cy={pB.y + placaH / 2} r={holeR}
+          fill="#000" opacity="0.3" />
       </>}
+
       {/* Etiqueta largo husillo (zoom medio+) */}
       {zoom > 45 && Math.abs(pT.y - pB.y) > 25 && (
         <text x={pB.x + tubeW + 3} y={(pB.y + pT.y) / 2}
