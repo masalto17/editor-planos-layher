@@ -210,7 +210,7 @@ export default function LayherEditor() {
         piezas: modelo.piezas,
         filas: modelo.filas,
         svgAlzado: svgAlzadoRef.current,
-        svgPlanta: svgPlantaRef.current,
+        svgPlanta: datosProyecto.incluirPlanta ? svgPlantaRef.current : null,
         datosProyecto,
       });
       setModalPDF(false);
@@ -373,9 +373,11 @@ export default function LayherEditor() {
       {modalPDF && (
         <ModalExportPDF
           nombreActual={modelo.nombreDiseno}
+          piezas={modelo.piezas}
           onExportar={handleExportPDF}
           onCerrar={() => setModalPDF(false)}
           exportando={exportando}
+          tienePlanta={!!svgPlantaRef.current}
         />
       )}
 
