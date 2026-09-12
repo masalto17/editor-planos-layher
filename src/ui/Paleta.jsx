@@ -172,8 +172,13 @@ function MiniPreviewImportada({ visual, largo, alto, color, selected }) {
 }
 
 // ─── Pieza individual ──────────────────────────────────────────────
+// Categorías de evento: muestran nombre descriptivo en vez de medida
+const CATS_EVENTO = new Set(['lineArray', 'pantallaLED', 'luz']);
+
 function PiezaItem({ pieza, activa, onSelect, showRef }) {
   const sel = activa?.id === pieza.id;
+  const esEvento = CATS_EVENTO.has(pieza.categoria);
+
   const medida = pieza.categoria === 'diagonal'
     ? `${pieza.ancho.toFixed(2)}×${pieza.alto.toFixed(2)}`
     : pieza.anchoPlat
@@ -191,8 +196,13 @@ function PiezaItem({ pieza, activa, onSelect, showRef }) {
         sel ? 'bg-red-600 text-white border-red-700 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-400 hover:shadow-sm text-gray-800'}`}>
       <PiezaPreview pieza={pieza} selected={sel} size={22} />
       <div className="flex-1 min-w-0 text-left">
-        <span className="font-semibold">{medida}</span>
-        {showRef && <span className={`ml-1 text-[8px] ${sel ? 'text-red-200' : 'text-gray-400'}`}>{pieza.ref}</span>}
+        {esEvento
+          ? <span className="font-semibold truncate block">{pieza.nombre}</span>
+          : <>
+              <span className="font-semibold">{medida}</span>
+              {showRef && <span className={`ml-1 text-[8px] ${sel ? 'text-red-200' : 'text-gray-400'}`}>{pieza.ref}</span>}
+            </>
+        }
       </div>
       <span className={`text-[9px] shrink-0 tabular-nums ${sel ? 'text-red-100' : 'text-gray-400'}`}>{pieza.peso}kg</span>
     </button>
@@ -326,6 +336,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
       <div className="flex flex-wrap gap-1 mt-0.5 px-0.5">
         {recientes.map(p => {
           const sel = activa?.id === p.id;
+          const esEv = CATS_EVENTO.has(p.categoria);
           const medida = p.categoria === 'diagonal'
             ? `${p.ancho.toFixed(2)}×${p.alto.toFixed(2)}`
             : p.anchoPlat ? `${p.anchoPlat.toFixed(2)}×${p.largo.toFixed(2)}`
@@ -336,7 +347,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
               className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded border transition ${
                 sel ? 'bg-red-600 text-white border-red-700' : 'bg-gray-50 border-gray-200 hover:border-gray-400 text-gray-700'}`}>
               <PiezaPreview pieza={p} selected={sel} size={16} />
-              <span className="font-semibold">{medida}</span>
+              <span className="font-semibold truncate max-w-[120px]">{esEv ? p.nombre : medida}</span>
             </button>
           );
         })}

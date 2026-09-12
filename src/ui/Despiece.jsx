@@ -2,8 +2,9 @@ import { useMemo, useCallback, useState } from 'react';
 import { X, Copy, CopyPlus, Trash2, FileSpreadsheet, ChevronDown, ChevronRight, Package, Weight, Layers, Keyboard } from 'lucide-react';
 import { DESPIECE_ORDER } from '../catalogo/constantes.js';
 import { CAT_KEYS } from '../catalogo/piezas.js';
+import { CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 
-const CAT_LABEL = Object.fromEntries(CAT_KEYS.map(ck => [ck.cat, ck.label]));
+const CAT_LABEL = Object.fromEntries([...CAT_KEYS, ...CAT_KEYS_EVENTO].map(ck => [ck.cat, ck.label]));
 
 // Colores representativos de cada categoría (coinciden con los renders SVG)
 const CAT_COLOR = {
@@ -29,6 +30,9 @@ const CAT_COLOR = {
   truss: '#374151',
   vigaIPN: '#374151',
   importada: '#6b7280',
+  lineArray: '#1d4ed8',
+  pantallaLED: '#0891b2',
+  luz: '#eab308',
 };
 
 function ColorDot({ categoria }) {
