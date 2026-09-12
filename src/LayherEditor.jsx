@@ -13,11 +13,14 @@ import ModalConfirmar from './ui/ModalConfirmar.jsx';
 import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
 import ModalPlantillas from './ui/ModalPlantillas.jsx';
+import ModalImportDXF from './ui/ModalImportDXF.jsx';
 import Onboarding from './ui/Onboarding.jsx';
 import ValidacionesEstructura from './ui/ValidacionesEstructura.jsx';
 import AtajosPanel from './ui/AtajosPanel.jsx';
 import StatusBar from './ui/StatusBar.jsx';
 import { exportarPDF } from './export/pdfExporter.js';
+import { CATALOGO } from './catalogo/piezas.js';
+import { uid } from './modelo/operaciones.js';
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpoint);
@@ -46,6 +49,7 @@ export default function LayherEditor() {
   const [mostrarPlantillas, setMostrarPlantillas] = useState(false);
   const [mostrarValidaciones, setMostrarValidaciones] = useState(false);
   const [mostrarAtajos, setMostrarAtajos] = useState(false);
+  const [mostrarImportDXF, setMostrarImportDXF] = useState(false);
   const [mousePos, setMousePos] = useState(null);
   const [zoomLevel, setZoomLevel] = useState(60);
   // Mobile drawers
@@ -117,6 +121,61 @@ export default function LayherEditor() {
     setMostrarPlantillas(false);
     setTimeout(() => setFitTrigger(t => t + 1), 100);
   };
+
+  // Mapea categoría DXF + largo a la pieza real del catálogo más cercana
+  const buscarPiezaCatalogo = useCallback((categoria, largo) => {
+    const catMap = {
+      vertical: 'verticales',
+      horizontalO: 'horizontalesO',
+      plataforma: 'plataformas',
+    };
+    const catKey = catMap[categoria];
+    if (!catKey || !CATALOGO[catKey]) return null;
+    const lista = CATALOGO[catKey];
+    let mejor = lista[0];
+    let mejorDist = Math.abs(mejor.largo - largo);
+    for (const p of lista) {
+      const d = Math.abs(p.largo - largo);
+      if (d < mejorDist) { mejor = p; mejorDist = d; }
+    }
+    return mejorDist < 0.2 ? mejor : null;
+  }, []);
+
+  const handleImportarDXF = useCallback((piezasDXF) => {
+    const filaZ = modelo.filaZ ?? 0;
+    const nuevas = [];
+    for (const p of piezasDXF) {
+      if (p.categoria === 'diagonal') {
+        // Diagonales no se mapean por catálogo aquí — se importan como geometría
+        continue;
+      }
+      const cat = buscarPiezaCatalogo(p.categoria, p.largo);
+      if (!cat) continue;
+      const pieza = {
+        id: uid(),
+        tipoId: cat.id,
+        nombre: cat.nombre,
+        categoria: p.categoria === 'horizontalO' ? 'horizontalO' : p.categoria === 'plataforma' ? 'plataforma' : 'vertical',
+        largo: cat.largo,
+        peso: cat.peso,
+        ref: cat.ref,
+        color: cat.color,
+        x: parseFloat((p.x ?? 0).toFixed(3)),
+        y: parseFloat((p.y ?? 0).toFixed(3)),
+        z: filaZ,
+        _importadaDXF: true,
+      };
+      if (cat.anchoPlat) pieza.anchoPlat = cat.anchoPlat;
+      if (p.categoria === 'horizontalO' || p.categoria === 'plataforma') pieza.orientacion = 'x';
+      nuevas.push(pieza);
+    }
+    if (nuevas.length > 0) {
+      modelo.commit([...modelo.piezas, ...nuevas]);
+      modelo.setPiezasSeleccionadas(nuevas.map(n => n.id));
+      setTimeout(() => setFitTrigger(t => t + 1), 100);
+    }
+    setMostrarImportDXF(false);
+  }, [modelo, buscarPiezaCatalogo]);
 
   useEffect(() => {
     const h = modelo.herramientaActiva;
@@ -196,6 +255,7 @@ export default function LayherEditor() {
         onAyuda={() => setMostrarAyuda(true)}
         onCorte={() => setMostrarCorte(true)}
         onPlantillas={() => setMostrarPlantillas(true)}
+        onImportDXF={() => setMostrarImportDXF(true)}
         onValidaciones={() => setMostrarValidaciones(v => !v)}
         isMobile={isMobile}
         onTogglePaleta={() => setPaletaAbierta(p => !p)}
@@ -333,6 +393,13 @@ export default function LayherEditor() {
         <ModalPlantillas
           onCargar={handleCargarPlantilla}
           onCerrar={() => setMostrarPlantillas(false)}
+        />
+      )}
+
+      {mostrarImportDXF && (
+        <ModalImportDXF
+          onImportar={handleImportarDXF}
+          onClose={() => setMostrarImportDXF(false)}
         />
       )}
 
