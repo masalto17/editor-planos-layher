@@ -1,5 +1,16 @@
 import { useMemo } from 'react';
-import { ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js';
+import { ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL, MODULOS_STANDARD, ROSETA_STEP } from '../catalogo/constantes.js';
+
+// Detecta si una distancia corresponde a un módulo Layher estándar
+function esModuloLayher(dist) {
+  return MODULOS_STANDARD.some(m => Math.abs(dist - m) < 0.005);
+}
+
+// Detecta si una distancia es múltiplo de roseta (0.50m)
+function esMultiploRoseta(dist) {
+  const r = dist / ROSETA_STEP;
+  return Math.abs(r - Math.round(r)) < 0.02 && dist > 0.01;
+}
 
 /**
  * Cotas automáticas: líneas de dimensión entre verticales (distancias X) y entre
@@ -8,6 +19,10 @@ import { ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js'
  * Posicionamiento:
  *  - CotasX: debajo del Y=0 (suelo), ancladas a las posiciones X de verticales
  *  - CotasY: a la izquierda del X mínimo de piezas, ancladas a alturas Y reales
+ *
+ * Mejoras:
+ *  - Distancias que coinciden con módulo Layher estándar se resaltan en verde (✓)
+ *  - Alturas múltiplo de roseta se marcan con indicador
  */
 export default function Cotas({ piezas, worldToScreen, zoom, worldVisible, dimCanvas, modoTecnico }) {
   // X mínimo real de las piezas (para anclar cotas Y)
@@ -51,8 +66,9 @@ export default function Cotas({ piezas, worldToScreen, zoom, worldVisible, dimCa
     return cotas;
   }, [piezas]);
 
-  const color = modoTecnico ? '#000' : '#6366f1';
+  const colorBase = modoTecnico ? '#000' : '#6366f1';
   const colorTotal = modoTecnico ? '#333' : '#4f46e5';
+  const colorModulo = modoTecnico ? '#000' : '#16a34a'; // verde para módulos Layher
   const fontSize = Math.max(8, Math.min(11, zoom * 0.14));
   const gap = Math.max(16, zoom * 0.25); // separación base entre niveles de cotas
 
@@ -62,26 +78,27 @@ export default function Cotas({ piezas, worldToScreen, zoom, worldVisible, dimCa
       {cotasX.map((c, i) => {
         const p1 = worldToScreen(c.x1, 0);
         const p2 = worldToScreen(c.x2, 0);
-        const yBase = p1.y + 8; // justo debajo de la línea de suelo en pantalla
+        const yBase = p1.y + 8;
         const yLine = yBase + gap * (c.nivel + 1);
-        const label = c.dist.toFixed(2) + 'm';
-        const sc = c.esTotal ? colorTotal : color;
+        const esMod = !c.esTotal && esModuloLayher(c.dist);
+        const label = c.dist.toFixed(2) + 'm' + (esMod ? ' ✓' : '');
+        const sc = c.esTotal ? colorTotal : esMod ? colorModulo : colorBase;
         return (
           <g key={`cx-${i}`} opacity={c.esTotal ? 0.65 : 0.85}>
             {/* Líneas de extensión vertical */}
             <line x1={p1.x} y1={yBase} x2={p1.x} y2={yLine + 4} stroke={sc} strokeWidth="0.5" strokeDasharray="2 2" />
             <line x1={p2.x} y1={yBase} x2={p2.x} y2={yLine + 4} stroke={sc} strokeWidth="0.5" strokeDasharray="2 2" />
             {/* Línea de cota horizontal */}
-            <line x1={p1.x + 6} y1={yLine} x2={p2.x - 6} y2={yLine} stroke={sc} strokeWidth={c.esTotal ? 1.2 : 0.8} />
+            <line x1={p1.x + 6} y1={yLine} x2={p2.x - 6} y2={yLine} stroke={sc} strokeWidth={c.esTotal ? 1.2 : esMod ? 1 : 0.8} />
             {/* Flechas */}
             <polygon points={`${p1.x},${yLine} ${p1.x + 6},${yLine - 3} ${p1.x + 6},${yLine + 3}`} fill={sc} />
             <polygon points={`${p2.x},${yLine} ${p2.x - 6},${yLine - 3} ${p2.x - 6},${yLine + 3}`} fill={sc} />
-            {/* Texto centrado */}
+            {/* Fondo del texto */}
             <rect x={(p1.x + p2.x) / 2 - label.length * fontSize * 0.32} y={yLine - fontSize - 2}
               width={label.length * fontSize * 0.64} height={fontSize + 3} rx="1"
-              fill={modoTecnico ? 'white' : '#f8fafc'} fillOpacity="0.95" stroke={sc} strokeWidth="0.3" />
+              fill={esMod ? '#f0fdf4' : modoTecnico ? 'white' : '#f8fafc'} fillOpacity="0.95" stroke={sc} strokeWidth="0.3" />
             <text x={(p1.x + p2.x) / 2} y={yLine - 4} textAnchor="middle"
-              fontSize={fontSize} fontFamily="monospace" fontWeight={c.esTotal ? 'bold' : 'normal'}
+              fontSize={fontSize} fontFamily="monospace" fontWeight={c.esTotal || esMod ? 'bold' : 'normal'}
               fill={sc}>{label}</text>
           </g>
         );
@@ -93,8 +110,9 @@ export default function Cotas({ piezas, worldToScreen, zoom, worldVisible, dimCa
         const p2 = worldToScreen(xMinPiezas, c.y2);
         const xBase = p1.x - 10;
         const xLine = Math.max(16, xBase - gap * (c.nivel + 1));
+        const esRos = !c.esTotal && esMultiploRoseta(c.dist);
         const label = c.dist.toFixed(2) + 'm';
-        const sc = c.esTotal ? colorTotal : color;
+        const sc = c.esTotal ? colorTotal : esRos ? '#7c3aed' : colorBase;
         return (
           <g key={`cy-${i}`} opacity={c.esTotal ? 0.65 : 0.85}>
             {/* Líneas de extensión horizontal */}

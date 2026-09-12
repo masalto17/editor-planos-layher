@@ -5,6 +5,7 @@ import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
 import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartidos.jsx';
 import CotasPlanta from './CotasPlanta.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
+import PiezaTooltip from '../ui/PiezaTooltip.jsx';
 
 // Extremos de una horizontal en X-Z, respetando su orientacion.
 function extremosXZ(pieza) {
@@ -967,24 +968,9 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           <div className="flex items-center gap-1.5"><span className="inline-block w-3 h-0 border-t-2 border-dashed border-purple-600" style={{height:0}} /><span>Diagonal</span></div>
         </div>
       )}
-      {hoverPieza && !arrastrando && !herramientaActiva && (() => {
-        const p = hoverPieza.pieza;
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (!rect) return null;
-        const left = hoverPieza.screenX - rect.left + 12;
-        const top = hoverPieza.screenY - rect.top - 10;
-        const posStr = p.categoria === 'diagonalPlanta'
-          ? `(${p.x1.toFixed(2)}, Z${p.z1.toFixed(2)}) → (${p.x2.toFixed(2)}, Z${p.z2.toFixed(2)})`
-          : `X: ${p.x.toFixed(2)}  Z: ${(p.z ?? 0).toFixed(2)}  Y: ${(p.y ?? 0).toFixed(2)}m`;
-        return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1.5 rounded shadow-lg max-w-56 z-50"
-            style={{ left, top }}>
-            <div className="font-bold">{p.nombre}</div>
-            <div className="text-gray-300">{p.ref} · {p.peso} kg</div>
-            <div className="text-gray-400 font-mono text-[9px] mt-0.5">{posStr}</div>
-          </div>
-        );
-      })()}
+      {hoverPieza && !arrastrando && !herramientaActiva && (
+        <PiezaTooltip hoverPieza={hoverPieza} svgRef={svgRef.current} vista="planta" />
+      )}
     </div>
   );
 }

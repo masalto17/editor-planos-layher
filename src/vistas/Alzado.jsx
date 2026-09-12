@@ -6,6 +6,7 @@ import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartid
 import Cotas from './Cotas.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
+import PiezaTooltip from '../ui/PiezaTooltip.jsx';
 
 // Vista de alzado frontal: plano X (horizontal) - Y (altura), a la profundidad `filaZ` activa.
 export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
@@ -338,24 +339,9 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           ))}
         </div>
       )}
-      {hoverPieza && !arrastrando && !herramientaActiva && (() => {
-        const p = hoverPieza.pieza;
-        const rect = svgRef.current?.getBoundingClientRect();
-        if (!rect) return null;
-        const left = hoverPieza.screenX - rect.left + 12;
-        const top = hoverPieza.screenY - rect.top - 10;
-        const posStr = p.categoria === 'diagonal'
-          ? `(${p.x1.toFixed(2)}, ${p.y1.toFixed(2)}) → (${p.x2.toFixed(2)}, ${p.y2.toFixed(2)})`
-          : `X: ${p.x.toFixed(2)}  Y: ${p.y.toFixed(2)}`;
-        return (
-          <div className="absolute pointer-events-none bg-black/90 text-white text-[10px] px-2 py-1.5 rounded shadow-lg max-w-56 z-50"
-            style={{ left, top }}>
-            <div className="font-bold">{p.nombre}</div>
-            <div className="text-gray-300">{p.ref} · {p.peso} kg</div>
-            <div className="text-gray-400 font-mono text-[9px] mt-0.5">{posStr}</div>
-          </div>
-        );
-      })()}
+      {hoverPieza && !arrastrando && !herramientaActiva && (
+        <PiezaTooltip hoverPieza={hoverPieza} svgRef={svgRef.current} vista="alzado" />
+      )}
     </div>
   );
 }
