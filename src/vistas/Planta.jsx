@@ -19,6 +19,7 @@ const TECNICO_COLORS_PLANTA = {
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
   base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
   mensula: '#222', escalera: '#222', fenolico: '#444', stringer: '#333',
+  lineArray: '#333', pantallaLED: '#333', luz: '#333',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -540,6 +541,118 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
           fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
           🪜 {pieza.largo}m
         </text>}
+      </g>
+    );
+  }
+
+  // ── Line Array → rectángulo con marca de cluster (huella del array colgado) ──
+  if (pieza.categoria === 'lineArray') {
+    const depth = 0.50; // profundidad del cluster en Z
+    const pTL = worldToScreen(pieza.x, z - depth / 2);
+    const pBR = worldToScreen(pieza.x + pieza.largo, z + depth / 2);
+    const w = pBR.x - pTL.x;
+    const h = pBR.y - pTL.y;
+    const sw = Math.max(0.8, zoom * 0.012);
+    const nCajas = pieza.cajas || 1;
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={pTL.x - 3} y={pTL.y - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Huella del cluster */}
+        <rect x={pTL.x} y={pTL.y} width={w} height={h}
+          fill={sc} fillOpacity="0.2" stroke={sc} strokeWidth={sw} />
+        {/* Cruz central (punto de cuelgue) */}
+        <line x1={pTL.x + w / 2 - Math.max(3, zoom * 0.04)} y1={pTL.y + h / 2}
+          x2={pTL.x + w / 2 + Math.max(3, zoom * 0.04)} y2={pTL.y + h / 2}
+          stroke={sc} strokeWidth={sw * 1.5} />
+        <line x1={pTL.x + w / 2} y1={pTL.y + h / 2 - Math.max(3, zoom * 0.04)}
+          x2={pTL.x + w / 2} y2={pTL.y + h / 2 + Math.max(3, zoom * 0.04)}
+          stroke={sc} strokeWidth={sw * 1.5} />
+        {/* Etiqueta */}
+        {zoom > 25 && w > 18 && (
+          <text x={pTL.x + w / 2} y={pTL.y + h + Math.max(8, zoom * 0.07)}
+            fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" fontWeight="bold" opacity="0.7">
+            🔊 ×{nCajas}
+          </text>
+        )}
+      </g>
+    );
+  }
+
+  // ── Pantalla LED → rectángulo con grid de módulos LED ──
+  if (pieza.categoria === 'pantallaLED') {
+    const depth = 0.15; // profundidad física del panel
+    const pTL = worldToScreen(pieza.x, z - depth / 2);
+    const pBR = worldToScreen(pieza.x + pieza.largo, z + depth / 2);
+    const w = pBR.x - pTL.x;
+    const h = pBR.y - pTL.y;
+    const sw = Math.max(0.8, zoom * 0.012);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={pTL.x - 3} y={pTL.y - 3} width={w + 6} height={h + 6}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        <rect x={pTL.x} y={pTL.y} width={w} height={h}
+          fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} />
+        {/* Línea central (cara de la pantalla) */}
+        <line x1={pTL.x} y1={pTL.y + h / 2} x2={pTL.x + w} y2={pTL.y + h / 2}
+          stroke={sc} strokeWidth={sw * 2} opacity="0.5" />
+        {/* Etiqueta */}
+        {zoom > 25 && w > 18 && (
+          <text x={pTL.x + w / 2} y={pTL.y + h + Math.max(8, zoom * 0.07)}
+            fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" fontWeight="bold" opacity="0.7">
+            📺 {pieza.largo}×{pieza.alto}m
+          </text>
+        )}
+      </g>
+    );
+  }
+
+  // ── Luz → círculo pequeño (fixture colgado, huella puntual) ──
+  if (pieza.categoria === 'luz') {
+    const p = worldToScreen(pieza.x, z);
+    const r = Math.max(3, zoom * pieza.largo * 0.5); // radio proporcional al ancho del fixture
+    const tipoLuz = pieza.tipoLuz || 'movingHead';
+    const esBarra = tipoLuz === 'barra';
+    if (esBarra) {
+      // Barras LED: rectángulo alargado en planta
+      const pR = worldToScreen(pieza.x + pieza.largo, z);
+      const barW = pR.x - p.x;
+      const barH = Math.max(3, zoom * 0.04);
+      const sw = Math.max(0.6, zoom * 0.008);
+      return (
+        <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+          {seleccionada && <rect x={p.x - 3} y={p.y - barH / 2 - 3} width={barW + 6} height={barH + 6}
+            fill="none" stroke="#E30613" strokeWidth="2" />}
+          <rect x={p.x} y={p.y - barH / 2} width={barW} height={barH}
+            fill={sc} fillOpacity="0.4" stroke={sc} strokeWidth={sw} rx="1" />
+          {zoom > 30 && barW > 15 && (
+            <text x={p.x + barW / 2} y={p.y + barH / 2 + Math.max(7, zoom * 0.06)}
+              fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+              fontFamily="monospace" opacity="0.6">BAR</text>
+          )}
+        </g>
+      );
+    }
+    // Fixtures puntuales (moving head, par, fresnel, etc.)
+    const sw = Math.max(0.6, zoom * 0.008);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
+        <circle cx={p.x} cy={p.y} r={r}
+          fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} />
+        {/* Marca central tipo fixture */}
+        <circle cx={p.x} cy={p.y} r={r * 0.35}
+          fill={sc} opacity="0.6" />
+        {/* Etiqueta */}
+        {zoom > 35 && (
+          <text x={p.x} y={p.y + r + Math.max(7, zoom * 0.06)}
+            fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.6">
+            {tipoLuz === 'hazer' ? 'HAZ' : tipoLuz === 'laser' ? 'LSR' : '💡'}
+          </text>
+        )}
       </g>
     );
   }

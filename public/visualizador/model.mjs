@@ -1,6 +1,6 @@
 import { roofGeometry } from './roof.mjs';
 import { importedGeometry } from './imported.mjs';
-export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer']);
+export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer','lineArray','pantallaLED','luz']);
 const n=(v,key,fallback)=>{const a=v[key]??fallback;if(typeof a!=='number'||!Number.isFinite(a)||Math.abs(a)>1000)throw Error(`Dato inválido: ${key}.`);return a;};
 export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
@@ -86,6 +86,47 @@ export function parseDesign(text){
  // Schematic profiles only; not fabricated catalogue sections.
  line(P(),P(len),.012);line(P(0,.055),P(len,.055),.012);line(P(),P(0,.055),.012);line(P(len),P(len,.055),.012);
  issues.push(`${item.name}: perfil esquemático, sección real pendiente.`);
+ }else if(p.categoria==='lineArray'){
+ // Line Array: bumper frame + stack of boxes hanging down
+ const altoCaja=n(p,'altoCaja',.35);const cajas=Math.max(1,Math.min(p.cajas||1,18));
+ const bumperH=0.08;const cableH=0.12;const gap=0.01;const depth=0.50;
+ // Bumper frame (small box at anchor point)
+ const bw=len*0.6;const bOff=(len-bw)/2;
+ box(bw,bumperH,depth*.6);// positioned at P() via offset
+ // Reposition bumper: centered
+ for(let k=primitives.length-6;k<primitives.length;k++){const f=primitives[k];f.pts=f.pts.map(pt=>{const dx=bOff;return p.orientacion==='z'?[pt[0],pt[1],pt[2]+dx]:[pt[0]+dx,pt[1],pt[2]];});}
+ // Cable (two thin lines)
+ line(P(len/2,0),P(len/2,-bumperH-cableH),.008,'tube');
+ // Stack of boxes
+ for(let j=0;j<cajas;j++){
+   const topY=-(bumperH+cableH+j*(altoCaja+gap));
+   const startFaces=primitives.length;
+   // Use face() directly for each box in the stack
+   const bx=0,by=topY-altoCaja,bz=-depth/2;
+   const corners=[[bx,topY,bz],[bx+len,topY,bz],[bx+len,by,bz],[bx,by,bz],
+                   [bx,topY,bz+depth],[bx+len,topY,bz+depth],[bx+len,by,bz+depth],[bx,by,bz+depth]];
+   const c=corners.map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
+ }
+ issues.push(`${item.name}: cluster esquemático de ${cajas} caja(s); geometría de referencia.`);
+ }else if(p.categoria==='pantallaLED'){
+ // Pantalla LED: flat rectangular panel
+ const alto=n(p,'alto',2);const depth=0.10;
+ // Panel as thin box
+ const c=[[0,0,-depth/2],[len,0,-depth/2],[len,alto,-depth/2],[0,alto,-depth/2],
+           [0,0,depth/2],[len,0,depth/2],[len,alto,depth/2],[0,alto,depth/2]].map(([u,v,w])=>P(u,v,w));
+ [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
+ issues.push(`${item.name}: panel plano de referencia ${len}×${alto}m.`);
+ }else if(p.categoria==='luz'){
+ // Luz: small fixture box + clamp
+ const fixtureH=0.30;const fixtureD=0.30;
+ // Clamp (small cylinder approx as lines)
+ line(P(len/2,0),P(len/2,-0.05),.015,'tube');
+ // Fixture body as small box
+ const hw=len/2;const c=[[0,-0.05,-fixtureD/2],[len,-0.05,-fixtureD/2],[len,-0.05-fixtureH,-fixtureD/2],[0,-0.05-fixtureH,-fixtureD/2],
+           [0,-0.05,fixtureD/2],[len,-0.05,fixtureD/2],[len,-0.05-fixtureH,fixtureD/2],[0,-0.05-fixtureH,fixtureD/2]].map(([u,v,w])=>P(u,v,w));
+ [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k])));
+ issues.push(`${item.name}: fixture esquemático de referencia.`);
  }else{
  line(P(),P(len),.024,p.categoria==='barandilla'?'rail':'tube');for(const u of [0,len]){line(P(u,-.045),P(u,.045),.028,'head');}
  }
