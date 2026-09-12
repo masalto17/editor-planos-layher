@@ -16,6 +16,9 @@ import Escalera from './Escalera.jsx';
 import ApoyaTecho from './ApoyaTecho.jsx';
 import Fenolico from './Fenolico.jsx';
 import Stringer from './Stringer.jsx';
+import LineArray from './LineArray.jsx';
+import PantallaLED from './PantallaLED.jsx';
+import MovingHead from './MovingHead.jsx';
 import GenericPiezaRender from './GenericPiezaRender.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -58,6 +61,9 @@ const RENDERERS = {
   apoyaTecho: ApoyaTecho,
   fenolico: Fenolico,
   stringer: Stringer,
+  lineArray: LineArray,
+  pantallaLED: PantallaLED,
+  luz: MovingHead,
 };
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)
@@ -66,6 +72,7 @@ const TECNICO_COLORS = {
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', base: '#222', collarin: '#222',
   vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
   mensula: '#333', escalera: '#222', apoyaTecho: '#333', fenolico: '#444', stringer: '#333',
+  lineArray: '#333', pantallaLED: '#333', luz: '#333',
 };
 
 // Dispatcher: renderiza una pieza en el Alzado (plano X-Y) según su categoría.

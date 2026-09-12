@@ -11,6 +11,7 @@ const HORIZONTAL_CATS = new Set([
   'horizontalO', 'vigaPuente', 'horizontalU', 'plataforma', 'barandilla', 'rodapie',
   'vigaIPN', 'celosia', 'truss', 'techo',
   'mensula', 'escalera', 'fenolico', 'stringer',
+  'lineArray', 'pantallaLED', 'luz',  // elementos de evento colgados de la estructura
   'importada',  // piezas importadas se tratan como horizontales por defecto
 ]);
 export const ES_TIPO_HORIZONTAL = c => HORIZONTAL_CATS.has(c);
@@ -25,6 +26,7 @@ export const Z_ORDER = {
   vigaPuente: 4, horizontalU: 5, stringer: 5.2,
   plataforma: 6, fenolico: 6.2, rodapie: 7, barandilla: 8,
   cumbrera: 9, techo: 9.5,
+  lineArray: 10, pantallaLED: 10.2, luz: 10.5,
   importada: 5.5,
 };
 
@@ -33,5 +35,6 @@ export const DESPIECE_ORDER = {
   mensula: 5.5, stringer: 5.8, plataforma: 6, fenolico: 6.2, barandilla: 7, rodapie: 8,
   diagonal: 9, diagonalPlanta: 9.5, escalera: 9.7,
   apoyaTecho: 10, celosia: 10.2, cumbrera: 10.5, techo: 10.7, truss: 11, vigaIPN: 12,
+  lineArray: 14, pantallaLED: 15, luz: 16,
   importada: 13,
 };

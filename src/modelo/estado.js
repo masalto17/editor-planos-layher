@@ -162,6 +162,13 @@ export function useDisenoState() {
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
+    // Evento: campos específicos de sonido/video/luces
+    if (h.altoCaja) n.altoCaja = h.altoCaja;
+    if (h.cajas) n.cajas = h.cajas;
+    if (h.tipoLA) n.tipoLA = h.tipoLA;
+    if (h.alto) n.alto = h.alto;
+    if (h.tipoLuz) n.tipoLuz = h.tipoLuz;
+    if (h.consumoW) n.consumoW = h.consumoW;
     // Pieza importada: copiar datos de render genérico
     Object.assign(n, datosImportados(h));
 
@@ -191,6 +198,13 @@ export function useDisenoState() {
     if (h.modulosAncho) n.modulosAncho = h.modulosAncho;
     if (h.celosiasPorLado) n.celosiasPorLado = h.celosiasPorLado;
     if (h.altoSuperior) n.altoSuperior = h.altoSuperior;
+    // Evento: campos específicos de sonido/video/luces
+    if (h.altoCaja) n.altoCaja = h.altoCaja;
+    if (h.cajas) n.cajas = h.cajas;
+    if (h.tipoLA) n.tipoLA = h.tipoLA;
+    if (h.alto) n.alto = h.alto;
+    if (h.tipoLuz) n.tipoLuz = h.tipoLuz;
+    if (h.consumoW) n.consumoW = h.consumoW;
     // Pieza importada: copiar datos de render genérico
     Object.assign(n, datosImportados(h));
 

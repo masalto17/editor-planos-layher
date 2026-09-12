@@ -1,7 +1,11 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle, Search, X, Clock } from 'lucide-react';
-import { CATALOGO, CAT_KEYS } from '../catalogo/piezas.js';
+import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
+
+// Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
+// Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
+const CATALOGO_ALL = { ...CATALOGO, ...CATALOGO_EVENTO };
 
 // ─── Supergrupos lógicos (orden de armado) ─────────────────────────
 const GRUPOS = [
@@ -15,6 +19,8 @@ const GRUPOS = [
     cats: ['mensulas', 'apoyaTechos', 'celosias', 'cumbreras', 'techos'] },
   { id: 'tecnica', label: 'Técnica / Rigging', icon: '🎤',
     cats: ['truss', 'vigasIPN'] },
+  { id: 'evento', label: 'Evento', icon: '🎪',
+    cats: ['lineArrays', 'pantallasLED', 'luces'] },
 ];
 
 // ─── Mini-preview SVG por categoría ────────────────────────────────
@@ -111,8 +117,26 @@ function PiezaPreview({ pieza, selected, size = 24 }) {
         <line x1={m} y1={s/2-4} x2={m} y2={s/2+4} stroke={c} strokeWidth={sw*1.5} />
         <line x1={s-m} y1={s/2-4} x2={s-m} y2={s/2+4} stroke={c} strokeWidth={sw*1.5} />
       </>}
+      {cat === 'lineArray' && <>
+        <line x1={s/2} y1={m} x2={s/2} y2={m+2} stroke={c} strokeWidth={sw*0.7} />
+        {[0,1,2].map(i => {
+          const yy = m + 3 + i * 3.2, wt = 3 + i * 0.6, wb = wt + 1.4;
+          return <polygon key={i} points={`${s/2-wt/2},${yy} ${s/2+wt/2},${yy} ${s/2+wb/2},${yy+2.4} ${s/2-wb/2},${yy+2.4}`} fill={c} opacity={0.85} />;
+        })}
+      </>}
+      {cat === 'pantallaLED' && <>
+        <rect x={m} y={m+2} width={s-2*m} height={s-2*m-4} fill={c} opacity={0.75} stroke="#111" strokeWidth={sw*0.6} rx={0.5} />
+        <line x1={s/2} y1={m+2} x2={s/2} y2={s-m-2} stroke="#000" strokeWidth={0.4} opacity={0.3} />
+        <line x1={m} y1={s/2} x2={s-m} y2={s/2} stroke="#000" strokeWidth={0.4} opacity={0.3} />
+      </>}
+      {cat === 'luz' && <>
+        <line x1={s/2} y1={m} x2={s/2} y2={m+3} stroke={c} strokeWidth={sw} />
+        <path d={`M ${s/2-3.5} ${m+3} L ${s/2-3.5} ${s/2+1} M ${s/2+3.5} ${m+3} L ${s/2+3.5} ${s/2+1} M ${s/2-3.5} ${m+3} L ${s/2+3.5} ${m+3}`}
+          fill="none" stroke={c} strokeWidth={sw*0.8} strokeLinecap="round" />
+        <circle cx={s/2} cy={s/2+2.5} r={2.6} fill={c} opacity={0.9} />
+      </>}
       {/* Fallback para categorías no dibujadas arriba */}
-      {!['vertical','horizontalO','vigaPuente','horizontalU','plataforma','barandilla','rodapie','diagonal','diagonalPlanta','base','collarin','mensula','escalera','apoyaTecho','fenolico','stringer','celosia','truss','cumbrera','techo','vigaIPN'].includes(cat) &&
+      {!['vertical','horizontalO','vigaPuente','horizontalU','plataforma','barandilla','rodapie','diagonal','diagonalPlanta','base','collarin','mensula','escalera','apoyaTecho','fenolico','stringer','celosia','truss','cumbrera','techo','vigaIPN','lineArray','pantallaLED','luz'].includes(cat) &&
         <rect x={m} y={m} width={s-2*m} height={s-2*m} fill={c} opacity={0.2} stroke={c} strokeWidth={sw*0.5} rx={2} />
       }
     </svg>
@@ -148,15 +172,22 @@ function MiniPreviewImportada({ visual, largo, alto, color, selected }) {
 }
 
 // ─── Pieza individual ──────────────────────────────────────────────
+// Categorías de evento: muestran nombre descriptivo en vez de medida
+const CATS_EVENTO = new Set(['lineArray', 'pantallaLED', 'luz']);
+
 function PiezaItem({ pieza, activa, onSelect, showRef }) {
   const sel = activa?.id === pieza.id;
+  const esEvento = CATS_EVENTO.has(pieza.categoria);
+
   const medida = pieza.categoria === 'diagonal'
     ? `${pieza.ancho.toFixed(2)}×${pieza.alto.toFixed(2)}`
     : pieza.anchoPlat
       ? `${pieza.anchoPlat.toFixed(2)}×${pieza.largo.toFixed(2)}`
       : pieza.categoria === 'techo'
         ? `${pieza.largo.toFixed(2)}m (${pieza.modulosAncho} mód)`
-        : `${pieza.largo.toFixed(2)}m`;
+        : pieza.categoria === 'pantallaLED'
+          ? `${pieza.largo.toFixed(2)}×${pieza.alto.toFixed(2)}`
+          : `${pieza.largo.toFixed(2)}m`;
 
   return (
     <button onClick={() => onSelect(pieza)}
@@ -165,8 +196,13 @@ function PiezaItem({ pieza, activa, onSelect, showRef }) {
         sel ? 'bg-red-600 text-white border-red-700 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-400 hover:shadow-sm text-gray-800'}`}>
       <PiezaPreview pieza={pieza} selected={sel} size={22} />
       <div className="flex-1 min-w-0 text-left">
-        <span className="font-semibold">{medida}</span>
-        {showRef && <span className={`ml-1 text-[8px] ${sel ? 'text-red-200' : 'text-gray-400'}`}>{pieza.ref}</span>}
+        {esEvento
+          ? <span className="font-semibold truncate block">{pieza.nombre}</span>
+          : <>
+              <span className="font-semibold">{medida}</span>
+              {showRef && <span className={`ml-1 text-[8px] ${sel ? 'text-red-200' : 'text-gray-400'}`}>{pieza.ref}</span>}
+            </>
+        }
       </div>
       <span className={`text-[9px] shrink-0 tabular-nums ${sel ? 'text-red-100' : 'text-gray-400'}`}>{pieza.peso}kg</span>
     </button>
@@ -207,7 +243,7 @@ function SuperGrupo({ grupo, secciones, activa, onSelect, cantPorCat, showRef, s
   const [abierto, setAbierto] = useState(true);
   const totalColocadas = secciones.reduce((sum, ck) => sum + (cantPorCat[ck.cat] || 0), 0);
   const tieneActiva = secciones.some(ck =>
-    CATALOGO[ck.key].some(p => activa?.id === p.id)
+    CATALOGO_ALL[ck.key].some(p => activa?.id === p.id)
   );
 
   // Abrir automáticamente si tiene pieza activa
@@ -232,7 +268,7 @@ function SuperGrupo({ grupo, secciones, activa, onSelect, cantPorCat, showRef, s
           {secciones.map(ck => (
             <SeccionPaleta key={ck.key} titulo={ck.label}
               tooltip={ck.tooltip}
-              piezas={CATALOGO[ck.key].map(p => ({ ...p, categoria: ck.cat }))}
+              piezas={CATALOGO_ALL[ck.key].map(p => ({ ...p, categoria: ck.cat }))}
               activa={activa} onSelect={onSelect}
               cantColocadas={cantPorCat[ck.cat] || 0}
               showRef={showRef}
@@ -300,6 +336,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
       <div className="flex flex-wrap gap-1 mt-0.5 px-0.5">
         {recientes.map(p => {
           const sel = activa?.id === p.id;
+          const esEv = CATS_EVENTO.has(p.categoria);
           const medida = p.categoria === 'diagonal'
             ? `${p.ancho.toFixed(2)}×${p.alto.toFixed(2)}`
             : p.anchoPlat ? `${p.anchoPlat.toFixed(2)}×${p.largo.toFixed(2)}`
@@ -310,7 +347,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
               className={`flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded border transition ${
                 sel ? 'bg-red-600 text-white border-red-700' : 'bg-gray-50 border-gray-200 hover:border-gray-400 text-gray-700'}`}>
               <PiezaPreview pieza={p} selected={sel} size={16} />
-              <span className="font-semibold">{medida}</span>
+              <span className="font-semibold truncate max-w-[120px]">{esEv ? p.nombre : medida}</span>
             </button>
           );
         })}
@@ -355,7 +392,7 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
 
   // Todas las secciones visibles según vista
   const seccionesVisibles = useMemo(() =>
-    CAT_KEYS.filter(ck => !ck.vistas || ck.vistas.includes(vista)),
+    [...CAT_KEYS, ...CAT_KEYS_EVENTO].filter(ck => !ck.vistas || ck.vistas.includes(vista)),
     [vista]
   );
 
@@ -368,7 +405,7 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
     return seccionesVisibles.filter(ck => {
       // Filtrar si la sección misma o alguna pieza coincide
       if (ck.label.toLowerCase().includes(terminoBusqueda)) return true;
-      return CATALOGO[ck.key].some(p =>
+      return CATALOGO_ALL[ck.key].some(p =>
         (p.nombre || '').toLowerCase().includes(terminoBusqueda) ||
         (p.ref || '').toLowerCase().includes(terminoBusqueda) ||
         String(p.largo).includes(terminoBusqueda) ||
