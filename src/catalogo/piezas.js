@@ -246,3 +246,6 @@ export function elegirDiagonal(anchoObj, altoObj) {
   });
   return mejor;
 }
+
+// Re-export catálogo de elementos de evento (sonido, video, iluminación)
+export { CATALOGO_EVENTO, CAT_KEYS_EVENTO } from './evento.js';
