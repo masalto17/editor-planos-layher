@@ -1,28 +1,35 @@
 // Luces — fixtures de iluminación colgados de truss/estructura.
-// Soporta: movingHead, wash, beam, spot, par, fresnel, profile, followSpot,
-// strobe, blinder, laser, barra, hazer.
-// (x, y) = punto de anclaje; el fixture cuelga hacia abajo.
+// Todas las dimensiones en metros reales → convertidas via zoom para escala correcta.
+// (x, y) = punto de anclaje (clamp al truss); el fixture cuelga hacia abajo.
 export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo, tipoLuz = 'movingHead' } = pieza;
-  const pL = worldToScreen(x, y), pR = worldToScreen(x + largo, y);
-  const midX = (pL.x + pR.x) / 2;
-  const topY = pL.y;
-  const wAnchor = Math.max(pR.x - pL.x, 4);
   const gid = `mhg-${pieza.id}`;
 
-  const clampW = Math.max(6, zoom * 0.05);
-  const clampH = Math.max(2.5, zoom * 0.02);
-  const tecW = Math.max(0.8, zoom * 0.01);
-  const showBeam = zoom > 25;
+  // Posiciones y dimensiones en pantalla
+  const pL = worldToScreen(x, y);
+  const pR = worldToScreen(x + largo, y);
+  const midX = (pL.x + pR.x) / 2;
+  const topY = pL.y;
+  const wPx = Math.max(4, pR.x - pL.x);
 
-  // ─── Abrazadera al truss (reutilizable) ──
-  const renderClamp = (cx, cy, w = clampW, h = clampH) => (
+  // metros → píxeles (para dimensiones proporcionales)
+  const m = (v) => v * zoom;
+  const sw = Math.max(0.4, zoom * 0.004);
+  const tecW = Math.max(0.8, zoom * 0.012);
+  const showDetail = zoom > 25;
+  const showBeam = zoom > 18;
+
+  // ── Clamp universal (abrazadera al truss) ──
+  const clampW = m(0.08);
+  const clampH = m(0.035);
+
+  const renderClamp = (cx, cy, cw = clampW, ch = clampH) => (
     <>
-      <rect x={cx - w / 2} y={cy} width={w} height={h}
+      <rect x={cx - cw / 2} y={cy} width={cw} height={ch}
         fill={modoTecnico ? 'none' : '#333'} stroke={modoTecnico ? sc : '#000'}
-        strokeWidth={modoTecnico ? tecW : 0.3} rx="0.5" />
-      {!modoTecnico && (
-        <line x1={cx - w / 2 + 0.5} y1={cy + 0.5} x2={cx + w / 2 - 0.5} y2={cy + 0.5}
+        strokeWidth={modoTecnico ? tecW : sw} rx={Math.max(0.3, m(0.003))} />
+      {!modoTecnico && cw > 3 && (
+        <line x1={cx - cw / 2 + 0.5} y1={cy + 0.5} x2={cx + cw / 2 - 0.5} y2={cy + 0.5}
           stroke="#fff" strokeWidth={0.4} opacity="0.2" />
       )}
     </>
@@ -30,36 +37,57 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
 
   // ─── BARRA LED ──────────────────────────────────────────────
   if (tipoLuz === 'barra') {
-    const barH = Math.max(3, zoom * 0.03);
-    const nLEDs = Math.max(3, Math.round(wAnchor / Math.max(4, zoom * 0.04)));
+    const barH = m(0.08);
+    const nLEDs = Math.max(3, Math.round(wPx / Math.max(3, m(0.06))));
+    const totalH = clampH + barH;
+
     if (modoTecnico) {
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={pL.x - 3} y={topY - clampH - 3} width={wAnchor + 6} height={clampH + barH + 6}
+          {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <rect x={pL.x} y={topY} width={wAnchor} height={barH} fill="none" stroke={sc} strokeWidth={tecW} />
+          <rect x={pL.x} y={topY + clampH} width={wPx} height={barH}
+            fill="none" stroke={sc} strokeWidth={tecW} />
+          <line x1={pL.x + wPx * 0.2} y1={topY} x2={pL.x + wPx * 0.2} y2={topY + clampH}
+            stroke={sc} strokeWidth={tecW * 0.7} />
+          <line x1={pL.x + wPx * 0.8} y1={topY} x2={pL.x + wPx * 0.8} y2={topY + clampH}
+            stroke={sc} strokeWidth={tecW * 0.7} />
         </g>
       );
     }
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={pL.x - 3} y={topY - clampH - 3} width={wAnchor + 6} height={clampH + barH + 6}
+        {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
-        {renderClamp(pL.x + wAnchor * 0.2, topY - clampH, clampW * 0.7, clampH)}
-        {renderClamp(pL.x + wAnchor * 0.8, topY - clampH, clampW * 0.7, clampH)}
-        <rect x={pL.x + 0.4} y={topY + 0.4} width={wAnchor} height={barH}
-          fill="#000" opacity="0.06" rx="0.6" />
-        <rect x={pL.x} y={topY} width={wAnchor} height={barH}
-          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="0.6" opacity="0.9" />
-        <line x1={pL.x + 1} y1={topY + 0.8} x2={pR.x - 1} y2={topY + 0.8}
-          stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.003)} opacity="0.3" />
-        {zoom > 35 && Array.from({ length: nLEDs }, (_, i) => (
-          <circle key={i} cx={pL.x + (wAnchor * (i + 0.5)) / nLEDs}
-            cy={topY + barH / 2} r={Math.max(0.8, barH * 0.2)} fill="#fff" opacity="0.45" />
+        {renderClamp(pL.x + wPx * 0.2, topY, clampW * 0.7, clampH)}
+        {renderClamp(pL.x + wPx * 0.8, topY, clampW * 0.7, clampH)}
+        {/* Sombra */}
+        <rect x={pL.x + 0.5} y={topY + clampH + 0.5} width={wPx} height={barH}
+          fill="#000" opacity="0.06" rx={m(0.005)} />
+        {/* Cuerpo */}
+        <rect x={pL.x} y={topY + clampH} width={wPx} height={barH}
+          fill={sc} stroke="#000" strokeWidth={sw} rx={m(0.005)} opacity="0.9" />
+        {/* Highlight */}
+        <line x1={pL.x + 1} y1={topY + clampH + 0.8} x2={pR.x - 1} y2={topY + clampH + 0.8}
+          stroke="#fff" strokeWidth={Math.max(0.4, m(0.003))} opacity="0.3" />
+        {/* LEDs individuales */}
+        {showDetail && Array.from({ length: nLEDs }, (_, i) => (
+          <circle key={i} cx={pL.x + (wPx * (i + 0.5)) / nLEDs}
+            cy={topY + clampH + barH / 2} r={Math.max(0.8, barH * 0.2)}
+            fill="#fff" opacity="0.45" />
         ))}
+        {/* Haz de luz difuso */}
         {showBeam && (
-          <rect x={pL.x} y={topY + barH} width={wAnchor} height={Math.max(4, zoom * 0.04)}
+          <rect x={pL.x} y={topY + totalH} width={wPx} height={m(0.15)}
             fill={sc} opacity="0.06" />
+        )}
+        {/* Etiqueta */}
+        {showDetail && wPx > 15 && (
+          <text x={midX} y={topY + totalH + m(0.10)}
+            fontSize={Math.max(6, m(0.05))} fill={sc} textAnchor="middle"
+            fontFamily="sans-serif" fontWeight="bold" opacity="0.5">
+            BARRA
+          </text>
         )}
       </g>
     );
@@ -67,18 +95,21 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
 
   // ─── BLINDER ────────────────────────────────────────────────
   if (tipoLuz === 'blinder') {
-    const bodyH = Math.max(5, zoom * 0.05);
+    const bodyH = m(0.18);
     const nCells = largo >= 0.5 ? 4 : 2;
-    const cellGap = Math.max(1, zoom * 0.01);
+    const cellGap = m(0.01);
+    const totalH = clampH + bodyH;
+
     if (modoTecnico) {
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wAnchor + 6} height={clampH + bodyH + 6}
+          {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <rect x={pL.x} y={topY + clampH} width={wAnchor} height={bodyH} fill="none" stroke={sc} strokeWidth={tecW} />
+          <rect x={pL.x} y={topY + clampH} width={wPx} height={bodyH}
+            fill="none" stroke={sc} strokeWidth={tecW} />
           {Array.from({ length: nCells - 1 }, (_, i) => (
-            <line key={i} x1={pL.x + (wAnchor * (i + 1)) / nCells} y1={topY + clampH}
-              x2={pL.x + (wAnchor * (i + 1)) / nCells} y2={topY + clampH + bodyH}
+            <line key={i} x1={pL.x + (wPx * (i + 1)) / nCells} y1={topY + clampH}
+              x2={pL.x + (wPx * (i + 1)) / nCells} y2={topY + clampH + bodyH}
               stroke={sc} strokeWidth={tecW * 0.5} />
           ))}
         </g>
@@ -86,21 +117,32 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
     }
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wAnchor + 6} height={clampH + bodyH + 6}
+        {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {renderClamp(midX, topY)}
-        <rect x={pL.x} y={topY + clampH} width={wAnchor} height={bodyH}
-          fill="#222" stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="0.5" opacity="0.9" />
+        {/* Sombra */}
+        <rect x={pL.x + 0.5} y={topY + clampH + 0.5} width={wPx} height={bodyH}
+          fill="#000" opacity="0.06" rx={m(0.004)} />
+        {/* Cuerpo */}
+        <rect x={pL.x} y={topY + clampH} width={wPx} height={bodyH}
+          fill="#222" stroke="#000" strokeWidth={sw} rx={m(0.004)} opacity="0.9" />
+        {/* Celdas con lámparas */}
         {Array.from({ length: nCells }, (_, i) => {
-          const cellW = (wAnchor - (nCells + 1) * cellGap) / nCells;
+          const cellW = (wPx - (nCells + 1) * cellGap) / nCells;
           const cx = pL.x + cellGap + i * (cellW + cellGap) + cellW / 2;
           const cy = topY + clampH + bodyH / 2;
-          return <circle key={i} cx={cx} cy={cy} r={Math.min(cellW, bodyH) * 0.35}
-            fill="#fde68a" opacity="0.7" />;
+          const r = Math.min(cellW, bodyH) * 0.35;
+          return (
+            <g key={i}>
+              <circle cx={cx} cy={cy} r={r} fill="#fde68a" opacity="0.7" />
+              {showDetail && <circle cx={cx - r * 0.25} cy={cy - r * 0.25} r={r * 0.2} fill="#fff" opacity="0.4" />}
+            </g>
+          );
         })}
+        {/* Haz de luz cálido */}
         {showBeam && (
-          <rect x={pL.x - 1} y={topY + clampH + bodyH} width={wAnchor + 2} height={Math.max(6, zoom * 0.06)}
-            fill="#fde68a" opacity="0.08" />
+          <rect x={pL.x - m(0.02)} y={topY + totalH} width={wPx + m(0.04)} height={m(0.20)}
+            fill="#fde68a" opacity="0.06" />
         )}
       </g>
     );
@@ -108,38 +150,45 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
 
   // ─── HAZER (máquina de haze) ────────────────────────────────
   if (tipoLuz === 'hazer') {
-    const bodyH = Math.max(5, zoom * 0.05);
+    const bodyH = m(0.22);
+    const totalH = clampH + bodyH;
+
     if (modoTecnico) {
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wAnchor + 6} height={clampH + bodyH + 6}
+          {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <rect x={pL.x} y={topY + clampH} width={wAnchor} height={bodyH} fill="none" stroke={sc} strokeWidth={tecW} />
-          <text x={midX} y={topY + clampH + bodyH / 2 + 2} fontSize={Math.max(4, zoom * 0.03)}
-            fill={sc} textAnchor="middle" fontFamily="monospace">H</text>
+          <rect x={pL.x} y={topY + clampH} width={wPx} height={bodyH}
+            fill="none" stroke={sc} strokeWidth={tecW} />
+          <text x={midX} y={topY + clampH + bodyH / 2 + m(0.02)}
+            fontSize={Math.max(5, m(0.04))} fill={sc} textAnchor="middle" fontFamily="monospace">H</text>
         </g>
       );
     }
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wAnchor + 6} height={clampH + bodyH + 6}
+        {seleccionada && <rect x={pL.x - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {renderClamp(midX, topY)}
-        <rect x={pL.x + 0.4} y={topY + clampH + 0.4} width={wAnchor} height={bodyH}
-          fill="#000" opacity="0.06" rx="1" />
-        <rect x={pL.x} y={topY + clampH} width={wAnchor} height={bodyH}
-          fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="1" opacity="0.85" />
-        <line x1={pL.x + 1} y1={topY + clampH + 1} x2={pL.x + wAnchor - 1} y2={topY + clampH + 1}
+        {/* Sombra */}
+        <rect x={pL.x + 0.5} y={topY + clampH + 0.5} width={wPx} height={bodyH}
+          fill="#000" opacity="0.06" rx={m(0.008)} />
+        {/* Cuerpo */}
+        <rect x={pL.x} y={topY + clampH} width={wPx} height={bodyH}
+          fill={sc} stroke="#000" strokeWidth={sw} rx={m(0.008)} opacity="0.85" />
+        {/* Highlight */}
+        <line x1={pL.x + 1} y1={topY + clampH + 1} x2={pR.x - 1} y2={topY + clampH + 1}
           stroke="#fff" strokeWidth={0.4} opacity="0.2" />
         {/* Salida de humo */}
-        {zoom > 35 && (
-          <circle cx={pL.x + wAnchor * 0.7} cy={topY + clampH + bodyH / 2}
+        {showDetail && (
+          <circle cx={pL.x + wPx * 0.7} cy={topY + clampH + bodyH / 2}
             r={Math.max(1.5, bodyH * 0.2)} fill="#e2e8f0" opacity="0.4" />
         )}
-        {zoom > 40 && (
-          <text x={midX} y={topY + clampH + bodyH + 8}
-            fontSize={Math.max(5, zoom * 0.035)} fill={sc} textAnchor="middle"
-            fontFamily="monospace" opacity="0.5">HAZE</text>
+        {/* Etiqueta */}
+        {showDetail && wPx > 10 && (
+          <text x={midX} y={topY + totalH + m(0.08)}
+            fontSize={Math.max(5, m(0.04))} fill={sc} textAnchor="middle"
+            fontFamily="sans-serif" fontWeight="bold" opacity="0.5">HAZE</text>
         )}
       </g>
     );
@@ -147,41 +196,52 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
 
   // ─── LÁSER ──────────────────────────────────────────────────
   if (tipoLuz === 'laser') {
-    const bodyR = Math.max(4, zoom * 0.04);
+    const dropH = m(0.02);
+    const bodyH = m(0.18);
+    const laserTopY = topY + clampH + dropH;
+    const totalH = clampH + dropH + bodyH;
+
     if (modoTecnico) {
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={midX - bodyR - 3} y={topY - 3} width={bodyR * 2 + 6} height={clampH + bodyR * 2 + 6}
+          {seleccionada && <rect x={midX - wPx / 2 - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <line x1={midX} y1={topY} x2={midX} y2={topY + clampH} stroke={sc} strokeWidth={tecW} />
-          <rect x={midX - bodyR} y={topY + clampH} width={bodyR * 2} height={bodyR * 1.5}
+          <line x1={midX} y1={topY} x2={midX} y2={laserTopY} stroke={sc} strokeWidth={tecW} />
+          <rect x={midX - wPx / 2} y={laserTopY} width={wPx} height={bodyH}
             fill="none" stroke={sc} strokeWidth={tecW} />
         </g>
       );
     }
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={midX - bodyR - 3} y={topY - 3} width={bodyR * 2 + 6} height={clampH + bodyR * 2 + 6}
+        {seleccionada && <rect x={midX - wPx / 2 - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {renderClamp(midX, topY, clampW * 0.7, clampH)}
-        <rect x={midX - bodyR} y={topY + clampH} width={bodyR * 2} height={bodyR * 1.5}
-          fill="#111" stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="1" opacity="0.9" />
-        <circle cx={midX} cy={topY + clampH + bodyR * 0.5} r={bodyR * 0.3}
+        <line x1={midX} y1={topY + clampH} x2={midX} y2={laserTopY}
+          stroke="#555" strokeWidth={Math.max(0.8, m(0.006))} />
+        {/* Sombra */}
+        <rect x={midX - wPx / 2 + 0.5} y={laserTopY + 0.5} width={wPx} height={bodyH}
+          fill="#000" opacity="0.06" rx={m(0.005)} />
+        {/* Cuerpo */}
+        <rect x={midX - wPx / 2} y={laserTopY} width={wPx} height={bodyH}
+          fill="#111" stroke="#000" strokeWidth={sw} rx={m(0.005)} opacity="0.9" />
+        {/* Apertura láser */}
+        <circle cx={midX} cy={laserTopY + bodyH * 0.35} r={wPx * 0.2}
           fill={sc} opacity="0.8" />
-        <circle cx={midX} cy={topY + clampH + bodyR * 0.5} r={bodyR * 0.15}
+        <circle cx={midX} cy={laserTopY + bodyH * 0.35} r={wPx * 0.1}
           fill="#fff" opacity="0.6" />
         {/* Haces de láser */}
         {showBeam && (
           <>
-            <line x1={midX} y1={topY + clampH + bodyR * 1.5}
-              x2={midX - bodyR * 4} y2={topY + clampH + bodyR * 8}
-              stroke={sc} strokeWidth={0.6} opacity="0.15" />
-            <line x1={midX} y1={topY + clampH + bodyR * 1.5}
-              x2={midX + bodyR * 3} y2={topY + clampH + bodyR * 7}
-              stroke={sc} strokeWidth={0.6} opacity="0.15" />
-            <line x1={midX} y1={topY + clampH + bodyR * 1.5}
-              x2={midX} y2={topY + clampH + bodyR * 9}
+            <line x1={midX} y1={laserTopY + bodyH}
+              x2={midX - m(0.40)} y2={laserTopY + bodyH + m(0.80)}
               stroke={sc} strokeWidth={0.6} opacity="0.12" />
+            <line x1={midX} y1={laserTopY + bodyH}
+              x2={midX + m(0.30)} y2={laserTopY + bodyH + m(0.70)}
+              stroke={sc} strokeWidth={0.6} opacity="0.12" />
+            <line x1={midX} y1={laserTopY + bodyH}
+              x2={midX} y2={laserTopY + bodyH + m(0.90)}
+              stroke={sc} strokeWidth={0.6} opacity="0.10" />
           </>
         )}
       </g>
@@ -193,56 +253,82 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
   if (esSimple) {
     const esRect = tipoLuz === 'strobe';
     const esFollow = tipoLuz === 'followSpot';
-    const r = esFollow ? Math.max(5, zoom * 0.05) : Math.max(3.5, zoom * 0.035);
-    const bodyH = esRect ? r * 1.4 : esFollow ? r * 2 : r * 2;
+
+    // Dimensiones reales: el fixture cuelga proporcional a su largo
+    const dropH = m(esFollow ? 0.04 : 0.02);
+    const bodyH = esRect ? m(0.12) : esFollow ? m(0.45) : m(largo * 0.65);
+    const bodyR = wPx / 2;
+    const fixtureTopY = topY + clampH + dropH;
+    const totalH = clampH + dropH + bodyH;
 
     if (modoTecnico) {
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={midX - r - 3} y={topY - 3} width={r * 2 + 6} height={clampH + bodyH + 6}
+          {seleccionada && <rect x={midX - wPx / 2 - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <line x1={midX} y1={topY} x2={midX} y2={topY + clampH} stroke={sc} strokeWidth={tecW} />
+          <line x1={midX} y1={topY} x2={midX} y2={fixtureTopY} stroke={sc} strokeWidth={tecW} />
           {esRect
-            ? <rect x={midX - r} y={topY + clampH} width={r * 2} height={bodyH} fill="none" stroke={sc} strokeWidth={tecW} />
-            : <circle cx={midX} cy={topY + clampH + r} r={r} fill="none" stroke={sc} strokeWidth={tecW} />}
+            ? <rect x={midX - wPx / 2} y={fixtureTopY} width={wPx} height={bodyH}
+                fill="none" stroke={sc} strokeWidth={tecW} />
+            : <ellipse cx={midX} cy={fixtureTopY + Math.min(bodyR, bodyH / 2)}
+                rx={bodyR} ry={Math.min(bodyR, bodyH / 2)}
+                fill="none" stroke={sc} strokeWidth={tecW} />}
         </g>
       );
     }
+
+    const bodyCy = fixtureTopY + Math.min(bodyR, bodyH / 2);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={midX - r - 3} y={topY - 3} width={r * 2 + 6} height={clampH + bodyH + 6}
+        {seleccionada && <rect x={midX - wPx / 2 - 3} y={topY - 3} width={wPx + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {renderClamp(midX, topY, clampW * (esFollow ? 0.5 : 0.66), clampH)}
-        {/* Brazo articulado (follow spot es más largo) */}
-        <line x1={midX} y1={topY + clampH} x2={midX} y2={topY + clampH + (esFollow ? 3 : 0)}
-          stroke="#555" strokeWidth={Math.max(0.8, zoom * 0.008)} />
+        {/* Brazo */}
+        <line x1={midX} y1={topY + clampH} x2={midX} y2={fixtureTopY}
+          stroke="#555" strokeWidth={Math.max(0.8, m(0.006))} />
+
+        {/* Haz de luz */}
+        {showBeam && !esRect && (
+          <polygon points={`${midX - m(0.02)},${fixtureTopY + bodyH} ${midX + m(0.02)},${fixtureTopY + bodyH} ${midX + m(0.30)},${fixtureTopY + bodyH + m(0.60)} ${midX - m(0.30)},${fixtureTopY + bodyH + m(0.60)}`}
+            fill={sc} opacity="0.06" />
+        )}
+
         {esRect ? (
-          <rect x={midX - r} y={topY + clampH} width={r * 2} height={bodyH}
-            fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="0.5" opacity="0.9" />
+          <>
+            <rect x={midX - wPx / 2 + 0.5} y={fixtureTopY + 0.5} width={wPx} height={bodyH}
+              fill="#000" opacity="0.06" rx={m(0.003)} />
+            <rect x={midX - wPx / 2} y={fixtureTopY} width={wPx} height={bodyH}
+              fill={sc} stroke="#000" strokeWidth={sw} rx={m(0.003)} opacity="0.9" />
+            {/* Flash del strobe */}
+            <rect x={midX - wPx * 0.35} y={fixtureTopY + bodyH * 0.2} width={wPx * 0.7} height={bodyH * 0.6}
+              fill="#fff" opacity="0.3" rx={m(0.002)} />
+          </>
         ) : (
           <>
+            {/* Follow spot: cuerpo cilíndrico detrás de la lente */}
             {esFollow && (
-              <rect x={midX - r * 0.7} y={topY + clampH + 3} width={r * 1.4} height={r * 2.5}
-                fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="1" opacity="0.85" />
+              <rect x={midX - wPx * 0.35} y={fixtureTopY} width={wPx * 0.7} height={bodyH * 0.85}
+                fill={sc} stroke="#000" strokeWidth={sw} rx={m(0.008)} opacity="0.85" />
             )}
-            <circle cx={midX} cy={topY + clampH + r + (esFollow ? 3 : 0)} r={r}
-              fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.9" />
+            {/* Sombra */}
+            <ellipse cx={midX + 0.5} cy={bodyCy + 0.5} rx={bodyR} ry={Math.min(bodyR, bodyH / 2)}
+              fill="#000" opacity="0.06" />
+            {/* Cuerpo/lente */}
+            <ellipse cx={midX} cy={bodyCy} rx={bodyR} ry={Math.min(bodyR, bodyH / 2)}
+              fill={sc} stroke="#000" strokeWidth={sw} opacity="0.9" />
+            {/* Reflejo */}
+            <circle cx={midX - bodyR * 0.15} cy={bodyCy - bodyR * 0.1}
+              r={bodyR * 0.2} fill="#fff" opacity="0.4" />
           </>
         )}
-        {/* Lente */}
-        <circle cx={midX - r * 0.2} cy={topY + clampH + r * 0.8 + (esFollow ? 3 : 0)}
-          r={r * 0.22} fill="#fff" opacity="0.4" />
-        {/* Haz de luz */}
-        {showBeam && (
-          <polygon points={`${midX - 1.5},${topY + clampH + bodyH + (esFollow ? 3 : 0)} ${midX + 1.5},${topY + clampH + bodyH + (esFollow ? 3 : 0)} ${midX + r * 2.5},${topY + clampH + bodyH + r * 6} ${midX - r * 2.5},${topY + clampH + bodyH + r * 6}`}
-            fill={sc} opacity="0.07" />
-        )}
-        {/* Etiqueta (fresnel/profile/follow) */}
-        {zoom > 45 && (
-          <text x={midX} y={topY + clampH + bodyH + (esFollow ? 12 : 9)}
-            fontSize={Math.max(5, zoom * 0.035)} fill={sc} textAnchor="middle"
-            fontFamily="monospace" opacity="0.5">
-            {tipoLuz === 'fresnel' ? 'FRES' : tipoLuz === 'profile' ? 'PROF' : tipoLuz === 'followSpot' ? 'FOLLOW' : tipoLuz === 'strobe' ? 'STRB' : 'PAR'}
+
+        {/* Etiqueta */}
+        {showDetail && (
+          <text x={midX} y={fixtureTopY + bodyH + m(0.08)}
+            fontSize={Math.max(5, m(0.04))} fill={sc} textAnchor="middle"
+            fontFamily="sans-serif" fontWeight="bold" opacity="0.5">
+            {tipoLuz === 'fresnel' ? 'FRES' : tipoLuz === 'profile' ? 'PROF'
+              : tipoLuz === 'followSpot' ? 'FOLLOW' : tipoLuz === 'strobe' ? 'STRB' : 'PAR'}
           </text>
         )}
       </g>
@@ -252,24 +338,31 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
   // ─── Moving Head / Wash / Beam / Spot: yugo + cabeza ───────
   const esWash = tipoLuz === 'wash';
   const esBeam = tipoLuz === 'beam';
-  const yokeW = Math.max(6, zoom * 0.06);
-  const yokeH = Math.max(6, zoom * 0.06);
-  const headR = esWash ? Math.max(5, zoom * 0.05) : esBeam ? Math.max(3, zoom * 0.028) : Math.max(4, zoom * 0.04);
-  const headRy = esWash ? headR * 0.65 : headR;
 
-  const yokeTop = topY + clampH;
-  const headCy = yokeTop + yokeH * 0.75;
+  // Dimensiones proporcionales al largo real del fixture
+  const dropH = m(0.02);
+  const yokeW = wPx * 0.75;
+  const yokeH = m(largo * 0.35);
+  const headRx = esWash ? wPx * 0.45 : esBeam ? wPx * 0.30 : wPx * 0.38;
+  const headRy = esWash ? headRx * 0.65 : headRx;
+
+  const yokeTopY = topY + clampH + dropH;
+  const headCy = yokeTopY + yokeH * 0.75;
+  const extentW = Math.max(yokeW, headRx * 2);
+  const totalH = clampH + dropH + yokeH + headRy;
 
   if (modoTecnico) {
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={midX - yokeW / 2 - 3} y={topY - 3} width={yokeW + 6} height={yokeH + headR * 2 + 6}
+        {seleccionada && <rect x={midX - extentW / 2 - 3} y={topY - 3} width={extentW + 6} height={totalH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
-        <line x1={midX} y1={topY} x2={midX} y2={yokeTop} stroke={sc} strokeWidth={tecW} />
-        <path d={`M ${midX - yokeW / 2} ${yokeTop} L ${midX - yokeW / 2} ${headCy} M ${midX + yokeW / 2} ${yokeTop} L ${midX + yokeW / 2} ${headCy} M ${midX - yokeW / 2} ${yokeTop} L ${midX + yokeW / 2} ${yokeTop}`}
+        <line x1={midX} y1={topY} x2={midX} y2={yokeTopY} stroke={sc} strokeWidth={tecW} />
+        <path d={`M ${midX - yokeW / 2} ${yokeTopY} L ${midX - yokeW / 2} ${headCy} M ${midX + yokeW / 2} ${yokeTopY} L ${midX + yokeW / 2} ${headCy} M ${midX - yokeW / 2} ${yokeTopY} L ${midX + yokeW / 2} ${yokeTopY}`}
           fill="none" stroke={sc} strokeWidth={tecW} />
-        <ellipse cx={midX} cy={headCy} rx={headR} ry={headRy} fill="none" stroke={sc} strokeWidth={tecW} />
-        <line x1={midX - headR * 0.6} y1={headCy} x2={midX + headR * 0.6} y2={headCy} stroke={sc} strokeWidth={tecW * 0.5} />
+        <ellipse cx={midX} cy={headCy} rx={headRx} ry={headRy}
+          fill="none" stroke={sc} strokeWidth={tecW} />
+        <line x1={midX - headRx * 0.6} y1={headCy} x2={midX + headRx * 0.6} y2={headCy}
+          stroke={sc} strokeWidth={tecW * 0.5} />
       </g>
     );
   }
@@ -284,39 +377,45 @@ export default function MovingHead({ pieza, worldToScreen, zoom, sc, op, cur, se
         </radialGradient>
       </defs>
 
-      {seleccionada && <rect x={midX - yokeW / 2 - 3} y={topY - 3} width={yokeW + 6} height={yokeH + headR * 2 + 6}
+      {seleccionada && <rect x={midX - extentW / 2 - 3} y={topY - 3} width={extentW + 6} height={totalH + 6}
         fill="none" stroke="#E30613" strokeWidth="2" />}
 
       {/* Abrazadera */}
       {renderClamp(midX, topY)}
-      <line x1={midX} y1={topY + clampH} x2={midX} y2={yokeTop}
-        stroke="#555" strokeWidth={Math.max(0.8, zoom * 0.008)} />
+      <line x1={midX} y1={topY + clampH} x2={midX} y2={yokeTopY}
+        stroke="#555" strokeWidth={Math.max(0.8, m(0.006))} />
 
       {/* Haz de luz (debajo, tenue) */}
       {showBeam && (
-        <polygon points={`${midX - 1.5},${headCy + headRy * 0.7} ${midX + 1.5},${headCy + headRy * 0.7} ${midX + headR * 3.5},${headCy + headR * 8} ${midX - headR * 3.5},${headCy + headR * 8}`}
-          fill={sc} opacity={esBeam ? 0.06 : 0.08} />
+        <polygon points={`${midX - m(0.02)},${headCy + headRy * 0.7} ${midX + m(0.02)},${headCy + headRy * 0.7} ${midX + m(0.40)},${headCy + headRy + m(0.80)} ${midX - m(0.40)},${headCy + headRy + m(0.80)}`}
+          fill={sc} opacity={esBeam ? 0.05 : 0.07} />
       )}
 
-      {/* Yugo (horquilla en U invertida) */}
-      <path d={`M ${midX - yokeW / 2} ${yokeTop} L ${midX - yokeW / 2} ${headCy} M ${midX + yokeW / 2} ${yokeTop} L ${midX + yokeW / 2} ${headCy} M ${midX - yokeW / 2} ${yokeTop} L ${midX + yokeW / 2} ${yokeTop}`}
-        fill="none" stroke={sc} strokeWidth={Math.max(1, zoom * 0.014)} strokeLinecap="round" opacity="0.9" />
+      {/* Yugo (horquilla U invertida) */}
+      <path d={`M ${midX - yokeW / 2} ${yokeTopY} L ${midX - yokeW / 2} ${headCy} M ${midX + yokeW / 2} ${yokeTopY} L ${midX + yokeW / 2} ${headCy} M ${midX - yokeW / 2} ${yokeTopY} L ${midX + yokeW / 2} ${yokeTopY}`}
+        fill="none" stroke={sc} strokeWidth={Math.max(1, m(0.012))} strokeLinecap="round" opacity="0.9" />
 
-      {/* Cabeza */}
-      <ellipse cx={midX + 0.4} cy={headCy + 0.4} rx={headR} ry={headRy}
+      {/* Cabeza — sombra */}
+      <ellipse cx={midX + 0.5} cy={headCy + 0.5} rx={headRx} ry={headRy}
         fill="#000" opacity="0.06" />
-      <ellipse cx={midX} cy={headCy} rx={headR} ry={headRy}
-        fill={sc} stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.92" />
-      <ellipse cx={midX} cy={headCy} rx={headR} ry={headRy} fill={`url(#${gid})`} />
+      {/* Cabeza — cuerpo */}
+      <ellipse cx={midX} cy={headCy} rx={headRx} ry={headRy}
+        fill={sc} stroke="#000" strokeWidth={sw} opacity="0.92" />
+      {/* Gradiente */}
+      <ellipse cx={midX} cy={headCy} rx={headRx} ry={headRy}
+        fill={`url(#${gid})`} />
       {/* Lente frontal */}
-      <ellipse cx={midX} cy={headCy} rx={headR * 0.45} ry={headRy * 0.45} fill="#111" opacity="0.7" />
-      <circle cx={midX - headR * 0.15} cy={headCy - headRy * 0.15} r={headR * 0.14} fill="#fff" opacity="0.5" />
+      <ellipse cx={midX} cy={headCy} rx={headRx * 0.45} ry={headRy * 0.45}
+        fill="#111" opacity="0.7" />
+      {/* Brillo especular */}
+      <circle cx={midX - headRx * 0.15} cy={headCy - headRy * 0.15}
+        r={headRx * 0.14} fill="#fff" opacity="0.5" />
 
       {/* Etiqueta */}
-      {zoom > 42 && (
-        <text x={midX} y={headCy + headRy + Math.max(8, zoom * 0.06)}
-          fontSize={Math.max(5.5, zoom * 0.04)} fill={sc} textAnchor="middle"
-          fontFamily="monospace" opacity="0.5">
+      {showDetail && (
+        <text x={midX} y={headCy + headRy + m(0.06)}
+          fontSize={Math.max(5, m(0.04))} fill={sc} textAnchor="middle"
+          fontFamily="sans-serif" fontWeight="bold" opacity="0.5">
           {esBeam ? 'BEAM' : esWash ? 'WASH' : tipoLuz === 'spot' ? 'SPOT' : 'MH'}
         </text>
       )}

@@ -545,112 +545,170 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
-  // ── Line Array → rectángulo con marca de cluster (huella del array colgado) ──
+  // ── Line Array → huella del cluster con punto de rigging y arco de cobertura ──
   if (pieza.categoria === 'lineArray') {
-    const depth = 0.50; // profundidad del cluster en Z
+    const depth = 0.50;
     const pTL = worldToScreen(pieza.x, z - depth / 2);
     const pBR = worldToScreen(pieza.x + pieza.largo, z + depth / 2);
     const w = pBR.x - pTL.x;
     const h = pBR.y - pTL.y;
     const sw = Math.max(0.8, zoom * 0.012);
     const nCajas = pieza.cajas || 1;
+    const esSub = pieza.tipoLA === 'subVolado' || pieza.tipoLA === 'subApilado';
+    const esDelay = pieza.tipoLA === 'delay';
+    const cx = pTL.x + w / 2, cy = pTL.y + h / 2;
+    const crossS = Math.max(3, zoom * 0.04);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <rect x={pTL.x - 3} y={pTL.y - 3} width={w + 6} height={h + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {/* Huella del cluster */}
         <rect x={pTL.x} y={pTL.y} width={w} height={h}
-          fill={sc} fillOpacity="0.2" stroke={sc} strokeWidth={sw} />
-        {/* Cruz central (punto de cuelgue) */}
-        <line x1={pTL.x + w / 2 - Math.max(3, zoom * 0.04)} y1={pTL.y + h / 2}
-          x2={pTL.x + w / 2 + Math.max(3, zoom * 0.04)} y2={pTL.y + h / 2}
-          stroke={sc} strokeWidth={sw * 1.5} />
-        <line x1={pTL.x + w / 2} y1={pTL.y + h / 2 - Math.max(3, zoom * 0.04)}
-          x2={pTL.x + w / 2} y2={pTL.y + h / 2 + Math.max(3, zoom * 0.04)}
-          stroke={sc} strokeWidth={sw * 1.5} />
-        {/* Etiqueta */}
-        {zoom > 25 && w > 18 && (
-          <text x={pTL.x + w / 2} y={pTL.y + h + Math.max(8, zoom * 0.07)}
+          fill={sc} fillOpacity={esSub ? 0.12 : 0.2} stroke={sc} strokeWidth={sw} />
+        {/* Cruz central (punto de rigging) */}
+        <line x1={cx - crossS} y1={cy} x2={cx + crossS} y2={cy} stroke={sc} strokeWidth={sw * 1.5} />
+        <line x1={cx} y1={cy - crossS} x2={cx} y2={cy + crossS} stroke={sc} strokeWidth={sw * 1.5} />
+        {/* Círculo de rigging (más visible) */}
+        <circle cx={cx} cy={cy} r={Math.max(2.5, zoom * 0.03)} fill="none" stroke={sc} strokeWidth={sw} />
+        {/* Arco de cobertura (solo tops, no subs) */}
+        {!esSub && zoom > 30 && h > 6 && (
+          <path d={`M ${pTL.x} ${cy} A ${w * 0.6} ${h * 1.2} 0 0 1 ${pTL.x + w} ${cy}`}
+            fill="none" stroke={sc} strokeWidth={sw * 0.7} strokeDasharray="2 2" opacity="0.35" />
+        )}
+        {/* Etiqueta con tipo */}
+        {zoom > 22 && w > 14 && (
+          <text x={cx} y={pTL.y + h + Math.max(8, zoom * 0.07)}
             fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.7">
-            🔊 ×{nCajas}
+            {esSub ? `SUB ×${nCajas}` : esDelay ? `DLY ×${nCajas}` : `LA ×${nCajas}`}
           </text>
         )}
       </g>
     );
   }
 
-  // ── Pantalla LED → rectángulo con grid de módulos LED ──
+  // ── Pantalla LED → rectángulo con línea frontal + soportes ──
   if (pieza.categoria === 'pantallaLED') {
-    const depth = 0.15; // profundidad física del panel
+    const depth = 0.15;
     const pTL = worldToScreen(pieza.x, z - depth / 2);
     const pBR = worldToScreen(pieza.x + pieza.largo, z + depth / 2);
     const w = pBR.x - pTL.x;
     const h = pBR.y - pTL.y;
     const sw = Math.max(0.8, zoom * 0.012);
+    const cx = pTL.x + w / 2;
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <rect x={pTL.x - 3} y={pTL.y - 3} width={w + 6} height={h + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Panel */}
         <rect x={pTL.x} y={pTL.y} width={w} height={h}
-          fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} />
-        {/* Línea central (cara de la pantalla) */}
-        <line x1={pTL.x} y1={pTL.y + h / 2} x2={pTL.x + w} y2={pTL.y + h / 2}
-          stroke={sc} strokeWidth={sw * 2} opacity="0.5" />
+          fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={sw} />
+        {/* Línea frontal (cara activa de la pantalla) */}
+        <line x1={pTL.x} y1={pTL.y + h * 0.3} x2={pTL.x + w} y2={pTL.y + h * 0.3}
+          stroke={sc} strokeWidth={sw * 2.5} opacity="0.5" />
+        {/* Marcas de soporte superior (ménsulas) */}
+        {zoom > 30 && w > 12 && <>
+          <line x1={pTL.x + w * 0.2} y1={pTL.y - Math.max(2, zoom * 0.02)} x2={pTL.x + w * 0.2} y2={pTL.y}
+            stroke={sc} strokeWidth={sw * 1.2} />
+          <line x1={pTL.x + w * 0.8} y1={pTL.y - Math.max(2, zoom * 0.02)} x2={pTL.x + w * 0.8} y2={pTL.y}
+            stroke={sc} strokeWidth={sw * 1.2} />
+        </>}
         {/* Etiqueta */}
-        {zoom > 25 && w > 18 && (
-          <text x={pTL.x + w / 2} y={pTL.y + h + Math.max(8, zoom * 0.07)}
+        {zoom > 22 && w > 14 && (
+          <text x={cx} y={pTL.y + h + Math.max(8, zoom * 0.07)}
             fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.7">
-            📺 {pieza.largo}×{pieza.alto}m
+            LED {pieza.largo}×{(pieza.alto || pieza.largo * 0.55).toFixed(1)}
           </text>
         )}
       </g>
     );
   }
 
-  // ── Luz → círculo pequeño (fixture colgado, huella puntual) ──
+  // ── Luz → fixtures de iluminación (proporcionales al mundo real) ──
   if (pieza.categoria === 'luz') {
-    const p = worldToScreen(pieza.x, z);
-    const r = Math.max(3, zoom * pieza.largo * 0.5); // radio proporcional al ancho del fixture
+    const pC = worldToScreen(pieza.x + pieza.largo / 2, z);
+    const pL2 = worldToScreen(pieza.x, z);
+    const pR2 = worldToScreen(pieza.x + pieza.largo, z);
+    const fixtureW = Math.max(4, pR2.x - pL2.x);
     const tipoLuz = pieza.tipoLuz || 'movingHead';
     const esBarra = tipoLuz === 'barra';
+    const esBlinder = tipoLuz === 'blinder';
+    const sw = Math.max(0.6, zoom * 0.008);
+
     if (esBarra) {
-      // Barras LED: rectángulo alargado en planta
-      const pR = worldToScreen(pieza.x + pieza.largo, z);
-      const barW = pR.x - p.x;
-      const barH = Math.max(3, zoom * 0.04);
-      const sw = Math.max(0.6, zoom * 0.008);
+      // Barra LED: rectángulo alargado
+      const barH = Math.max(3, zoom * 0.08);
       return (
         <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={p.x - 3} y={p.y - barH / 2 - 3} width={barW + 6} height={barH + 6}
+          {seleccionada && <rect x={pL2.x - 3} y={pC.y - barH / 2 - 3} width={fixtureW + 6} height={barH + 6}
             fill="none" stroke="#E30613" strokeWidth="2" />}
-          <rect x={p.x} y={p.y - barH / 2} width={barW} height={barH}
-            fill={sc} fillOpacity="0.4" stroke={sc} strokeWidth={sw} rx="1" />
-          {zoom > 30 && barW > 15 && (
-            <text x={p.x + barW / 2} y={p.y + barH / 2 + Math.max(7, zoom * 0.06)}
+          <rect x={pL2.x} y={pC.y - barH / 2} width={fixtureW} height={barH}
+            fill={sc} fillOpacity="0.35" stroke={sc} strokeWidth={sw} rx="1" />
+          {/* LEDs indicativos */}
+          {zoom > 35 && fixtureW > 20 && Array.from({ length: Math.min(8, Math.round(fixtureW / 6)) }, (_, i, a) => (
+            <circle key={i} cx={pL2.x + fixtureW * (i + 0.5) / Math.min(8, Math.round(fixtureW / 6))}
+              cy={pC.y} r={Math.max(0.8, barH * 0.15)} fill={sc} opacity="0.5" />
+          ))}
+          {zoom > 25 && fixtureW > 12 && (
+            <text x={pC.x} y={pC.y + barH / 2 + Math.max(7, zoom * 0.06)}
               fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
-              fontFamily="monospace" opacity="0.6">BAR</text>
+              fontFamily="monospace" fontWeight="bold" opacity="0.6">BAR</text>
           )}
         </g>
       );
     }
-    // Fixtures puntuales (moving head, par, fresnel, etc.)
-    const sw = Math.max(0.6, zoom * 0.008);
+
+    if (esBlinder) {
+      // Blinder: rectángulo con divisiones de celdas
+      const bH = Math.max(4, zoom * 0.12);
+      const nCells = pieza.largo >= 0.5 ? 4 : 2;
+      return (
+        <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+          {seleccionada && <rect x={pL2.x - 3} y={pC.y - bH / 2 - 3} width={fixtureW + 6} height={bH + 6}
+            fill="none" stroke="#E30613" strokeWidth="2" />}
+          <rect x={pL2.x} y={pC.y - bH / 2} width={fixtureW} height={bH}
+            fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} />
+          {Array.from({ length: nCells - 1 }, (_, i) => (
+            <line key={i} x1={pL2.x + fixtureW * (i + 1) / nCells} y1={pC.y - bH / 2}
+              x2={pL2.x + fixtureW * (i + 1) / nCells} y2={pC.y + bH / 2}
+              stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />
+          ))}
+          {zoom > 25 && fixtureW > 12 && (
+            <text x={pC.x} y={pC.y + bH / 2 + Math.max(7, zoom * 0.06)}
+              fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+              fontFamily="monospace" fontWeight="bold" opacity="0.6">BLD</text>
+          )}
+        </g>
+      );
+    }
+
+    // Fixtures puntuales: moving head, wash, beam, par, fresnel, etc.
+    // Radio proporcional al fixture real
+    const r = Math.max(3, fixtureW / 2);
+    const esMoving = ['movingHead', 'wash', 'beam', 'spot'].includes(tipoLuz);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <circle cx={p.x} cy={p.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
-        <circle cx={p.x} cy={p.y} r={r}
-          fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} />
-        {/* Marca central tipo fixture */}
-        <circle cx={p.x} cy={p.y} r={r * 0.35}
-          fill={sc} opacity="0.6" />
-        {/* Etiqueta */}
-        {zoom > 35 && (
-          <text x={p.x} y={p.y + r + Math.max(7, zoom * 0.06)}
+        {seleccionada && <circle cx={pC.x} cy={pC.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Cuerpo del fixture */}
+        <circle cx={pC.x} cy={pC.y} r={r}
+          fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={sw} />
+        {/* Moving heads: yugo como línea diametral */}
+        {esMoving && r > 3 && <>
+          <line x1={pC.x - r * 0.8} y1={pC.y} x2={pC.x + r * 0.8} y2={pC.y}
+            stroke={sc} strokeWidth={sw * 1.5} opacity="0.5" />
+          <circle cx={pC.x} cy={pC.y} r={r * 0.5} fill={sc} fillOpacity="0.4" stroke="none" />
+        </>}
+        {/* Fixtures simples: punto central */}
+        {!esMoving && <circle cx={pC.x} cy={pC.y} r={r * 0.3} fill={sc} opacity="0.5" />}
+        {/* Etiqueta con tipo */}
+        {zoom > 30 && (
+          <text x={pC.x} y={pC.y + r + Math.max(7, zoom * 0.06)}
             fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
-            fontFamily="monospace" opacity="0.6">
-            {tipoLuz === 'hazer' ? 'HAZ' : tipoLuz === 'laser' ? 'LSR' : '💡'}
+            fontFamily="monospace" fontWeight="bold" opacity="0.6">
+            {tipoLuz === 'hazer' ? 'HAZ' : tipoLuz === 'laser' ? 'LSR' : tipoLuz === 'wash' ? 'W'
+              : tipoLuz === 'beam' ? 'B' : tipoLuz === 'par' ? 'P' : tipoLuz === 'fresnel' ? 'F'
+              : tipoLuz === 'profile' ? 'PR' : tipoLuz === 'strobe' ? 'ST' : tipoLuz === 'followSpot' ? 'FS' : 'MH'}
           </text>
         )}
       </g>

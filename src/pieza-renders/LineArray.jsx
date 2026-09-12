@@ -1,6 +1,6 @@
-// Line Array — cluster de sonido colgado de estructura/truss.
-// Dibuja N cajas trapezoidales (tops) o rectangulares (subs) en coordenadas mundo,
-// colgando desde (x, y) con bumper frame + cadena de rigging.
+// Line Array — cluster de sonido profesional colgado de estructura/truss.
+// Render tipo L-Acoustics K2 / JBL VTX / d&b J-Series.
+// (x, y) = punto de anclaje superior (bumper frame); las cajas cuelgan hacia abajo.
 // `largo` = ancho real del cluster (≈1.09m tops, ≈0.70m subs)
 // `altoCaja` = alto real de cada caja (≈0.35m tops, ≈0.55m subs)
 export default function LineArray({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
@@ -11,15 +11,14 @@ export default function LineArray({ pieza, worldToScreen, zoom, sc, op, cur, sel
   const esDelay = tipoLA === 'delay';
   const nCajas = Math.max(1, Math.min(cajas, 18));
 
-  // Dimensiones mundo del cluster
-  const bumperH = 0.08;       // alto del bumper frame (mundo)
-  const cableH = 0.12;        // cable de rigging (mundo)
-  const gap = 0.01;            // separación entre cajas (mundo)
+  // Dimensiones mundo
+  const bumperH = 0.10;
+  const cableH = 0.15;
+  const gap = 0.008;
   const anchoCluster = largo;
-  const altoPorCaja = altoCaja;
 
-  // Factor de ensanche trapecio: tops se ensanchan abajo ~15%
-  const ensanche = (esSub || esDelay) ? 0 : 0.15;
+  // Ensanche trapecio: tops se ensanchan progresivamente (curva de array)
+  const ensancheMax = (esSub || esDelay) ? 0 : 0.12;
 
   // Puntos mundo → pantalla
   const pAnchorL = worldToScreen(x, y);
@@ -27,144 +26,209 @@ export default function LineArray({ pieza, worldToScreen, zoom, sc, op, cur, sel
   const midX = (pAnchorL.x + pAnchorR.x) / 2;
   const clusterW = pAnchorR.x - pAnchorL.x;
 
-  // Bumper frame (arriba de todo, sobre punto de anclaje)
-  const bumperWFrac = 0.6; // el bumper es 60% del ancho del cluster
-  const pBumperTL = worldToScreen(x + anchoCluster * (1 - bumperWFrac) / 2, y);
-  const pBumperTR = worldToScreen(x + anchoCluster * (1 + bumperWFrac) / 2, y);
-  const pBumperBL = worldToScreen(x + anchoCluster * (1 - bumperWFrac) / 2, y - bumperH);
-  const bumperW_px = pBumperTR.x - pBumperTL.x;
-  const bumperH_px = pBumperBL.y - pBumperTL.y;
+  // Bumper frame centrado (70% del ancho)
+  const bumperFrac = 0.70;
+  const bumpOffX = anchoCluster * (1 - bumperFrac) / 2;
+  const pBTL = worldToScreen(x + bumpOffX, y);
+  const pBTR = worldToScreen(x + anchoCluster - bumpOffX, y);
+  const pBBL = worldToScreen(x + bumpOffX, y - bumperH);
+  const bumperW = pBTR.x - pBTL.x;
+  const bumperH_px = pBBL.y - pBTL.y;
 
-  // Cable (desde bumper hasta primera caja)
-  const cableBottom = worldToScreen(x, y - bumperH - cableH);
-  const cableH_px = cableBottom.y - pBumperBL.y;
+  // Punto de rigging (cable desde bumper hasta primera caja)
+  const pCableEnd = worldToScreen(x, y - bumperH - cableH);
+  const cableEndY = pCableEnd.y;
 
-  // Stack de cajas
+  // ─── Stack de cajas ───
   const stackStartY = y - bumperH - cableH;
   const cajasEls = [];
-  for (let i = 0; i < nCajas; i++) {
-    const cajaTopY = stackStartY - i * (altoPorCaja + gap);
-    const cajaBotY = cajaTopY - altoPorCaja;
-    const frac = nCajas > 1 ? i / (nCajas - 1) : 0;
-    const ensancheI = ensanche * frac;
+  const sw = Math.max(0.4, zoom * 0.004);
 
-    const tl = worldToScreen(x - anchoCluster * ensancheI / 2, cajaTopY);
-    const tr = worldToScreen(x + anchoCluster + anchoCluster * ensancheI / 2, cajaTopY);
-    const bl = worldToScreen(x - anchoCluster * (ensancheI + ensanche / (nCajas || 1)) / 2, cajaBotY);
-    const br = worldToScreen(x + anchoCluster + anchoCluster * (ensancheI + ensanche / (nCajas || 1)) / 2, cajaBotY);
+  for (let i = 0; i < nCajas; i++) {
+    const cajaTopY = stackStartY - i * (altoCaja + gap);
+    const cajaBotY = cajaTopY - altoCaja;
+
+    // Ensanche progresivo (curva J del array)
+    const t = nCajas > 1 ? i / (nCajas - 1) : 0;
+    const ens = ensancheMax * t * t; // cuadrático — la curva se abre más abajo
+
+    const tl = worldToScreen(x - anchoCluster * ens / 2, cajaTopY);
+    const tr = worldToScreen(x + anchoCluster + anchoCluster * ens / 2, cajaTopY);
+    // Ensanche del borde inferior: un poquito más que el superior
+    const tNext = nCajas > 1 ? Math.min(1, (i + 1) / (nCajas - 1)) : 0;
+    const ensBot = ensancheMax * tNext * tNext;
+    const bl = worldToScreen(x - anchoCluster * ensBot / 2, cajaBotY);
+    const br = worldToScreen(x + anchoCluster + anchoCluster * ensBot / 2, cajaBotY);
 
     const pts = `${tl.x},${tl.y} ${tr.x},${tr.y} ${br.x},${br.y} ${bl.x},${bl.y}`;
     const boxW = tr.x - tl.x;
     const boxH = bl.y - tl.y;
+    const cx = (tl.x + tr.x) / 2;
+    const cy = (tl.y + bl.y) / 2;
 
     cajasEls.push(
       <g key={i}>
-        {/* Sombra */}
+        {/* Sombra lateral */}
         {!modoTecnico && (
-          <polygon points={`${tl.x + 0.5},${tl.y + 0.5} ${tr.x + 0.5},${tr.y + 0.5} ${br.x + 0.5},${br.y + 0.5} ${bl.x + 0.5},${bl.y + 0.5}`}
-            fill="#000" opacity="0.06" />
+          <polygon points={`${tl.x + 1},${tl.y + 1} ${tr.x + 1},${tr.y + 1} ${br.x + 1},${br.y + 1} ${bl.x + 1},${bl.y + 1}`}
+            fill="#000" opacity="0.08" />
         )}
-        {/* Caja */}
-        <polygon points={pts} fill={modoTecnico ? 'none' : sc}
-          stroke={modoTecnico ? sc : '#000'} strokeWidth={Math.max(0.3, zoom * 0.003)}
-          opacity={modoTecnico ? 1 : 0.92} />
-        {/* Overlay galvanizado */}
+        {/* Cuerpo de la caja */}
+        <polygon points={pts}
+          fill={modoTecnico ? 'none' : '#1a1a2e'}
+          stroke={modoTecnico ? sc : '#000'}
+          strokeWidth={modoTecnico ? Math.max(0.8, zoom * 0.01) : sw}
+          opacity={modoTecnico ? 1 : 0.95} />
+        {/* Panel frontal (grille de bocinas) */}
         {!modoTecnico && (
-          <polygon points={pts} fill={`url(#${gid})`} />
+          <polygon points={pts} fill={`url(#${gid})`} opacity="0.9" />
+        )}
+        {/* Franja de grille (la cara visible del altoparlante) */}
+        {!modoTecnico && boxH > 3 && (
+          <rect x={tl.x + boxW * 0.05} y={tl.y + boxH * 0.15}
+            width={boxW * 0.9} height={boxH * 0.7}
+            fill="#111" opacity="0.35" rx={Math.max(0.3, zoom * 0.003)} />
         )}
         {/* Línea de junta entre cajas */}
-        {!modoTecnico && i > 0 && (
-          <line x1={tl.x + 1} y1={tl.y} x2={tr.x - 1} y2={tr.y}
-            stroke="#000" strokeWidth={0.4} opacity="0.15" />
+        {i > 0 && (
+          <line x1={tl.x} y1={tl.y} x2={tr.x} y2={tr.y}
+            stroke={modoTecnico ? sc : '#000'} strokeWidth={modoTecnico ? sw * 0.5 : 0.5} opacity={modoTecnico ? 0.5 : 0.3} />
         )}
-        {/* Brillo lateral */}
-        {!modoTecnico && (
-          <line x1={tl.x + 0.8} y1={tl.y + 0.8} x2={bl.x + 0.8} y2={bl.y - 0.8}
-            stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.005)} opacity="0.2" />
+        {/* Brillo highlight superior */}
+        {!modoTecnico && boxW > 6 && (
+          <line x1={tl.x + 1.5} y1={tl.y + 1} x2={tr.x - 1.5} y2={tl.y + 1}
+            stroke="#fff" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.15" />
         )}
-        {/* Detalle: driver/altavoz circular en cada caja (zoom alto) */}
-        {!modoTecnico && zoom > 40 && boxW > 12 && !esSub && (
+        {/* Detalle: bocinas/drivers visibles (tops, zoom alto) */}
+        {!modoTecnico && zoom > 35 && boxW > 15 && !esSub && (
           <>
-            <circle cx={(tl.x + tr.x) / 2} cy={(tl.y + bl.y) / 2}
-              r={Math.min(boxH * 0.3, boxW * 0.08)} fill="#111" opacity="0.4" />
-            <circle cx={(tl.x + tr.x) / 2} cy={(tl.y + bl.y) / 2}
-              r={Math.min(boxH * 0.15, boxW * 0.04)} fill="#333" opacity="0.5" />
+            {/* Driver HF (tweeter) */}
+            <rect x={cx - boxW * 0.06} y={cy - boxH * 0.2} width={boxW * 0.12} height={boxH * 0.4}
+              fill="#222" opacity="0.5" rx={0.5} />
+            {/* Bocinas LF (woofers a cada lado) */}
+            <circle cx={cx - boxW * 0.25} cy={cy} r={Math.min(boxH * 0.25, boxW * 0.06)}
+              fill="#0a0a0a" stroke="#333" strokeWidth={0.3} opacity="0.5" />
+            <circle cx={cx + boxW * 0.25} cy={cy} r={Math.min(boxH * 0.25, boxW * 0.06)}
+              fill="#0a0a0a" stroke="#333" strokeWidth={0.3} opacity="0.5" />
           </>
         )}
-        {/* Detalle: cono de sub (zoom alto) */}
-        {!modoTecnico && zoom > 40 && boxW > 12 && esSub && (
-          <circle cx={(tl.x + tr.x) / 2} cy={(tl.y + bl.y) / 2}
-            r={Math.min(boxH * 0.35, boxW * 0.15)} fill="none" stroke="#111" strokeWidth={0.5} opacity="0.3" />
+        {/* Detalle: cono de sub (subs, zoom alto) */}
+        {!modoTecnico && zoom > 35 && boxW > 15 && esSub && (
+          <>
+            <circle cx={cx - boxW * 0.22} cy={cy} r={Math.min(boxH * 0.32, boxW * 0.12)}
+              fill="none" stroke="#333" strokeWidth={0.6} opacity="0.35" />
+            <circle cx={cx + boxW * 0.22} cy={cy} r={Math.min(boxH * 0.32, boxW * 0.12)}
+              fill="none" stroke="#333" strokeWidth={0.6} opacity="0.35" />
+            {/* Puerto reflex central */}
+            <rect x={cx - boxW * 0.04} y={cy - boxH * 0.25} width={boxW * 0.08} height={boxH * 0.5}
+              fill="#0a0a0a" opacity="0.3" rx={0.5} />
+          </>
+        )}
+        {/* Marca lateral de modelo (zoom muy alto) */}
+        {!modoTecnico && zoom > 55 && boxW > 30 && (
+          <text x={tr.x - 3} y={cy + 1} fontSize={Math.max(4, boxH * 0.25)}
+            fill="#555" textAnchor="end" fontFamily="sans-serif" fontWeight="bold" opacity="0.3">
+            {esSub ? 'SUB' : esDelay ? 'DLY' : 'K2'}
+          </text>
         )}
       </g>
     );
   }
 
-  // Total height del cluster en pantalla
-  const totalBottom = worldToScreen(x, stackStartY - nCajas * (altoPorCaja + gap));
-  const totalH_px = totalBottom.y - pAnchorL.y;
+  // Total height del cluster
+  const stackEndY = stackStartY - nCajas * altoCaja - (nCajas - 1) * gap;
+  const pStackEnd = worldToScreen(x, stackEndY);
+  const totalBottom_px = pStackEnd.y;
 
   const tecW = Math.max(0.8, zoom * 0.012);
 
+  // ─── MODO TÉCNICO ───
   if (modoTecnico) {
-    const stackEnd = worldToScreen(x, stackStartY - nCajas * altoPorCaja - (nCajas - 1) * gap);
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={pAnchorL.x - 3} y={pAnchorL.y - 3}
-          width={clusterW + 6} height={Math.abs(totalH_px) + 6}
+        {seleccionada && <rect x={pAnchorL.x - 4} y={pAnchorL.y - 4}
+          width={clusterW + 8} height={totalBottom_px - pAnchorL.y + 8}
           fill="none" stroke="#E30613" strokeWidth="2" rx="1" />}
-        {/* Bumper */}
-        <rect x={pBumperTL.x} y={pBumperTL.y} width={bumperW_px} height={bumperH_px}
+        {/* Bumper frame */}
+        <rect x={pBTL.x} y={pBTL.y} width={bumperW} height={bumperH_px}
           fill="none" stroke={sc} strokeWidth={tecW} />
-        {/* Cable */}
-        <line x1={midX} y1={pBumperTL.y + bumperH_px} x2={midX} y2={cableBottom.y}
+        {/* Punto de cuelgue */}
+        <circle cx={midX} cy={pBTL.y} r={Math.max(1.5, zoom * 0.015)}
+          fill="none" stroke={sc} strokeWidth={tecW * 0.8} />
+        {/* Cable central */}
+        <line x1={midX} y1={pBTL.y + bumperH_px} x2={midX} y2={cableEndY}
           stroke={sc} strokeWidth={tecW * 0.7} />
-        {/* Cajas (contorno) */}
+        {/* Cajas */}
         {cajasEls}
-        {/* Eje central */}
-        <line x1={midX} y1={cableBottom.y} x2={midX} y2={stackEnd.y}
-          stroke={sc} strokeWidth={tecW * 0.5} strokeDasharray="2 2" />
+        {/* Eje central (dash) */}
+        <line x1={midX} y1={cableEndY} x2={midX} y2={totalBottom_px}
+          stroke={sc} strokeWidth={tecW * 0.4} strokeDasharray="3 2" />
+        {/* Cota: cantidad */}
+        <text x={pAnchorR.x + 5} y={(pAnchorL.y + totalBottom_px) / 2}
+          fontSize={Math.max(6, zoom * 0.05)} fill={sc} fontFamily="monospace" opacity="0.7">
+          {esSub ? 'SUB' : esDelay ? 'DLY' : 'LA'} ×{nCajas}
+        </text>
       </g>
     );
   }
 
+  // ─── MODO DECORATIVO ───
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       <defs>
-        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.18" />
-          <stop offset="40%" stopColor="#fff" stopOpacity="0.03" />
-          <stop offset="100%" stopColor="#000" stopOpacity="0.12" />
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#444" stopOpacity="0.10" />
+          <stop offset="30%" stopColor="#222" stopOpacity="0.05" />
+          <stop offset="70%" stopColor="#000" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0.15" />
         </linearGradient>
       </defs>
 
-      {seleccionada && <rect x={pAnchorL.x - 3} y={pAnchorL.y - 3}
-        width={clusterW + 6} height={Math.abs(totalH_px) + 6}
-        fill="none" stroke="#E30613" strokeWidth="2" rx="1" opacity="0.5" />}
+      {seleccionada && <rect x={pAnchorL.x - 4} y={pAnchorL.y - 4}
+        width={clusterW + 8} height={totalBottom_px - pAnchorL.y + 8}
+        fill="none" stroke="#E30613" strokeWidth="2" rx="1" opacity="0.6" />}
 
-      {/* Bumper frame de rigging */}
-      <rect x={pBumperTL.x + 0.5} y={pBumperTL.y + 0.5} width={bumperW_px} height={bumperH_px}
-        fill="#000" opacity="0.06" rx="1" />
-      <rect x={pBumperTL.x} y={pBumperTL.y} width={bumperW_px} height={bumperH_px}
-        fill="#333" stroke="#000" strokeWidth={Math.max(0.3, zoom * 0.003)} rx="1" opacity="0.92" />
-      <line x1={pBumperTL.x + 1} y1={pBumperTL.y + 1} x2={pBumperTR.x - 1} y2={pBumperTL.y + 1}
-        stroke="#fff" strokeWidth={Math.max(0.4, zoom * 0.004)} opacity="0.25" />
+      {/* ── Bumper frame de rigging ── */}
+      {/* Sombra */}
+      <rect x={pBTL.x + 1} y={pBTL.y + 1} width={bumperW} height={bumperH_px}
+        fill="#000" opacity="0.08" rx="1" />
+      {/* Cuerpo bumper (acero negro) */}
+      <rect x={pBTL.x} y={pBTL.y} width={bumperW} height={bumperH_px}
+        fill="#2a2a2a" stroke="#000" strokeWidth={sw} rx="1" />
+      {/* Highlight bumper */}
+      <line x1={pBTL.x + 2} y1={pBTL.y + 1} x2={pBTR.x - 2} y2={pBTL.y + 1}
+        stroke="#666" strokeWidth={Math.max(0.3, zoom * 0.003)} opacity="0.4" />
+      {/* Ojo de cuelgue */}
+      <circle cx={midX} cy={pBTL.y - Math.max(1, zoom * 0.01)} r={Math.max(1.5, zoom * 0.012)}
+        fill="none" stroke="#555" strokeWidth={Math.max(0.5, zoom * 0.005)} />
 
-      {/* Cadena de rigging */}
-      <line x1={midX - 2} y1={pBumperTL.y + bumperH_px} x2={midX - 2} y2={cableBottom.y}
-        stroke="#555" strokeWidth={Math.max(0.5, zoom * 0.005)} strokeDasharray={zoom > 25 ? '1.5 1.5' : '0'} />
-      <line x1={midX + 2} y1={pBumperTL.y + bumperH_px} x2={midX + 2} y2={cableBottom.y}
-        stroke="#555" strokeWidth={Math.max(0.5, zoom * 0.005)} strokeDasharray={zoom > 25 ? '1.5 1.5' : '0'} />
+      {/* ── Cadena/cable de rigging ── */}
+      {zoom > 20 ? (
+        // Cadenas dobles (detalle)
+        <>
+          <line x1={midX - Math.max(1, zoom * 0.01)} y1={pBTL.y + bumperH_px}
+            x2={midX - Math.max(1, zoom * 0.01)} y2={cableEndY}
+            stroke="#444" strokeWidth={Math.max(0.6, zoom * 0.006)}
+            strokeDasharray={zoom > 30 ? '1.5 1' : 'none'} />
+          <line x1={midX + Math.max(1, zoom * 0.01)} y1={pBTL.y + bumperH_px}
+            x2={midX + Math.max(1, zoom * 0.01)} y2={cableEndY}
+            stroke="#444" strokeWidth={Math.max(0.6, zoom * 0.006)}
+            strokeDasharray={zoom > 30 ? '1.5 1' : 'none'} />
+        </>
+      ) : (
+        <line x1={midX} y1={pBTL.y + bumperH_px} x2={midX} y2={cableEndY}
+          stroke="#444" strokeWidth={Math.max(0.8, zoom * 0.008)} />
+      )}
 
-      {/* Pila de cajas */}
+      {/* ── Pila de cajas ── */}
       {cajasEls}
 
-      {/* Etiqueta */}
-      {zoom > 30 && clusterW > 20 && (
-        <text x={midX} y={totalBottom.y + Math.max(8, zoom * 0.08)}
-          fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
-          fontFamily="monospace" fontWeight="bold" opacity="0.6">
-          {esDelay ? `DLY ×${cajas}` : esSub ? `SUB ×${cajas}` : `LA ×${cajas}`}
+      {/* ── Etiqueta inferior ── */}
+      {zoom > 22 && clusterW > 14 && (
+        <text x={midX} y={totalBottom_px + Math.max(9, zoom * 0.09)}
+          fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="middle"
+          fontFamily="sans-serif" fontWeight="bold" opacity="0.55">
+          {esDelay ? `DELAY ×${nCajas}` : esSub ? `SUB ×${nCajas}` : `LA ×${nCajas}`}
         </text>
       )}
     </g>

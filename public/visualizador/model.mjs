@@ -87,46 +87,94 @@ export function parseDesign(text){
  line(P(),P(len),.012);line(P(0,.055),P(len,.055),.012);line(P(),P(0,.055),.012);line(P(len),P(len,.055),.012);
  issues.push(`${item.name}: perfil esquemático, sección real pendiente.`);
  }else if(p.categoria==='lineArray'){
- // Line Array: bumper frame + stack of boxes hanging down
+ // Line Array: bumper frame + rigging cables + stacked speaker boxes
  const altoCaja=n(p,'altoCaja',.35);const cajas=Math.max(1,Math.min(p.cajas||1,18));
- const bumperH=0.08;const cableH=0.12;const gap=0.01;const depth=0.50;
- // Bumper frame (small box at anchor point)
- const bw=len*0.6;const bOff=(len-bw)/2;
- box(bw,bumperH,depth*.6);// positioned at P() via offset
- // Reposition bumper: centered
- for(let k=primitives.length-6;k<primitives.length;k++){const f=primitives[k];f.pts=f.pts.map(pt=>{const dx=bOff;return p.orientacion==='z'?[pt[0],pt[1],pt[2]+dx]:[pt[0]+dx,pt[1],pt[2]];});}
- // Cable (two thin lines)
- line(P(len/2,0),P(len/2,-bumperH-cableH),.008,'tube');
- // Stack of boxes
+ const bumperH=0.10;const cableH=0.15;const gap=0.008;const depth=0.50;
+ const esSub=(p.tipoLA==='subVolado'||p.tipoLA==='subApilado');
+ // Bumper frame (centered, 70% width)
+ const bFrac=0.70;const bw=len*bFrac;const bOff=(len-bw)/2;const bd=depth*0.5;
+ const bf=[[bOff,0,-bd/2],[bOff+bw,0,-bd/2],[bOff+bw,-bumperH,-bd/2],[bOff,-bumperH,-bd/2],
+            [bOff,0,bd/2],[bOff+bw,0,bd/2],[bOff+bw,-bumperH,bd/2],[bOff,-bumperH,bd/2]].map(([u,v,w])=>P(u,v,w));
+ [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bf[k]),'plate'));
+ // Rigging point (small cross at top)
+ line(P(len/2,0.02),P(len/2,0),.010,'tube');
+ // Two cables from bumper to first box
+ const cOff=len*0.15;
+ line(P(len/2-cOff,-bumperH),P(len/2-cOff,-bumperH-cableH),.006,'tube');
+ line(P(len/2+cOff,-bumperH),P(len/2+cOff,-bumperH-cableH),.006,'tube');
+ // Stack of speaker boxes with progressive widening (J-curve for tops)
+ const ensMax=esSub?0:0.08;
  for(let j=0;j<cajas;j++){
-   const topY=-(bumperH+cableH+j*(altoCaja+gap));
-   const startFaces=primitives.length;
-   // Use face() directly for each box in the stack
-   const bx=0,by=topY-altoCaja,bz=-depth/2;
-   const corners=[[bx,topY,bz],[bx+len,topY,bz],[bx+len,by,bz],[bx,by,bz],
-                   [bx,topY,bz+depth],[bx+len,topY,bz+depth],[bx+len,by,bz+depth],[bx,by,bz+depth]];
-   const c=corners.map(([u,v,w])=>P(u,v,w));
-   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
+   const topYj=-(bumperH+cableH+j*(altoCaja+gap));
+   const t=cajas>1?j/(cajas-1):0;const tN=cajas>1?Math.min(1,(j+1)/(cajas-1)):0;
+   const ensT=ensMax*t*t;const ensB=ensMax*tN*tN;
+   const wTop=len*(1+ensT);const wBot=len*(1+ensB);
+   const offT=(len-wTop)/2;const offB=(len-wBot)/2;
+   // Front face (Z-) and back face (Z+), top and bottom with different widths
+   const c8=[[offT,topYj,-depth/2],[offT+wTop,topYj,-depth/2],[offB+wBot,topYj-altoCaja,-depth/2],[offB,topYj-altoCaja,-depth/2],
+              [offT,topYj,depth/2],[offT+wTop,topYj,depth/2],[offB+wBot,topYj-altoCaja,depth/2],[offB,topYj-altoCaja,depth/2]].map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c8[k]),'plate'));
+   // Grille stripe on front face (thin darker band)
+   if(j<cajas-1){
+     const gy=topYj-altoCaja;const gw=wBot*0.9;const gOff=offB+(wBot-gw)/2;
+     line(P(gOff,gy,-depth/2-0.001),P(gOff+gw,gy,-depth/2-0.001),.003,'tube');
+   }
  }
- issues.push(`${item.name}: cluster esquemático de ${cajas} caja(s); geometría de referencia.`);
+ issues.push(`${item.name}: cluster de ${cajas} caja(s) con curva J; geometría esquemática.`);
  }else if(p.categoria==='pantallaLED'){
- // Pantalla LED: flat rectangular panel
- const alto=n(p,'alto',2);const depth=0.10;
- // Panel as thin box
+ // Pantalla LED: thin panel with frame + mounting brackets
+ const alto=n(p,'alto',2);const depth=0.10;const frameD=0.02;
+ // Main panel body
  const c=[[0,0,-depth/2],[len,0,-depth/2],[len,alto,-depth/2],[0,alto,-depth/2],
            [0,0,depth/2],[len,0,depth/2],[len,alto,depth/2],[0,alto,depth/2]].map(([u,v,w])=>P(u,v,w));
  [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
- issues.push(`${item.name}: panel plano de referencia ${len}×${alto}m.`);
+ // Mounting brackets at top (two vertical tubes at 20% and 80% width)
+ const brkH=0.12;
+ line(P(len*0.2,alto),P(len*0.2,alto+brkH),.012,'tube');
+ line(P(len*0.8,alto),P(len*0.8,alto+brkH),.012,'tube');
+ // Cross bar between brackets
+ line(P(len*0.2,alto+brkH),P(len*0.8,alto+brkH),.010,'tube');
+ // Module grid lines on front face (decorative)
+ const nModH=Math.max(2,Math.round(alto/0.5));const nModW=Math.max(2,Math.round(len/0.5));
+ for(let mi=1;mi<nModH;mi++){const gy=mi*alto/nModH;line(P(0,gy,-depth/2-0.001),P(len,gy,-depth/2-0.001),.002,'tube');}
+ for(let mi=1;mi<nModW;mi++){const gx=mi*len/nModW;line(P(gx,0,-depth/2-0.001),P(gx,alto,-depth/2-0.001),.002,'tube');}
+ issues.push(`${item.name}: panel LED ${len}×${alto}m con soporte superior.`);
  }else if(p.categoria==='luz'){
- // Luz: small fixture box + clamp
- const fixtureH=0.30;const fixtureD=0.30;
- // Clamp (small cylinder approx as lines)
- line(P(len/2,0),P(len/2,-0.05),.015,'tube');
- // Fixture body as small box
- const hw=len/2;const c=[[0,-0.05,-fixtureD/2],[len,-0.05,-fixtureD/2],[len,-0.05-fixtureH,-fixtureD/2],[0,-0.05-fixtureH,-fixtureD/2],
-           [0,-0.05,fixtureD/2],[len,-0.05,fixtureD/2],[len,-0.05-fixtureH,fixtureD/2],[0,-0.05-fixtureH,fixtureD/2]].map(([u,v,w])=>P(u,v,w));
- [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k])));
- issues.push(`${item.name}: fixture esquemático de referencia.`);
+ // Luz: fixture with clamp, yoke/arm, and body
+ const tipoLuz=p.tipoLuz||'movingHead';const fixtureD=len*0.7;
+ const clampH=0.04;const dropH=0.03;
+ // Clamp at truss
+ line(P(len/2,0),P(len/2,-clampH),.015,'tube');
+ if(tipoLuz==='barra'){
+   // LED bar: long thin box
+   const barH=0.08;const barD=0.10;
+   const bc=[[0,-clampH,-barD/2],[len,-clampH,-barD/2],[len,-clampH-barH,-barD/2],[0,-clampH-barH,-barD/2],
+              [0,-clampH,barD/2],[len,-clampH,barD/2],[len,-clampH-barH,barD/2],[0,-clampH-barH,barD/2]].map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bc[k])));
+ }else if(tipoLuz==='blinder'){
+   // Blinder: wide short box
+   const bH=0.18;const bD=0.15;
+   const bc=[[0,-clampH,-bD/2],[len,-clampH,-bD/2],[len,-clampH-bH,-bD/2],[0,-clampH-bH,-bD/2],
+              [0,-clampH,bD/2],[len,-clampH,bD/2],[len,-clampH-bH,bD/2],[0,-clampH-bH,bD/2]].map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bc[k])));
+ }else{
+   // Moving head / wash / beam / par / fresnel / etc: yoke + head
+   const yokeW=len*0.6;const yokeH=len*0.35;const headR=len*0.35;
+   const yokeOff=(len-yokeW)/2;const yokeTop=-clampH-dropH;
+   // Drop from clamp
+   line(P(len/2,-clampH),P(len/2,yokeTop),.008,'tube');
+   // Yoke arms (two vertical tubes + cross bar)
+   line(P(yokeOff,yokeTop),P(yokeOff,yokeTop-yokeH),.008,'tube');
+   line(P(yokeOff+yokeW,yokeTop),P(yokeOff+yokeW,yokeTop-yokeH),.008,'tube');
+   line(P(yokeOff,yokeTop),P(yokeOff+yokeW,yokeTop),.008,'tube');
+   // Head as box (approximation of the round head)
+   const headCy=yokeTop-yokeH*0.6;const hW=headR*1.4;const hH=headR;const hD=headR*1.2;
+   const hOff=len/2-hW/2;
+   const hc=[[hOff,headCy+hH/2,-hD/2],[hOff+hW,headCy+hH/2,-hD/2],[hOff+hW,headCy-hH/2,-hD/2],[hOff,headCy-hH/2,-hD/2],
+              [hOff,headCy+hH/2,hD/2],[hOff+hW,headCy+hH/2,hD/2],[hOff+hW,headCy-hH/2,hD/2],[hOff,headCy-hH/2,hD/2]].map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>hc[k])));
+ }
+ issues.push(`${item.name}: fixture ${tipoLuz} esquemático de referencia.`);
  }else{
  line(P(),P(len),.024,p.categoria==='barandilla'?'rail':'tube');for(const u of [0,len]){line(P(u,-.045),P(u,.045),.028,'head');}
  }
