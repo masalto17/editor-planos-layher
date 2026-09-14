@@ -33,6 +33,15 @@ export const CATALOGO = {
     { id: 'HU073', nombre: 'Horizontal U 0.73m', largo: 0.73, peso: 3.1,  ref: '2613.073', color: '#92400e' },
     { id: 'HU109', nombre: 'Horizontal U 1.09m', largo: 1.09, peso: 4.4,  ref: '2613.108', color: '#92400e' },
   ],
+  // ─── HORIZONTALES U REFORZADAS T14 (mayor capacidad de carga) ──
+  // Pesos ≈ — verificar contra catálogo F4-2018-SP
+  horizontalesUT14: [
+    { id: 'HUT14_073', nombre: 'Horizontal U T14 0.73m', largo: 0.73, peso: 4.2,  ref: '2618.073', color: '#92400e' },
+    { id: 'HUT14_109', nombre: 'Horizontal U T14 1.09m', largo: 1.09, peso: 6.0,  ref: '2618.109', color: '#92400e' },
+    { id: 'HUT14_157', nombre: 'Horizontal U T14 1.57m', largo: 1.57, peso: 8.2,  ref: '2618.157', color: '#92400e' },
+    { id: 'HUT14_207', nombre: 'Horizontal U T14 2.07m', largo: 2.07, peso: 10.8, ref: '2618.207', color: '#92400e' },
+    { id: 'HUT14_257', nombre: 'Horizontal U T14 2.57m', largo: 2.57, peso: 13.0, ref: '2618.257', color: '#92400e' },
+  ],
   plataformas: [
     { id: 'PL032_073', nombre: 'Plataforma 0.32×0.73m',  largo: 0.73, anchoPlat: 0.32, peso: 4.8,  ref: '3812.073', color: '#7f1d1d' },
     { id: 'PL032_109', nombre: 'Plataforma 0.32×1.09m',  largo: 1.09, anchoPlat: 0.32, peso: 6.5,  ref: '3812.109', color: '#7f1d1d' },
@@ -85,6 +94,14 @@ export const CATALOGO = {
   ],
   collarines: [
     { id: 'CO', nombre: 'Collarín', largo: 0.02, peso: 1.3, ref: '2603.000', color: '#78350f' },
+  ],
+
+  // ─── TACOS DE MADERA (complemento bajo husillos, terreno blando) ──
+  // Pesos ≈ — verificar contra proveedor local
+  tacosMadera: [
+    { id: 'TACO20', nombre: 'Taco madera 20×20×5cm', largo: 0.20, anchoTaco: 0.20, espesor: 0.05, peso: 1.0, ref: 'TACO-20', color: '#8B6914' },
+    { id: 'TACO30', nombre: 'Taco madera 30×30×5cm', largo: 0.30, anchoTaco: 0.30, espesor: 0.05, peso: 2.2, ref: 'TACO-30', color: '#8B6914' },
+    { id: 'TACO40', nombre: 'Tablón madera 40×20×5cm', largo: 0.40, anchoTaco: 0.20, espesor: 0.05, peso: 2.0, ref: 'TACO-40', color: '#8B6914' },
   ],
 
   // ─── MÉNSULAS (voladizo lateral desde vertical) ──────────
@@ -206,12 +223,14 @@ export const CATALOGO = {
 export const CAT_KEYS = [
   { key: 'bases',            cat: 'base',           label: '⚙️ Base Regulable (Tornillón)' },
   { key: 'collarines',       cat: 'collarin',       label: '🔗 Collarín' },
+  { key: 'tacosMadera',      cat: 'tacoMadera',     label: '🪵 Tacos de madera' },
   { key: 'verticales',       cat: 'vertical',       label: '📐 Verticales (parantes)' },
   { key: 'horizontalesO',    cat: 'horizontalO',    label: '🟢 Horizontales O (tubo)' },
   { key: 'diagonales',       cat: 'diagonal',       label: '📏 Diagonales (alzado)',  vistas: ['alzado'] },
   { key: 'diagonalesPlanta', cat: 'diagonalPlanta', label: '📏 Diagonales (planta)',  vistas: ['planta'] },
   { key: 'vigasPuente',      cat: 'vigaPuente',     label: '🟠 Vigas Puente U' },
   { key: 'horizontalesU',    cat: 'horizontalU',    label: '🟤 Horizontales U' },
+  { key: 'horizontalesUT14', cat: 'horizontalUT14', label: '🟤 Horizontales U T14 (reforzadas)' },
   { key: 'stringers',        cat: 'stringer',       label: '📏 Stringers (40×80)', tooltip: 'Caño estr. 40×80×2.50mm entre viga puente y fenólico, sep. 0.60m' },
   { key: 'plataformas',      cat: 'plataforma',     label: '🟥 Plataformas' },
   { key: 'rodapies',         cat: 'rodapie',        label: '🛡️ Rodapiés' },

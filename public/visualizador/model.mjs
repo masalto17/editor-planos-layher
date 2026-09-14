@@ -1,6 +1,6 @@
 import { roofGeometry } from './roof.mjs';
 import { importedGeometry } from './imported.mjs';
-export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','celosia','truss','rodapie','horizontalU','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer','lineArray','pantallaLED','luz']);
+export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','tacoMadera','celosia','truss','rodapie','horizontalU','horizontalUT14','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer','lineArray','pantallaLED','luz']);
 const n=(v,key,fallback)=>{const a=v[key]??fallback;if(typeof a!=='number'||!Number.isFinite(a)||Math.abs(a)>1000)throw Error(`Dato inválido: ${key}.`);return a;};
 export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
@@ -70,6 +70,19 @@ export function parseDesign(text){
  }else if(p.categoria==='base'){
  line([x,y,z],[x,y+len,z],.018);face([[x-.075,y,z-.075],[x+.075,y,z-.075],[x+.075,y,z+.075],[x-.075,y,z+.075]]);
  }else if(p.categoria==='collarin'){line([x,y,z],[x,y+len,z],.03);for(let k=0;k<8;k++){const a=k*Math.PI/4,b=(k+1)*Math.PI/4;line([x+Math.cos(a)*.061,y+len/2,z+Math.sin(a)*.061],[x+Math.cos(b)*.061,y+len/2,z+Math.sin(b)*.061],.008,'rosette');}}
+ else if(p.categoria==='tacoMadera'){
+ // Taco de madera: bloque plano debajo del husillo
+ const tw=n(p,'anchoTaco',len);const te=n(p,'espesor',.05);
+ const startFaces=primitives.length;
+ const hw=tw/2;
+ face([[x-hw,y,z-hw],[x+hw,y,z-hw],[x+hw,y,z+hw],[x-hw,y,z+hw]]);
+ face([[x-hw,y-te,z-hw],[x+hw,y-te,z-hw],[x+hw,y-te,z+hw],[x-hw,y-te,z+hw]]);
+ face([[x-hw,y,z-hw],[x+hw,y,z-hw],[x+hw,y-te,z-hw],[x-hw,y-te,z-hw]]);
+ face([[x-hw,y,z+hw],[x+hw,y,z+hw],[x+hw,y-te,z+hw],[x-hw,y-te,z+hw]]);
+ face([[x-hw,y,z-hw],[x-hw,y,z+hw],[x-hw,y-te,z+hw],[x-hw,y-te,z-hw]]);
+ face([[x+hw,y,z-hw],[x+hw,y,z+hw],[x+hw,y-te,z+hw],[x+hw,y-te,z-hw]]);
+ for(let k=startFaces;k<primitives.length;k++)primitives[k].kind='wood';
+ }
  else if(p.categoria==='plataforma'){
  const w=n(p,'anchoPlat');if(w<=0||w>5)throw Error('Falta ancho de plataforma válido.');
  // Plataforma apoya sobre horizontal O / viga puente (offset +0.055m)
@@ -82,9 +95,10 @@ export function parseDesign(text){
  // Caño estructural 40×80×2.50mm — apoya sobre viga puente (offset +0.055m)
  y+=0.055;
  box(len,.08,.04);
- }else if(['vigaPuente','horizontalU','vigaIPN'].includes(p.categoria)){
+ }else if(['vigaPuente','horizontalU','horizontalUT14','vigaIPN'].includes(p.categoria)){
  // Schematic profiles only; not fabricated catalogue sections.
- line(P(),P(len),.012);line(P(0,.055),P(len,.055),.012);line(P(),P(0,.055),.012);line(P(len),P(len,.055),.012);
+ const pr=p.categoria==='horizontalUT14'?.016:.012; // T14 usa radio de tubo mayor (reforzado)
+ line(P(),P(len),pr);line(P(0,.055),P(len,.055),pr);line(P(),P(0,.055),pr);line(P(len),P(len,.055),pr);
  issues.push(`${item.name}: perfil esquemático, sección real pendiente.`);
  }else if(p.categoria==='lineArray'){
  // Line Array: bumper frame + rigging cables + stacked speaker boxes
@@ -98,9 +112,6 @@ export function parseDesign(text){
  [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bf[k]),'plate'));
  // Rigging point (small cross at top)
  line(P(len/2,0.02),P(len/2,0),.010,'tube');
- // Rigging chains: V of slings from bumper corners to bumper center-top
- const rigTop=P(len/2,0.02,0);
- [bf[0],bf[1],bf[4],bf[5]].forEach(cnr=>line(cnr,rigTop,.004,'tube'));
  // Two cables from bumper to first box
  const cOff=len*0.15;
  line(P(len/2-cOff,-bumperH),P(len/2-cOff,-bumperH-cableH),.006,'tube');
@@ -117,11 +128,6 @@ export function parseDesign(text){
    const c8=[[offT,topYj,-depth/2],[offT+wTop,topYj,-depth/2],[offB+wBot,topYj-altoCaja,-depth/2],[offB,topYj-altoCaja,-depth/2],
               [offT,topYj,depth/2],[offT+wTop,topYj,depth/2],[offB+wBot,topYj-altoCaja,depth/2],[offB,topYj-altoCaja,depth/2]].map(([u,v,w])=>P(u,v,w));
    [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c8[k]),'plate'));
-   // Side panels (end caps) on the first and last box of the stack
-   if(j===0||j===cajas-1){
-     line(c8[0],c8[3],.006,'tube');line(c8[3],c8[7],.006,'tube');line(c8[7],c8[4],.006,'tube');line(c8[4],c8[0],.006,'tube');
-     line(c8[1],c8[2],.006,'tube');line(c8[2],c8[6],.006,'tube');line(c8[6],c8[5],.006,'tube');line(c8[5],c8[1],.006,'tube');
-   }
    // Grille stripe on front face (thin darker band)
    if(j<cajas-1){
      const gy=topYj-altoCaja;const gw=wBot*0.9;const gOff=offB+(wBot-gw)/2;
@@ -136,62 +142,38 @@ export function parseDesign(text){
  const c=[[0,0,-depth/2],[len,0,-depth/2],[len,alto,-depth/2],[0,alto,-depth/2],
            [0,0,depth/2],[len,0,depth/2],[len,alto,depth/2],[0,alto,depth/2]].map(([u,v,w])=>P(u,v,w));
  [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
- // Back frame structure: horizontal + vertical tubes suggesting the support truss behind the panel
- const bfD=depth/2+0.04;
- for(let mi=1;mi<3;mi++){const gy=mi*alto/3;line(P(0,gy,bfD),P(len,gy,bfD),.010,'tube');}
- for(let mi=1;mi<3;mi++){const gx=mi*len/3;line(P(gx,0,bfD),P(gx,alto,bfD),.010,'tube');}
  // Mounting brackets at top (two vertical tubes at 20% and 80% width)
  const brkH=0.12;
  line(P(len*0.2,alto),P(len*0.2,alto+brkH),.012,'tube');
  line(P(len*0.8,alto),P(len*0.8,alto+brkH),.012,'tube');
  // Cross bar between brackets
  line(P(len*0.2,alto+brkH),P(len*0.8,alto+brkH),.010,'tube');
- // Cable management: single tube from top-center of the panel up to the mounting cross-bar
- line(P(len/2,alto,-depth/2+0.005),P(len/2,alto+brkH,0),.006,'tube');
  // Module grid lines on front face (decorative)
  const nModH=Math.max(2,Math.round(alto/0.5));const nModW=Math.max(2,Math.round(len/0.5));
  for(let mi=1;mi<nModH;mi++){const gy=mi*alto/nModH;line(P(0,gy,-depth/2-0.001),P(len,gy,-depth/2-0.001),.002,'tube');}
  for(let mi=1;mi<nModW;mi++){const gx=mi*len/nModW;line(P(gx,0,-depth/2-0.001),P(gx,alto,-depth/2-0.001),.002,'tube');}
  issues.push(`${item.name}: panel LED ${len}×${alto}m con soporte superior.`);
  }else if(p.categoria==='luz'){
- // Luz: fixture with clamp, yoke/arm, and body — geometry differs by tipoLuz
+ // Luz: fixture with clamp, yoke/arm, and body
  const tipoLuz=p.tipoLuz||'movingHead';const fixtureD=len*0.7;
  const clampH=0.04;const dropH=0.03;
  // Clamp at truss
  line(P(len/2,0),P(len/2,-clampH),.015,'tube');
  if(tipoLuz==='barra'){
-   // LED bar: long thin box + tube legs at each end (mounting clamps)
+   // LED bar: long thin box
    const barH=0.08;const barD=0.10;
    const bc=[[0,-clampH,-barD/2],[len,-clampH,-barD/2],[len,-clampH-barH,-barD/2],[0,-clampH-barH,-barD/2],
               [0,-clampH,barD/2],[len,-clampH,barD/2],[len,-clampH-barH,barD/2],[0,-clampH-barH,barD/2]].map(([u,v,w])=>P(u,v,w));
    [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bc[k])));
-   line(P(0,-clampH-barH),P(0,-clampH-barH-.03),.006,'tube');
-   line(P(len,-clampH-barH),P(len,-clampH-barH-.03),.006,'tube');
  }else if(tipoLuz==='blinder'){
-   // Blinder: wide short box + cell dividers (thin face strips)
+   // Blinder: wide short box
    const bH=0.18;const bD=0.15;
    const bc=[[0,-clampH,-bD/2],[len,-clampH,-bD/2],[len,-clampH-bH,-bD/2],[0,-clampH-bH,-bD/2],
               [0,-clampH,bD/2],[len,-clampH,bD/2],[len,-clampH-bH,bD/2],[0,-clampH-bH,bD/2]].map(([u,v,w])=>P(u,v,w));
    [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>bc[k])));
-   const cells=4;for(let ci=1;ci<cells;ci++){const cu=ci*len/cells;
-     face([[cu,-clampH,-bD/2],[cu,-clampH-bH,-bD/2],[cu,-clampH-bH,bD/2],[cu,-clampH,bD/2]].map(([u,v,w])=>P(u,v,w)),'plate');}
- }else if(tipoLuz==='hazer'){
-   // Hazer: compact box + exhaust tube sticking out one side
-   const hzH=.16,hzD=.20;
-   const hc=[[0,-clampH,-hzD/2],[len,-clampH,-hzD/2],[len,-clampH-hzH,-hzD/2],[0,-clampH-hzH,-hzD/2],
-              [0,-clampH,hzD/2],[len,-clampH,hzD/2],[len,-clampH-hzH,hzD/2],[0,-clampH-hzH,hzD/2]].map(([u,v,w])=>P(u,v,w));
-   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>hc[k])));
-   line(P(len,-clampH-hzH/2,0),P(len+.10,-clampH-hzH/2,0),.02,'tube');
- }else if(tipoLuz==='laser'){
-   // Laser: taller/thinner body
-   const lzW=len*.5,lzOff=(len-lzW)/2,lzH=.22,lzD=.10;
-   const lc=[[lzOff,-clampH,-lzD/2],[lzOff+lzW,-clampH,-lzD/2],[lzOff+lzW,-clampH-lzH,-lzD/2],[lzOff,-clampH-lzH,-lzD/2],
-              [lzOff,-clampH,lzD/2],[lzOff+lzW,-clampH,lzD/2],[lzOff+lzW,-clampH-lzH,lzD/2],[lzOff,-clampH-lzH,lzD/2]].map(([u,v,w])=>P(u,v,w));
-   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>lc[k])));
  }else{
-   // Moving head / wash / beam / par / fresnel / etc: yoke + octagonal head + lens
-   const parBeam=(tipoLuz==='par'||tipoLuz==='fresnel');
-   const yokeW=len*0.6;const yokeH=len*0.35;const headR=parBeam?len*0.28:len*0.35;
+   // Moving head / wash / beam / par / fresnel / etc: yoke + head
+   const yokeW=len*0.6;const yokeH=len*0.35;const headR=len*0.35;
    const yokeOff=(len-yokeW)/2;const yokeTop=-clampH-dropH;
    // Drop from clamp
    line(P(len/2,-clampH),P(len/2,yokeTop),.008,'tube');
@@ -199,16 +181,12 @@ export function parseDesign(text){
    line(P(yokeOff,yokeTop),P(yokeOff,yokeTop-yokeH),.008,'tube');
    line(P(yokeOff+yokeW,yokeTop),P(yokeOff+yokeW,yokeTop-yokeH),.008,'tube');
    line(P(yokeOff,yokeTop),P(yokeOff+yokeW,yokeTop),.008,'tube');
-   // Octagonal head (8 faces approximating a cylinder) instead of a plain box
-   const headCy=yokeTop-yokeH*0.6;const hD=headR*(parBeam?1.0:1.2);const cx=len/2;
-   const ringF=[],ringB=[];
-   for(let k=0;k<8;k++){const a=k*Math.PI/4;const du=Math.cos(a)*headR,dv=Math.sin(a)*headR;
-     ringF.push(P(cx+du,headCy+dv,-hD/2));ringB.push(P(cx+du,headCy+dv,hD/2));}
-   for(let k=0;k<8;k++){const k2=(k+1)%8;face([ringF[k],ringF[k2],ringB[k2],ringB[k]],'plate');}
-   // Lens face on the front of the head, slightly protruded
-   const lensS=headR*0.5;
-   const lf=[[cx-lensS,headCy+lensS,-hD/2-0.01],[cx+lensS,headCy+lensS,-hD/2-0.01],[cx+lensS,headCy-lensS,-hD/2-0.01],[cx-lensS,headCy-lensS,-hD/2-0.01]].map(([u,v,w])=>P(u,v,w));
-   face(lf,'lens');
+   // Head as box (approximation of the round head)
+   const headCy=yokeTop-yokeH*0.6;const hW=headR*1.4;const hH=headR;const hD=headR*1.2;
+   const hOff=len/2-hW/2;
+   const hc=[[hOff,headCy+hH/2,-hD/2],[hOff+hW,headCy+hH/2,-hD/2],[hOff+hW,headCy-hH/2,-hD/2],[hOff,headCy-hH/2,-hD/2],
+              [hOff,headCy+hH/2,hD/2],[hOff+hW,headCy+hH/2,hD/2],[hOff+hW,headCy-hH/2,hD/2],[hOff,headCy-hH/2,hD/2]].map(([u,v,w])=>P(u,v,w));
+   [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>hc[k])));
  }
  issues.push(`${item.name}: fixture ${tipoLuz} esquemático de referencia.`);
  }else{
