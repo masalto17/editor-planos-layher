@@ -732,8 +732,44 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
 
     // Fixtures puntuales: moving head, wash, beam, par, fresnel, etc.
     // Radio proporcional al fixture real
-    const r = Math.max(3, fixtureW / 2);
+    const esHazer = tipoLuz === 'hazer';
+    const esLaser = tipoLuz === 'laser';
+    const esFollowSpot = tipoLuz === 'followSpot';
+    const r = esFollowSpot ? Math.max(4, fixtureW / 2 * 1.3) : Math.max(3, fixtureW / 2);
     const esMoving = ['movingHead', 'wash', 'beam', 'spot'].includes(tipoLuz);
+    const tieneHaz = esMoving || esFollowSpot;
+    const largoHaz = esFollowSpot ? r * 2.2 : r * 1.3;
+    const etiqueta = esHazer ? 'HAZ' : esLaser ? 'LSR' : tipoLuz === 'wash' ? 'W'
+      : tipoLuz === 'beam' ? 'B' : tipoLuz === 'par' ? 'P' : tipoLuz === 'fresnel' ? 'F'
+      : tipoLuz === 'profile' ? 'PR' : tipoLuz === 'strobe' ? 'ST' : esFollowSpot ? 'FS' : 'MH';
+
+    // Hazer: máquina rectangular con línea ondulada de salida de humo
+    if (esHazer) {
+      const hw = Math.max(6, fixtureW), hh = Math.max(4, fixtureW * 0.6);
+      const wiggleY = pC.y - hh / 2 - Math.max(3, zoom * 0.03);
+      return (
+        <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+          {seleccionada && <rect x={pC.x - hw / 2 - 4} y={pC.y - hh / 2 - 4} width={hw + 8} height={hh + 8}
+            fill="none" stroke="#E30613" strokeWidth="2" />}
+          <rect x={pC.x - hw / 2} y={pC.y - hh / 2} width={hw} height={hh}
+            fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} rx="1" />
+          {zoom > 25 && (
+            <path d={`M ${pC.x - hw * 0.3} ${wiggleY}
+              Q ${pC.x - hw * 0.15} ${wiggleY - Math.max(3, zoom * 0.03)} ${pC.x} ${wiggleY}
+              Q ${pC.x + hw * 0.15} ${wiggleY + Math.max(3, zoom * 0.03)} ${pC.x + hw * 0.3} ${wiggleY}`}
+              fill="none" stroke={sc} strokeWidth={sw * 0.8} opacity="0.4" strokeLinecap="round" />
+          )}
+          {zoom > 30 && (
+            <text x={pC.x} y={pC.y + hh / 2 + Math.max(7, zoom * 0.06)}
+              fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
+              fontFamily="monospace" fontWeight="bold" opacity="0.6">
+              {etiqueta}{zoom > 45 && pieza.consumoW ? ` ${pieza.consumoW}W` : ''}
+            </text>
+          )}
+        </g>
+      );
+    }
+
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <circle cx={pC.x} cy={pC.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
@@ -746,16 +782,30 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
             stroke={sc} strokeWidth={sw * 1.5} opacity="0.5" />
           <circle cx={pC.x} cy={pC.y} r={r * 0.5} fill={sc} fillOpacity="0.4" stroke="none" />
         </>}
-        {/* Fixtures simples: punto central */}
-        {!esMoving && <circle cx={pC.x} cy={pC.y} r={r * 0.3} fill={sc} opacity="0.5" />}
-        {/* Etiqueta con tipo */}
+        {/* Láser: líneas radiantes desde el centro */}
+        {esLaser && zoom > 25 && Array.from({ length: 6 }, (_, i) => {
+          const ang = (i / 6) * Math.PI * 2;
+          const rr = r * 1.6;
+          return (
+            <line key={i} x1={pC.x} y1={pC.y}
+              x2={pC.x + Math.cos(ang) * rr} y2={pC.y + Math.sin(ang) * rr}
+              stroke={sc} strokeWidth={sw * 0.5} opacity="0.3" />
+          );
+        })}
+        {/* Fixtures simples (no moving, no láser): punto central */}
+        {!esMoving && !esLaser && <circle cx={pC.x} cy={pC.y} r={r * 0.3} fill={sc} opacity="0.5" />}
+        {/* Indicador de haz/apuntado (moving heads y follow spot), por defecto hacia abajo en planta */}
+        {tieneHaz && zoom > 25 && (
+          <line x1={pC.x} y1={pC.y} x2={pC.x} y2={pC.y + r + largoHaz}
+            stroke={sc} strokeWidth={esFollowSpot ? sw * 1.2 : sw * 0.8}
+            strokeDasharray="2 2" opacity="0.4" />
+        )}
+        {/* Etiqueta con tipo (+ consumo en alto zoom) */}
         {zoom > 30 && (
           <text x={pC.x} y={pC.y + r + Math.max(7, zoom * 0.06)}
             fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.6">
-            {tipoLuz === 'hazer' ? 'HAZ' : tipoLuz === 'laser' ? 'LSR' : tipoLuz === 'wash' ? 'W'
-              : tipoLuz === 'beam' ? 'B' : tipoLuz === 'par' ? 'P' : tipoLuz === 'fresnel' ? 'F'
-              : tipoLuz === 'profile' ? 'PR' : tipoLuz === 'strobe' ? 'ST' : tipoLuz === 'followSpot' ? 'FS' : 'MH'}
+            {etiqueta}{zoom > 45 && pieza.consumoW ? ` ${pieza.consumoW}W` : ''}
           </text>
         )}
       </g>
