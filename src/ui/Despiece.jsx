@@ -10,10 +10,12 @@ const CAT_LABEL = Object.fromEntries([...CAT_KEYS, ...CAT_KEYS_EVENTO].map(ck =>
 const CAT_COLOR = {
   base: '#8B4513',
   collarin: '#5C3317',
+  tacoMadera: '#8B6914',
   vertical: '#2563eb',
   horizontalO: '#16a34a',
   vigaPuente: '#d97706',
   horizontalU: '#d97706',
+  horizontalUT14: '#92400e',
   mensula: '#0ea5e9',
   stringer: '#64748b',
   plataforma: '#9f1239',

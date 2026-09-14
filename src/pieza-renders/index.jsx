@@ -19,6 +19,8 @@ import Stringer from './Stringer.jsx';
 import LineArray from './LineArray.jsx';
 import PantallaLED from './PantallaLED.jsx';
 import MovingHead from './MovingHead.jsx';
+import HorizontalUT14 from './HorizontalUT14.jsx';
+import TacoMadera from './TacoMadera.jsx';
 import GenericPiezaRender from './GenericPiezaRender.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -46,11 +48,13 @@ const RENDERERS = {
   barandilla: HorizontalO,
   vigaPuente: VigaPuente,
   horizontalU: HorizontalU,
+  horizontalUT14: HorizontalUT14,
   plataforma: Plataforma,
   rodapie: Rodapie,
   diagonal: DiagonalPieza,
   base: Base,
   collarin: Base,
+  tacoMadera: TacoMadera,
   vigaIPN: VigaIPN,
   celosia: CelosiaTruss,
   truss: Truss,
@@ -68,8 +72,8 @@ const RENDERERS = {
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)
 const TECNICO_COLORS = {
-  vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
-  plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', base: '#222', collarin: '#222',
+  vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333', horizontalUT14: '#222',
+  plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', base: '#222', collarin: '#222', tacoMadera: '#333',
   vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
   mensula: '#333', escalera: '#222', apoyaTecho: '#333', fenolico: '#444', stringer: '#333',
   lineArray: '#333', pantallaLED: '#333', luz: '#333',

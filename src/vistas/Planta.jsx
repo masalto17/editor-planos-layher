@@ -15,11 +15,11 @@ function extremosXZ(pieza) {
 }
 
 const TECNICO_COLORS_PLANTA = {
-  vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333',
+  vertical: '#111', horizontalO: '#333', vigaPuente: '#222', horizontalU: '#333', horizontalUT14: '#222',
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', diagonalPlanta: '#333',
-  base: '#222', collarin: '#222', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
+  base: '#222', collarin: '#222', tacoMadera: '#333', vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
   mensula: '#222', escalera: '#222', fenolico: '#444', stringer: '#333',
-  lineArray: '#333', pantallaLED: '#333', luz: '#333',
+  lineArray: '#333', pantallaLED: '#333', luz: '#333', apoyaTecho: '#222',
 };
 
 // ─── Helpers de dibujo para planta (estilo plano profesional) ───
@@ -216,6 +216,52 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
+  // ── Horizontal U T14 (reforzada) → doble línea más gruesa que HorizontalU ──
+  if (pieza.categoria === 'horizontalUT14') {
+    const { x1, z1, x2, z2 } = extremosXZ(pieza);
+    const pL = worldToScreen(x1, z1), pR = worldToScreen(x2, z2);
+    const sep = Math.max(3.5, zoom * 0.045);
+    const lineW = Math.max(0.8, zoom * 0.013);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke="#E30613" strokeWidth={sep + 6} opacity="0.2" strokeLinecap="round" />}
+        {dobleLinea(pL, pR, sep, lineW, sc)}
+        {/* Línea central fina (marca de refuerzo T14) */}
+        <line x1={pL.x} y1={pL.y} x2={pR.x} y2={pR.y}
+          stroke={sc} strokeWidth={Math.max(0.3, zoom * 0.004)} opacity="0.35" />
+        {zoom > 35 && Math.hypot(pR.x - pL.x, pR.y - pL.y) > 20 && (
+          <text x={(pL.x + pR.x) / 2} y={(pL.y + pR.y) / 2 - sep - 2}
+            textAnchor="middle" fontSize={Math.max(6, zoom * 0.05)} fill={sc} fontFamily="monospace" opacity="0.5">T14</text>
+        )}
+      </g>
+    );
+  }
+
+  // ── Taco de madera → cuadrado relleno (bloque visto desde arriba) ──
+  if (pieza.categoria === 'tacoMadera') {
+    const p = worldToScreen(pieza.x, z);
+    const ancho = pieza.anchoTaco || pieza.largo || 0.20;
+    const s = Math.max(4, ancho * zoom / 2);
+    const sw = Math.max(0.5, zoom * 0.006);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={p.x - s - 3} y={p.y - s - 3} width={(s + 3) * 2} height={(s + 3) * 2}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Cuadrado de madera */}
+        <rect x={p.x - s} y={p.y - s} width={s * 2} height={s * 2}
+          fill={sc} fillOpacity="0.45" stroke={sc} strokeWidth={sw} />
+        {/* Diagonales de veta */}
+        {zoom > 25 && s > 4 && <>
+          <line x1={p.x - s * 0.6} y1={p.y - s * 0.6} x2={p.x + s * 0.6} y2={p.y + s * 0.6}
+            stroke={sc} strokeWidth={sw * 0.6} opacity="0.3" />
+          <line x1={p.x + s * 0.6} y1={p.y - s * 0.6} x2={p.x - s * 0.6} y2={p.y + s * 0.6}
+            stroke={sc} strokeWidth={sw * 0.6} opacity="0.3" />
+        </>}
+      </g>
+    );
+  }
+
   // ── Stringer (caño 40×80) → rectángulo angosto (sección rectangular en planta) ──
   if (pieza.categoria === 'stringer') {
     const { x1, z1, x2, z2 } = extremosXZ(pieza);
@@ -403,13 +449,17 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
-  // ── Diagonal alzado → línea X con marca rombo + extensión visual ──
+  // ── Diagonal alzado → línea X con rombo sutil + dimensiones reales ──
   if (pieza.categoria === 'diagonal') {
     const pA = worldToScreen(pieza.x1, z);
     const pB = worldToScreen(pieza.x2, z);
     const midX = (pA.x + pB.x) / 2, midY = (pA.y + pB.y) / 2;
-    const s = Math.max(4, zoom * 0.05);
+    const s = Math.max(2.5, zoom * 0.03); // rombo más sutil
     const sw = Math.max(1, zoom * 0.015);
+    // Calcular dimensiones reales del tramo de diagonal (ancho × alto)
+    const ancho = Math.abs(pieza.x2 - pieza.x1);
+    const alto = pieza.alto || pieza.alturaDiag || 0;
+    const dimLabel = alto > 0 ? `${ancho.toFixed(2)}×${alto.toFixed(2)}m` : `${ancho.toFixed(2)}m`;
     return (
       <g opacity={op * 0.7} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
@@ -417,15 +467,15 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Línea entre posiciones X de los extremos */}
         <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y}
           stroke={sc} strokeWidth={sw} strokeDasharray="4 3" strokeLinecap="round" />
-        {/* Rombo central (marca de diagonal alzado) */}
-        <rect x={midX - s} y={midY - s} width={s * 2} height={s * 2} fill={sc} fillOpacity="0.2"
-          stroke={sc} strokeWidth={sw * 0.8} transform={`rotate(45 ${midX} ${midY})`} />
+        {/* Rombo central sutil (marca de diagonal alzado) */}
+        <rect x={midX - s} y={midY - s} width={s * 2} height={s * 2} fill={sc} fillOpacity="0.1"
+          stroke={sc} strokeWidth={sw * 0.5} opacity="0.5" transform={`rotate(45 ${midX} ${midY})`} />
         {/* Puntos extremos */}
         <circle cx={pA.x} cy={pA.y} r={Math.max(1.5, zoom * 0.02)} fill={sc} />
         <circle cx={pB.x} cy={pB.y} r={Math.max(1.5, zoom * 0.02)} fill={sc} />
-        {/* Etiqueta */}
+        {/* Etiqueta con dimensiones reales */}
         {zoom > 30 && <text x={midX} y={midY - s - 3} fontSize={Math.max(7, zoom * 0.06)}
-          fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">↗ diag</text>}
+          fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">{dimLabel}</text>}
       </g>
     );
   }
@@ -570,25 +620,10 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         <line x1={cx} y1={cy - crossS} x2={cx} y2={cy + crossS} stroke={sc} strokeWidth={sw * 1.5} />
         {/* Círculo de rigging (más visible) */}
         <circle cx={cx} cy={cy} r={Math.max(2.5, zoom * 0.03)} fill="none" stroke={sc} strokeWidth={sw} />
-        {/* Líneas de módulos (cajas individuales del cluster, solo alto zoom) */}
-        {zoom > 40 && nCajas > 1 && w > 20 && Array.from({ length: nCajas - 1 }, (_, i) => (
-          <line key={i} x1={pTL.x + w * (i + 1) / nCajas} y1={pTL.y}
-            x2={pTL.x + w * (i + 1) / nCajas} y2={pTL.y + h}
-            stroke={sc} strokeWidth={sw * 0.5} opacity="0.35" />
-        ))}
         {/* Arco de cobertura (solo tops, no subs) */}
         {!esSub && zoom > 30 && h > 6 && (
           <path d={`M ${pTL.x} ${cy} A ${w * 0.6} ${h * 1.2} 0 0 1 ${pTL.x + w} ${cy}`}
             fill="none" stroke={sc} strokeWidth={sw * 0.7} strokeDasharray="2 2" opacity="0.35" />
-        )}
-        {/* Patrón de dispersión: dos líneas de cobertura desde el frente del cluster */}
-        {!esSub && zoom > 30 && (
-          <>
-            <line x1={cx} y1={pTL.y} x2={cx - w * 0.9} y2={pTL.y - h * 2.5}
-              stroke={sc} strokeWidth={sw * 0.5} strokeDasharray="1.5 2" opacity="0.3" />
-            <line x1={cx} y1={pTL.y} x2={cx + w * 0.9} y2={pTL.y - h * 2.5}
-              stroke={sc} strokeWidth={sw * 0.5} strokeDasharray="1.5 2" opacity="0.3" />
-          </>
         )}
         {/* Etiqueta con tipo */}
         {zoom > 22 && w > 14 && (
@@ -596,14 +631,6 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
             fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.7">
             {esSub ? `SUB ×${nCajas}` : esDelay ? `DLY ×${nCajas}` : `LA ×${nCajas}`}
-          </text>
-        )}
-        {/* Peso total (alto zoom) */}
-        {zoom > 40 && pieza.peso && w > 14 && (
-          <text x={cx} y={pTL.y + h + Math.max(8, zoom * 0.07) + Math.max(8, zoom * 0.06)}
-            fontSize={Math.max(6, zoom * 0.045)} fill={sc} textAnchor="middle"
-            fontFamily="monospace" opacity="0.55">
-            {Math.round(pieza.peso)}kg
           </text>
         )}
       </g>
@@ -626,33 +653,9 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Panel */}
         <rect x={pTL.x} y={pTL.y} width={w} height={h}
           fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={sw} />
-        {/* Borde frontal más grueso (cara activa de la pantalla, dirección de visión) */}
+        {/* Línea frontal (cara activa de la pantalla) */}
         <line x1={pTL.x} y1={pTL.y + h * 0.3} x2={pTL.x + w} y2={pTL.y + h * 0.3}
-          stroke={sc} strokeWidth={sw * 3} opacity="0.6" strokeLinecap="round" />
-        {/* Indicador de dirección de visión (flecha hacia el frente) */}
-        {zoom > 25 && w > 14 && (
-          <path d={`M ${cx - Math.max(3, zoom * 0.03)} ${pTL.y + h * 0.3 - Math.max(4, zoom * 0.04)}
-            L ${cx} ${pTL.y + h * 0.3 - Math.max(9, zoom * 0.09)}
-            L ${cx + Math.max(3, zoom * 0.03)} ${pTL.y + h * 0.3 - Math.max(4, zoom * 0.04)} Z`}
-            fill={sc} opacity="0.55" />
-        )}
-        {/* Grilla de píxeles (módulos LED, alto zoom) */}
-        {zoom > 40 && w > 16 && h > 8 && (() => {
-          const cols = Math.min(10, Math.max(2, Math.round(w / 6)));
-          const rows = Math.min(4, Math.max(1, Math.round(h / 6)));
-          const dots = [];
-          for (let ri = 0; ri < rows; ri++) {
-            for (let ci = 0; ci < cols; ci++) {
-              dots.push(
-                <circle key={`${ri}-${ci}`}
-                  cx={pTL.x + w * (ci + 0.5) / cols}
-                  cy={pTL.y + h * (ri + 0.5) / rows}
-                  r={Math.max(0.5, zoom * 0.006)} fill={sc} opacity="0.4" />
-              );
-            }
-          }
-          return dots;
-        })()}
+          stroke={sc} strokeWidth={sw * 2.5} opacity="0.5" />
         {/* Marcas de soporte superior (ménsulas) */}
         {zoom > 30 && w > 12 && <>
           <line x1={pTL.x + w * 0.2} y1={pTL.y - Math.max(2, zoom * 0.02)} x2={pTL.x + w * 0.2} y2={pTL.y}
@@ -732,44 +735,8 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
 
     // Fixtures puntuales: moving head, wash, beam, par, fresnel, etc.
     // Radio proporcional al fixture real
-    const esHazer = tipoLuz === 'hazer';
-    const esLaser = tipoLuz === 'laser';
-    const esFollowSpot = tipoLuz === 'followSpot';
-    const r = esFollowSpot ? Math.max(4, fixtureW / 2 * 1.3) : Math.max(3, fixtureW / 2);
+    const r = Math.max(3, fixtureW / 2);
     const esMoving = ['movingHead', 'wash', 'beam', 'spot'].includes(tipoLuz);
-    const tieneHaz = esMoving || esFollowSpot;
-    const largoHaz = esFollowSpot ? r * 2.2 : r * 1.3;
-    const etiqueta = esHazer ? 'HAZ' : esLaser ? 'LSR' : tipoLuz === 'wash' ? 'W'
-      : tipoLuz === 'beam' ? 'B' : tipoLuz === 'par' ? 'P' : tipoLuz === 'fresnel' ? 'F'
-      : tipoLuz === 'profile' ? 'PR' : tipoLuz === 'strobe' ? 'ST' : esFollowSpot ? 'FS' : 'MH';
-
-    // Hazer: máquina rectangular con línea ondulada de salida de humo
-    if (esHazer) {
-      const hw = Math.max(6, fixtureW), hh = Math.max(4, fixtureW * 0.6);
-      const wiggleY = pC.y - hh / 2 - Math.max(3, zoom * 0.03);
-      return (
-        <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-          {seleccionada && <rect x={pC.x - hw / 2 - 4} y={pC.y - hh / 2 - 4} width={hw + 8} height={hh + 8}
-            fill="none" stroke="#E30613" strokeWidth="2" />}
-          <rect x={pC.x - hw / 2} y={pC.y - hh / 2} width={hw} height={hh}
-            fill={sc} fillOpacity="0.3" stroke={sc} strokeWidth={sw} rx="1" />
-          {zoom > 25 && (
-            <path d={`M ${pC.x - hw * 0.3} ${wiggleY}
-              Q ${pC.x - hw * 0.15} ${wiggleY - Math.max(3, zoom * 0.03)} ${pC.x} ${wiggleY}
-              Q ${pC.x + hw * 0.15} ${wiggleY + Math.max(3, zoom * 0.03)} ${pC.x + hw * 0.3} ${wiggleY}`}
-              fill="none" stroke={sc} strokeWidth={sw * 0.8} opacity="0.4" strokeLinecap="round" />
-          )}
-          {zoom > 30 && (
-            <text x={pC.x} y={pC.y + hh / 2 + Math.max(7, zoom * 0.06)}
-              fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
-              fontFamily="monospace" fontWeight="bold" opacity="0.6">
-              {etiqueta}{zoom > 45 && pieza.consumoW ? ` ${pieza.consumoW}W` : ''}
-            </text>
-          )}
-        </g>
-      );
-    }
-
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <circle cx={pC.x} cy={pC.y} r={r + 4} fill="none" stroke="#E30613" strokeWidth="2" />}
@@ -782,30 +749,16 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
             stroke={sc} strokeWidth={sw * 1.5} opacity="0.5" />
           <circle cx={pC.x} cy={pC.y} r={r * 0.5} fill={sc} fillOpacity="0.4" stroke="none" />
         </>}
-        {/* Láser: líneas radiantes desde el centro */}
-        {esLaser && zoom > 25 && Array.from({ length: 6 }, (_, i) => {
-          const ang = (i / 6) * Math.PI * 2;
-          const rr = r * 1.6;
-          return (
-            <line key={i} x1={pC.x} y1={pC.y}
-              x2={pC.x + Math.cos(ang) * rr} y2={pC.y + Math.sin(ang) * rr}
-              stroke={sc} strokeWidth={sw * 0.5} opacity="0.3" />
-          );
-        })}
-        {/* Fixtures simples (no moving, no láser): punto central */}
-        {!esMoving && !esLaser && <circle cx={pC.x} cy={pC.y} r={r * 0.3} fill={sc} opacity="0.5" />}
-        {/* Indicador de haz/apuntado (moving heads y follow spot), por defecto hacia abajo en planta */}
-        {tieneHaz && zoom > 25 && (
-          <line x1={pC.x} y1={pC.y} x2={pC.x} y2={pC.y + r + largoHaz}
-            stroke={sc} strokeWidth={esFollowSpot ? sw * 1.2 : sw * 0.8}
-            strokeDasharray="2 2" opacity="0.4" />
-        )}
-        {/* Etiqueta con tipo (+ consumo en alto zoom) */}
+        {/* Fixtures simples: punto central */}
+        {!esMoving && <circle cx={pC.x} cy={pC.y} r={r * 0.3} fill={sc} opacity="0.5" />}
+        {/* Etiqueta con tipo */}
         {zoom > 30 && (
           <text x={pC.x} y={pC.y + r + Math.max(7, zoom * 0.06)}
             fontSize={Math.max(6, zoom * 0.05)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.6">
-            {etiqueta}{zoom > 45 && pieza.consumoW ? ` ${pieza.consumoW}W` : ''}
+            {tipoLuz === 'hazer' ? 'HAZ' : tipoLuz === 'laser' ? 'LSR' : tipoLuz === 'wash' ? 'W'
+              : tipoLuz === 'beam' ? 'B' : tipoLuz === 'par' ? 'P' : tipoLuz === 'fresnel' ? 'F'
+              : tipoLuz === 'profile' ? 'PR' : tipoLuz === 'strobe' ? 'ST' : tipoLuz === 'followSpot' ? 'FS' : 'MH'}
           </text>
         )}
       </g>
@@ -848,6 +801,31 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {w > 20 && h > 10 && <text x={px + w / 2} y={py + h / 2 + 3}
           fontSize={Math.max(6, Math.min(h * 0.5, zoom * 0.06))} fill={fenColor} textAnchor="middle"
           fontFamily="monospace" fontWeight="bold" opacity="0.45">FEN</text>}
+      </g>
+    );
+  }
+
+  // ── ApoyaTecho → cuadrado con triángulo interior (soporte celosía/cubierta) ──
+  if (pieza.categoria === 'apoyaTecho') {
+    const p = worldToScreen(pieza.x, z);
+    const s = Math.max(4.5, zoom * 0.065);
+    const sw = Math.max(0.6, zoom * 0.008);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        {seleccionada && <rect x={p.x - s - 3} y={p.y - s - 3} width={(s + 3) * 2} height={(s + 3) * 2}
+          fill="none" stroke="#E30613" strokeWidth="2" />}
+        {/* Cuadrado exterior */}
+        <rect x={p.x - s} y={p.y - s} width={s * 2} height={s * 2}
+          fill={sc} fillOpacity="0.15" stroke={sc} strokeWidth={sw} />
+        {/* Triángulo interior (marca de soporte de techo) */}
+        <polygon points={`${p.x},${p.y - s * 0.7} ${p.x - s * 0.6},${p.y + s * 0.5} ${p.x + s * 0.6},${p.y + s * 0.5}`}
+          fill={sc} fillOpacity="0.2" stroke={sc} strokeWidth={sw * 0.8} />
+        {/* Punto central */}
+        <circle cx={p.x} cy={p.y} r={Math.max(1, zoom * 0.012)} fill={sc} opacity="0.6" />
+        {/* Etiqueta */}
+        {zoom > 35 && <text x={p.x} y={p.y + s + Math.max(7, zoom * 0.06)}
+          fontSize={Math.max(5, zoom * 0.045)} fill={sc} textAnchor="middle"
+          fontFamily="monospace" opacity="0.5">AT</text>}
       </g>
     );
   }
@@ -1055,6 +1033,15 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         onMouseMove={onMouseMove} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
         style={{ cursor: panneando ? 'grabbing' : arrastrando ? 'grabbing' : herramientaActiva ? 'crosshair' : 'default' }}>
+        {/* Defs: flechas para cotas de distancia */}
+        <defs>
+          <marker id="arrowR" markerWidth="6" markerHeight="4" refX="5" refY="2" orient="auto">
+            <path d="M0,0 L6,2 L0,4" fill="context-stroke" />
+          </marker>
+          <marker id="arrowL" markerWidth="6" markerHeight="4" refX="1" refY="2" orient="auto-start-reverse">
+            <path d="M6,0 L0,2 L6,4" fill="context-stroke" />
+          </marker>
+        </defs>
         {mostrarGrilla && <Grilla worldVisible={worldVisible} worldToScreen={worldToScreen} zoom={zoom} />}
         <LineaBase worldVisible={worldVisible} worldToScreen={worldToScreen} y={0} />
         {/* Ejes de columna verticales — números 1, 2, 3... basados en posiciones X de verticales */}
@@ -1110,11 +1097,11 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             <g key={f.id}>
               <line x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={filaColor} strokeWidth="0.6" strokeDasharray="6 4" opacity="0.3" />
               {/* Círculo eje izquierdo */}
-              <circle cx={6} cy={p1.y} r={r} fill={filaColor} fillOpacity="0.9" stroke="none" />
-              <text x={6} y={p1.y + 3.5} fontSize="10" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">{f.nombre}</text>
+              <circle cx={14} cy={p1.y} r={r} fill={filaColor} fillOpacity="0.9" stroke="none" />
+              <text x={14} y={p1.y + 3.5} fontSize="10" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">{f.nombre}</text>
               {/* Círculo eje derecho */}
-              <circle cx={dimCanvas.w - 6} cy={p1.y} r={r} fill={filaColor} fillOpacity="0.9" stroke="none" />
-              <text x={dimCanvas.w - 6} y={p1.y + 3.5} fontSize="10" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">{f.nombre}</text>
+              <circle cx={dimCanvas.w - 14} cy={p1.y} r={r} fill={filaColor} fillOpacity="0.9" stroke="none" />
+              <text x={dimCanvas.w - 14} y={p1.y + 3.5} fontSize="10" fill="white" textAnchor="middle" fontFamily="monospace" fontWeight="bold">{f.nombre}</text>
             </g>
           );
         })}
@@ -1133,7 +1120,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             return (
               <g key={`dist-z-${i}`}>
                 <line x1={18} y1={p1.y + 10} x2={18} y2={p2.y - 10}
-                  stroke={filaColor} strokeWidth="0.5" opacity="0.4" />
+                  stroke={filaColor} strokeWidth="0.5" opacity="0.4" markerEnd="url(#arrowR)" markerStart="url(#arrowL)" />
                 <rect x={4} y={cy - 5} width="30" height="10" fill="white" fillOpacity="0.85" rx="2" />
                 <text x={19} y={cy + 3} fontSize="8" fill={filaColor} textAnchor="middle" fontFamily="monospace">{dist}m</text>
               </g>
