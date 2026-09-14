@@ -570,10 +570,25 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         <line x1={cx} y1={cy - crossS} x2={cx} y2={cy + crossS} stroke={sc} strokeWidth={sw * 1.5} />
         {/* Círculo de rigging (más visible) */}
         <circle cx={cx} cy={cy} r={Math.max(2.5, zoom * 0.03)} fill="none" stroke={sc} strokeWidth={sw} />
+        {/* Líneas de módulos (cajas individuales del cluster, solo alto zoom) */}
+        {zoom > 40 && nCajas > 1 && w > 20 && Array.from({ length: nCajas - 1 }, (_, i) => (
+          <line key={i} x1={pTL.x + w * (i + 1) / nCajas} y1={pTL.y}
+            x2={pTL.x + w * (i + 1) / nCajas} y2={pTL.y + h}
+            stroke={sc} strokeWidth={sw * 0.5} opacity="0.35" />
+        ))}
         {/* Arco de cobertura (solo tops, no subs) */}
         {!esSub && zoom > 30 && h > 6 && (
           <path d={`M ${pTL.x} ${cy} A ${w * 0.6} ${h * 1.2} 0 0 1 ${pTL.x + w} ${cy}`}
             fill="none" stroke={sc} strokeWidth={sw * 0.7} strokeDasharray="2 2" opacity="0.35" />
+        )}
+        {/* Patrón de dispersión: dos líneas de cobertura desde el frente del cluster */}
+        {!esSub && zoom > 30 && (
+          <>
+            <line x1={cx} y1={pTL.y} x2={cx - w * 0.9} y2={pTL.y - h * 2.5}
+              stroke={sc} strokeWidth={sw * 0.5} strokeDasharray="1.5 2" opacity="0.3" />
+            <line x1={cx} y1={pTL.y} x2={cx + w * 0.9} y2={pTL.y - h * 2.5}
+              stroke={sc} strokeWidth={sw * 0.5} strokeDasharray="1.5 2" opacity="0.3" />
+          </>
         )}
         {/* Etiqueta con tipo */}
         {zoom > 22 && w > 14 && (
@@ -581,6 +596,14 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
             fontSize={Math.max(7, zoom * 0.055)} fill={sc} textAnchor="middle"
             fontFamily="monospace" fontWeight="bold" opacity="0.7">
             {esSub ? `SUB ×${nCajas}` : esDelay ? `DLY ×${nCajas}` : `LA ×${nCajas}`}
+          </text>
+        )}
+        {/* Peso total (alto zoom) */}
+        {zoom > 40 && pieza.peso && w > 14 && (
+          <text x={cx} y={pTL.y + h + Math.max(8, zoom * 0.07) + Math.max(8, zoom * 0.06)}
+            fontSize={Math.max(6, zoom * 0.045)} fill={sc} textAnchor="middle"
+            fontFamily="monospace" opacity="0.55">
+            {Math.round(pieza.peso)}kg
           </text>
         )}
       </g>
@@ -603,9 +626,33 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Panel */}
         <rect x={pTL.x} y={pTL.y} width={w} height={h}
           fill={sc} fillOpacity="0.25" stroke={sc} strokeWidth={sw} />
-        {/* Línea frontal (cara activa de la pantalla) */}
+        {/* Borde frontal más grueso (cara activa de la pantalla, dirección de visión) */}
         <line x1={pTL.x} y1={pTL.y + h * 0.3} x2={pTL.x + w} y2={pTL.y + h * 0.3}
-          stroke={sc} strokeWidth={sw * 2.5} opacity="0.5" />
+          stroke={sc} strokeWidth={sw * 3} opacity="0.6" strokeLinecap="round" />
+        {/* Indicador de dirección de visión (flecha hacia el frente) */}
+        {zoom > 25 && w > 14 && (
+          <path d={`M ${cx - Math.max(3, zoom * 0.03)} ${pTL.y + h * 0.3 - Math.max(4, zoom * 0.04)}
+            L ${cx} ${pTL.y + h * 0.3 - Math.max(9, zoom * 0.09)}
+            L ${cx + Math.max(3, zoom * 0.03)} ${pTL.y + h * 0.3 - Math.max(4, zoom * 0.04)} Z`}
+            fill={sc} opacity="0.55" />
+        )}
+        {/* Grilla de píxeles (módulos LED, alto zoom) */}
+        {zoom > 40 && w > 16 && h > 8 && (() => {
+          const cols = Math.min(10, Math.max(2, Math.round(w / 6)));
+          const rows = Math.min(4, Math.max(1, Math.round(h / 6)));
+          const dots = [];
+          for (let ri = 0; ri < rows; ri++) {
+            for (let ci = 0; ci < cols; ci++) {
+              dots.push(
+                <circle key={`${ri}-${ci}`}
+                  cx={pTL.x + w * (ci + 0.5) / cols}
+                  cy={pTL.y + h * (ri + 0.5) / rows}
+                  r={Math.max(0.5, zoom * 0.006)} fill={sc} opacity="0.4" />
+              );
+            }
+          }
+          return dots;
+        })()}
         {/* Marcas de soporte superior (ménsulas) */}
         {zoom > 30 && w > 12 && <>
           <line x1={pTL.x + w * 0.2} y1={pTL.y - Math.max(2, zoom * 0.02)} x2={pTL.x + w * 0.2} y2={pTL.y}
