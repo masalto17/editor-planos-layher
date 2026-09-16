@@ -67,11 +67,11 @@ npm run dev
 
 ### Mejoras de catálogo pendientes
 - **Vigas reticuladas / celosías** — para luces grandes de escenarios
-- **Ménsulas** (2630/2631.xxx) — voladizos laterales
-- **Horizontales U reforzadas T14** (2618.xxx) — para mayor capacidad de carga
-- **Escaleras internas** de acceso
-- **Diagonal en planta** (2622/2623.xxx)
-- **Tacos de madera** bajo husillos (opción terreno blando)
+- ~~**Ménsulas** (2630/2631.xxx) — voladizos laterales~~ ✅ PR#7
+- ~~**Horizontales U reforzadas T14** (2618.xxx) — para mayor capacidad de carga~~ ✅ PR#6
+- ~~**Escaleras internas** de acceso~~ ✅ PR#7
+- ~~**Diagonal en planta** (2622/2623.xxx)~~ ✅ PR#7
+- ~~**Tacos de madera** bajo husillos (opción terreno blando)~~ ✅ PR#6
 
 ### Mejoras visuales (más adelante)
 - Modo "plano técnico" para exportar: líneas simples estilo CAD, sin colores
