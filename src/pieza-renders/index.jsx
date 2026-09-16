@@ -21,6 +21,7 @@ import PantallaLED from './PantallaLED.jsx';
 import MovingHead from './MovingHead.jsx';
 import HorizontalUT14 from './HorizontalUT14.jsx';
 import TacoMadera from './TacoMadera.jsx';
+import DiagonalPlanta from './DiagonalPlanta.jsx';
 import GenericPiezaRender from './GenericPiezaRender.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
@@ -68,6 +69,7 @@ const RENDERERS = {
   lineArray: LineArray,
   pantallaLED: PantallaLED,
   luz: MovingHead,
+  diagonalPlanta: DiagonalPlanta,
 };
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)
@@ -76,6 +78,7 @@ const TECNICO_COLORS = {
   plataforma: '#555', barandilla: '#444', rodapie: '#444', diagonal: '#333', base: '#222', collarin: '#222', tacoMadera: '#333',
   vigaIPN: '#222', celosia: '#333', truss: '#333', cumbrera: '#444', techo: '#333',
   mensula: '#333', escalera: '#222', apoyaTecho: '#333', fenolico: '#444', stringer: '#333',
+  diagonalPlanta: '#333',
   lineArray: '#333', pantallaLED: '#333', luz: '#333',
 };
 

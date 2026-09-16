@@ -82,11 +82,11 @@ export const CATALOGO = {
     { id: 'D307x200', nombre: 'Diagonal 3.07×2.00m', ancho: 3.07, alto: 2.00, peso: 9.5, ref: '2620.307', color: '#7c3aed' },
   ],
   diagonalesPlanta: [
-    { id: 'DP157', nombre: 'Diagonal planta 1.57m', largo: 1.57, peso: 3.8, ref: '2622.157', color: '#c026d3' },
-    { id: 'DP207', nombre: 'Diagonal planta 2.07m', largo: 2.07, peso: 4.6, ref: '2622.207', color: '#c026d3' },
-    { id: 'DP257', nombre: 'Diagonal planta 2.57m', largo: 2.57, peso: 5.4, ref: '2622.257', color: '#c026d3' },
-    { id: 'DP307', nombre: 'Diagonal planta 3.07m', largo: 3.07, peso: 6.3, ref: '2622.307', color: '#c026d3' },
-    { id: 'DP363', nombre: 'Diagonal planta 3.63m (2.57×2.57)', largo: 3.634, peso: 7.4, ref: '2623.257', color: '#c026d3' },
+    { id: 'DP157', nombre: 'Diagonal planta 1.57m', largo: 1.57, peso: 3.8, ref: '2622.157', color: '#7C3AED' },
+    { id: 'DP207', nombre: 'Diagonal planta 2.07m', largo: 2.07, peso: 4.6, ref: '2622.207', color: '#7C3AED' },
+    { id: 'DP257', nombre: 'Diagonal planta 2.57m', largo: 2.57, peso: 5.4, ref: '2622.257', color: '#7C3AED' },
+    { id: 'DP307', nombre: 'Diagonal planta 3.07m', largo: 3.07, peso: 6.3, ref: '2622.307', color: '#7C3AED' },
+    { id: 'DP363', nombre: 'Diagonal planta 3.63m (2.57×2.57)', largo: 3.634, peso: 7.4, ref: '2623.257', color: '#7C3AED' },
   ],
   bases: [
     { id: 'HUS060', nombre: 'Tornillón regulable 0.60m', largo: 0.60, peso: 4.5, ref: '4001.060', color: '#7c2d12' },
@@ -106,19 +106,22 @@ export const CATALOGO = {
 
   // ─── MÉNSULAS (voladizo lateral desde vertical) ──────────
   // Pesos ≈ — verificar contra catálogo F4-2018-SP
+  // `lado` default 'der' (derecha); `orientacion` default 'x' (a lo largo del alzado)
   mensulas: [
-    { id: 'ME028', nombre: 'Ménsula 0.28m',      largo: 0.28, peso: 3.4,  ref: '2632.019', color: '#b45309' },
-    { id: 'ME039', nombre: 'Ménsula 0.39m',      largo: 0.39, peso: 3.9,  ref: '2632.039', color: '#b45309' },
-    { id: 'ME045', nombre: 'Ménsula 0.45m',      largo: 0.45, peso: 3.1,  ref: '2632.045', color: '#b45309' },
-    { id: 'ME073', nombre: 'Ménsula LW 0.73m',   largo: 0.73, peso: 6.4,  ref: '2632.073', color: '#b45309' },
-    { id: 'ME109', nombre: 'Ménsula 1.09m',      largo: 1.09, peso: 11.2, ref: '2630.109', color: '#b45309' },
+    { id: 'ME039',   nombre: 'Ménsula 0.39m',                  largo: 0.39, peso: 3.5, ref: '2630.039', color: '#6B21A8' },
+    { id: 'ME073',   nombre: 'Ménsula 0.73m',                  largo: 0.73, peso: 5.8, ref: '2630.073', color: '#6B21A8' },
+    { id: 'MEV039',  nombre: 'Ménsula c/vertical 0.39m',       largo: 0.39, peso: 5.2, ref: '2631.039', color: '#6B21A8' },
+    { id: 'MEV073',  nombre: 'Ménsula c/vertical 0.73m',       largo: 0.73, peso: 7.5, ref: '2631.073', color: '#6B21A8' },
   ],
 
-  // ─── ESCALERAS EVENTOS (Viga Zanca 750, 8 peldaños) ────
-  // Desnivel fijo: 8 peldaños × 0.167m = 1.33m
-  // Peso ≈ por zanca (van 2 por escalera) — verificar
+  // ─── ESCALERAS INTERNAS DE ACCESO (aluminio, ancho 0.64m) ──
+  // Pesos ≈ — verificar contra catálogo Layher escaleras internas
+  // `alto` = desnivel que salva; `largo` = proyección horizontal del tramo;
+  // `ancho` = ancho interno estándar (0.64m); `orientacion` default 'x'
   escaleras: [
-    { id: 'ESC257', nombre: 'Escalera 2.57m', largo: 2.57, desnivel: 1.33, anchoEscalera: 0.75, peso: 28.0, ref: '2638.257', color: '#dc2626' },
+    { id: 'ESC100', nombre: 'Escalera 1.00m', alto: 1.00, largo: 0.73, ancho: 0.64, peso: 8.5,  ref: '2670.100', color: '#059669' },
+    { id: 'ESC150', nombre: 'Escalera 1.50m', alto: 1.50, largo: 1.09, ancho: 0.64, peso: 11.0, ref: '2670.150', color: '#059669' },
+    { id: 'ESC200', nombre: 'Escalera 2.00m', alto: 2.00, largo: 1.40, ancho: 0.64, peso: 14.5, ref: '2670.200', color: '#059669' },
   ],
 
   // ─── APOYA TECHOS (soporte cubierta cassette) ───────────

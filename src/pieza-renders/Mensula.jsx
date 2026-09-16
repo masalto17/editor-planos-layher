@@ -1,10 +1,11 @@
 // Ménsula — voladizo lateral desde vertical con diagonal de apoyo.
 // En alzado: brazo horizontal + diagonal triangular de refuerzo.
-// Soporta `flip`: false = derecha (default), true = izquierda.
+// Dirección: `flip: true` = izquierda, `false` = derecha (default).
+// También acepta `lado: 'izq'|'der'` como alias de flip.
 // Efecto galvanizado: gradiente metálico, sombras, highlights especulares.
 export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
   const { x, y, largo } = pieza;
-  const dir = pieza.flip ? -1 : 1; // dirección del voladizo
+  const dir = (pieza.flip || pieza.lado === 'izq') ? -1 : 1; // dirección del voladizo
   // Punto de conexión (roseta en vertical) y extremo del voladizo
   const pO = worldToScreen(x, y);
   const pE = worldToScreen(x + largo * dir, y);
@@ -47,10 +48,12 @@ export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, selec
         {/* Brazo horizontal */}
         <line x1={pO.x} y1={pO.y} x2={pE.x} y2={pE.y}
           stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
-        {/* Diagonal de apoyo */}
+        {/* Diagonal de apoyo — sin relleno, triángulo abierto */}
         <line x1={pD.x} y1={pD.y} x2={pE.x} y2={pE.y}
-          stroke={sc} strokeWidth={tecW} strokeLinecap="round"
-          strokeDasharray={`${Math.max(3, zoom * 0.04)} ${Math.max(2, zoom * 0.02)}`} />
+          stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
+        {/* Cierre vertical del triángulo */}
+        <line x1={pO.x} y1={pO.y} x2={pD.x} y2={pD.y}
+          stroke={sc} strokeWidth={tecW * 0.7} strokeLinecap="round" opacity="0.5" />
         {/* Punto de conexión */}
         <circle cx={pO.x} cy={pO.y} r={Math.max(1.5, zoom * 0.015)}
           fill={sc} stroke={sc} strokeWidth={Math.max(0.3, zoom * 0.003)} />
@@ -142,7 +145,7 @@ export default function Mensula({ pieza, worldToScreen, zoom, sc, op, cur, selec
       {zoom > 40 && w > 25 && (
         <text x={(pO.x + pE.x) / 2} y={pO.y - g - 3}
           fontSize={Math.max(5, zoom * 0.04)} fill={sc} textAnchor="middle"
-          fontFamily="monospace" opacity="0.4">M {largo.toFixed(2)}m</text>
+          fontFamily="monospace" opacity="0.4">M {largo.toFixed(2)}m ({pieza.lado === 'izq' ? 'izq' : 'der'})</text>
       )}
     </g>
   );
