@@ -10,6 +10,15 @@ Editor visual interactivo de alzado frontal para estructuras temporales armadas 
 - El usuario del editor es un técnico que conoce el armado real Layher (no un administrativo)
 - Trabaja en **Mac** (sin mouse, usa trackpad)
 
+## Roadmap visual
+Artifact publicado con el estado actual, la fase inmediata V2.0, el backlog de catálogo,
+la arquitectura objetivo y los datos técnicos clave — vista de referencia rápida derivada
+de este archivo, para compartir con Huguito sin abrir el repo:
+https://claude.ai/artifact/SibpeVKg5TxaMMoy773tYD
+
+Actualizar ese artifact cuando cambie el backlog de esta sección o el de más abajo
+("Backlog priorizado").
+
 ## Estado actual: V2.0 (en curso)
 Proyecto Vite + React en la raíz. `src/LayherEditor.jsx` es el orquestador (ya no monolito) —
 ver "Arquitectura objetivo" abajo, ya aplicada. V1.3 original queda de referencia en
