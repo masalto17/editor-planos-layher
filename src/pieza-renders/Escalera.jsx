@@ -1,30 +1,36 @@
-// Escalera eventos — Viga Zanca 750 con peldaños y pasamanos.
-// En alzado: 2 zancas inclinadas + peldaños horizontales + pasamanos laterales.
-// Se coloca en (x, y) = base inferior. Sube hacia (x+largo, y+desnivel).
-// Soporta `flip`: false = sube a la derecha (default), true = sube a la izquierda.
-// Efecto galvanizado: gradiente metálico en zancas, sombras y highlights.
+// Escalera interna de acceso — aluminio, ancho 0.64m.
+// En alzado (orientacion='x'): 2 largueros inclinados + peldaños horizontales.
+// En alzado (orientacion='z'): vista frontal, se ve el ancho como rectángulo.
+// Se coloca en (x, y) = base inferior. Sube hacia (x+largo, y+alto).
+// `flip`: false = sube a la derecha (default), true = sube a la izquierda.
+// `alto` = desnivel que salva, `largo` = proyección horizontal, `ancho` = 0.64m.
+// Efecto galvanizado: gradiente metálico en largueros.
 export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, seleccionada, onMouseDown, modoTecnico }) {
-  const { x, y, largo } = pieza;
-  const desnivel = pieza.desnivel || 1.33;
+  const { x, y } = pieza;
+  const alto = pieza.alto || 1.00;
+  const largo = pieza.largo || alto * 0.73; // fallback: proyección horizontal
+  const ancho = pieza.ancho || 0.64;
   const dir = pieza.flip ? -1 : 1; // dirección horizontal
-  const numPeldanos = 8;
+
+  // Número de peldaños proporcional a la altura (~6 por metro)
+  const numPeldanos = Math.max(3, Math.round(alto * 6));
   const alturaPasamanos = 0.90; // 900mm pasamanos
 
   // Esquinas del tramo
   const pBL = worldToScreen(x, y);                            // base (abajo)
-  const pTR = worldToScreen(x + largo * dir, y + desnivel);   // tope (arriba)
+  const pTR = worldToScreen(x + largo * dir, y + alto);       // tope (arriba)
 
-  // Pasamanos: corre paralelo a las zancas pero 0.90m por encima
+  // Pasamanos: corre paralelo a los largueros pero 0.90m por encima
   const pPasBase = worldToScreen(x, y + alturaPasamanos);
-  const pPasTop = worldToScreen(x + largo * dir, y + desnivel + alturaPasamanos);
+  const pPasTop = worldToScreen(x + largo * dir, y + alto + alturaPasamanos);
 
   const tecW = Math.max(1, zoom * 0.012);
-  const g = Math.max(2, zoom * 0.035);  // grosor zanca
+  const g = Math.max(2, zoom * 0.035);  // grosor larguero
   const gp = Math.max(1, zoom * 0.015); // grosor peldaño
   const gPas = Math.max(1, zoom * 0.018); // grosor pasamanos
   const hlOff = g * 0.22;
 
-  // Ángulo de la zanca para gradiente perpendicular
+  // Ángulo del larguero para gradiente perpendicular
   const zdx = pTR.x - pBL.x, zdy = pTR.y - pBL.y;
   const zLen = Math.sqrt(zdx * zdx + zdy * zdy);
   const znx = zLen > 0 ? -zdy / zLen : 0;
@@ -34,16 +40,16 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
   const sinA = Math.sin(zAngle + Math.PI / 2);
   const gid = `escg-${pieza.id}`;
 
-  // Offset lateral para las 2 zancas (separación visual)
-  const zancaOff = Math.max(1.5, zoom * 0.012);
-  const zancaDir = dir;
+  // Offset lateral para los 2 largueros (separación visual)
+  const lrgOff = Math.max(1.5, zoom * 0.012);
+  const lrgDir = dir;
 
   // Peldaños: distribuidos uniformemente entre base y tope
   const peldanos = [];
   for (let i = 1; i <= numPeldanos; i++) {
     const t = i / (numPeldanos + 1);
     const px = x + largo * dir * t;
-    const py = y + desnivel * t;
+    const py = y + alto * t;
     const peldW = largo / (numPeldanos + 1) * 0.8;
     const pL = worldToScreen(px - peldW / 2, py);
     const pR = worldToScreen(px + peldW / 2, py);
@@ -57,7 +63,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
     for (let i = 0; i <= nMont; i++) {
       const t = i / nMont;
       const mx = x + largo * dir * t;
-      const myBot = y + desnivel * t;
+      const myBot = y + alto * t;
       const myTop = myBot + alturaPasamanos;
       const pmB = worldToScreen(mx, myBot);
       const pmT = worldToScreen(mx, myTop);
@@ -77,13 +83,13 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
           <line x1={pPasBase.x} y1={pPasBase.y} x2={pPasTop.x} y2={pPasTop.y}
             stroke="#E30613" strokeWidth={gPas + 6} opacity="0.15" strokeLinecap="round" />
         </>}
-        {/* Zanca izquierda */}
+        {/* Larguero izquierdo */}
         <line x1={pBL.x} y1={pBL.y} x2={pTR.x} y2={pTR.y}
           stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
-        {/* Zanca derecha (offset visual) */}
-        <line x1={pBL.x + zancaOff * zancaDir} y1={pBL.y + zancaOff} x2={pTR.x + zancaOff * zancaDir} y2={pTR.y + zancaOff}
+        {/* Larguero derecho (offset visual) */}
+        <line x1={pBL.x + lrgOff * lrgDir} y1={pBL.y + lrgOff} x2={pTR.x + lrgOff * lrgDir} y2={pTR.y + lrgOff}
           stroke={sc} strokeWidth={tecW} strokeLinecap="round" />
-        {/* Peldaños */}
+        {/* Peldaños — trazos cortos */}
         {peldanos.map((p, i) => (
           <line key={i} x1={p.pL.x} y1={p.pL.y} x2={p.pR.x} y2={p.pR.y}
             stroke={sc} strokeWidth={tecW} />
@@ -108,7 +114,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
 
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-      {/* Gradiente galvanizado perpendicular a zancas */}
+      {/* Gradiente galvanizado perpendicular a largueros */}
       <defs>
         <linearGradient id={gid}
           x1={0.5 - cosA * 0.5} y1={0.5 - sinA * 0.5}
@@ -134,12 +140,12 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
           stroke={sc} strokeWidth={Math.max(0.8, zoom * 0.01)} opacity="0.35" />
       ))}
 
-      {/* ═══ Sombra zanca principal ═══ */}
+      {/* ═══ Sombra larguero principal ═══ */}
       <line x1={pBL.x + hlOff * 1.2} y1={pBL.y + hlOff * 1.2}
         x2={pTR.x + hlOff * 1.2} y2={pTR.y + hlOff * 1.2}
         stroke="#000" strokeWidth={g} strokeLinecap="round" opacity="0.06" />
 
-      {/* ═══ Zanca izquierda ═══ */}
+      {/* ═══ Larguero izquierdo ═══ */}
       <line x1={pBL.x} y1={pBL.y} x2={pTR.x} y2={pTR.y}
         stroke={sc} strokeWidth={g} strokeLinecap="round" />
       {/* Overlay galvanizado */}
@@ -150,13 +156,13 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
         x2={pTR.x - znx * hlOff} y2={pTR.y - zny * hlOff}
         stroke="#fff" strokeWidth={g * 0.22} strokeLinecap="round" opacity="0.35" />
 
-      {/* ═══ Zanca derecha ═══ */}
-      <line x1={pBL.x + zancaOff * 2 * zancaDir} y1={pBL.y + zancaOff}
-        x2={pTR.x + zancaOff * 2 * zancaDir} y2={pTR.y + zancaOff}
+      {/* ═══ Larguero derecho ═══ */}
+      <line x1={pBL.x + lrgOff * 2 * lrgDir} y1={pBL.y + lrgOff}
+        x2={pTR.x + lrgOff * 2 * lrgDir} y2={pTR.y + lrgOff}
         stroke={sc} strokeWidth={g} strokeLinecap="round" />
-      {/* Overlay galvanizado zanca derecha */}
-      <line x1={pBL.x + zancaOff * 2 * zancaDir} y1={pBL.y + zancaOff}
-        x2={pTR.x + zancaOff * 2 * zancaDir} y2={pTR.y + zancaOff}
+      {/* Overlay galvanizado larguero derecho */}
+      <line x1={pBL.x + lrgOff * 2 * lrgDir} y1={pBL.y + lrgOff}
+        x2={pTR.x + lrgOff * 2 * lrgDir} y2={pTR.y + lrgOff}
         stroke={`url(#${gid})`} strokeWidth={g} strokeLinecap="round" />
 
       {/* ═══ Peldaños ═══ */}
@@ -174,7 +180,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
         </g>
       ))}
 
-      {/* ═══ Pasamanos (línea inclinada paralela a zancas) ═══ */}
+      {/* ═══ Pasamanos (línea inclinada paralela a largueros) ═══ */}
       <line x1={pPasBase.x} y1={pPasBase.y} x2={pPasTop.x} y2={pPasTop.y}
         stroke={sc} strokeWidth={gPas} strokeLinecap="round" opacity="0.6"
         strokeDasharray={`${Math.max(6, zoom * 0.06)} ${Math.max(3, zoom * 0.03)}`} />
@@ -184,7 +190,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
         stroke="#fff" strokeWidth={gPas * 0.2} strokeLinecap="round" opacity="0.2"
         strokeDasharray={`${Math.max(6, zoom * 0.06)} ${Math.max(3, zoom * 0.03)}`} />
 
-      {/* ═══ Puntos extremos (mejorados) ═══ */}
+      {/* ═══ Puntos extremos ═══ */}
       <circle cx={pBL.x} cy={pBL.y} r={Math.max(2.5, zoom * 0.025)}
         fill={sc} stroke="#000" strokeWidth={Math.max(0.5, zoom * 0.005)} />
       {zoom > 30 && <circle cx={pBL.x - Math.max(0.4, zoom * 0.004)} cy={pBL.y - Math.max(0.4, zoom * 0.004)}
@@ -197,7 +203,7 @@ export default function Escalera({ pieza, worldToScreen, zoom, sc, op, cur, sele
       {/* Etiqueta */}
       {zoom > 30 && <text x={(pBL.x + pTR.x) / 2 + 8 * dir} y={(pBL.y + pTR.y) / 2 - 4}
         fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="start" fontFamily="monospace" opacity="0.5">
-        🪜 {largo.toFixed(2)}m {arrowLabel}{desnivel.toFixed(2)}m
+        {arrowLabel}{alto.toFixed(2)}m
       </text>}
     </g>
   );

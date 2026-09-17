@@ -1,0 +1,23 @@
+{
+  "name": "MásAlto Layout",
+  "short_name": "MásAlto",
+  "description": "Editor de planos Layher Allround — MásAlto Estructuras",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#E30613",
+  "icons": [
+    {
+      "src": "/branding/masalto-icon-192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/branding/masalto-icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

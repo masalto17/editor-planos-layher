@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>MasAlto Layout · Visualizador 3D</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&family=IBM+Plex+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header>
+      <img src="assets/logo.png" alt="MasAlto Layout" width="1308" height="359">
+      <div>
+        <strong>Visualizador 3D</strong>
+        <span>Previsualizador de estructuras · Integración local</span>
+      </div>
+      <a class="suite-home" href="../inicio/index.html" target="_blank" rel="noopener noreferrer" title="Abrir Inicio conservando esta vista">Inicio ↗</a>
+      <button id="example">Abrir ejemplo</button>
+      <button id="special-example">Ejemplo con piezas especiales</button>
+      <label class="primary file">
+        Abrir mi diseño
+        <input type="file" id="file" accept=".json,application/json">
+      </label>
+    </header>
+
+    <main>
+      <section class="work">
+        <div class="titlebar">
+          <div>
+            <h1 id="name">Abrí un diseño para explorar</h1>
+            <p id="source">Archivos .masalto.json del editor de planos</p>
+            <p id="coverage" role="status"></p>
+          </div>
+          <span id="count"></span>
+        </div>
+
+        <div class="viewport" id="drop">
+          <div id="scene"></div>
+          <div class="empty" id="empty">
+            <strong>Tu plano, desde otra perspectiva.</strong>
+            <p>Arrastrá acá un archivo .masalto.json<br>o abrí el ejemplo del proyecto.</p>
+          </div>
+          <div class="views">
+            <button data-view="iso" aria-pressed="true">Perspectiva</button>
+            <button data-view="front" aria-pressed="false">Alzado</button>
+            <button data-view="top" aria-pressed="false">Planta</button>
+            <button data-view="side" aria-pressed="false">Lateral</button>
+          </div>
+          <div class="bottomcontrols">
+            <span>Orbitá con el trackpad · doble click selecciona pieza · Home encuadra</span>
+            <div>
+              <button id="tour">Recorrido</button>
+              <button id="capture">Captura</button>
+              <button id="present">Pantalla</button>
+              <button id="focus">Foco</button>
+              <button id="fit">Encuadrar</button>
+            </div>
+          </div>
+          <div id="error" role="alert" hidden></div>
+        </div>
+
+        <div class="status">
+          <span id="dimensions">Sin diseño</span>
+          <span>Medidas de la geometría representada</span>
+        </div>
+      </section>
+
+      <aside>
+        <section class="panel">
+          <h2>Apariencia</h2>
+          <div class="stylebuttons">
+            <button data-style="premium" aria-pressed="true">Premium</button>
+            <button data-style="technical" aria-pressed="false">Técnica</button>
+          </div>
+          <label for="explode">Separación visual</label>
+          <input id="explode" type="range" min="0" max="1.8" step="0.05" value="0">
+          <p class="help">Posiciones y largos del archivo. Uniones, espesores y detalles visuales simplificados.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Presentación cliente</h2>
+          <div class="actionbuttons">
+            <button id="save-view">Guardar vista</button>
+            <button id="reset-views">Restaurar</button>
+          </div>
+          <div id="saved-views" class="viewlist"></div>
+          <p id="presentation-status" class="help">Vistas listas cuando abras un diseño.</p>
+        </section>
+
+        <section class="panel">
+          <h2>Piezas del archivo</h2>
+          <p id="summary">Sin datos</p>
+          <label for="category">Mostrar categoría</label>
+          <select id="category">
+            <option value="">Todas</option>
+          </select>
+          <div id="list" class="list"></div>
+        </section>
+
+        <section class="panel" id="selection" hidden>
+          <h2>Pieza seleccionada</h2>
+          <p id="detail"></p>
+          <button id="clear">Quitar selección</button>
+        </section>
+
+        <section class="panel">
+          <details id="warnings">
+            <summary id="warning-count">Alcance de esta prueba</summary>
+            <p>Los detalles de fabricación se representan de forma aproximada. La vista no verifica uniones, cargas ni viabilidad constructiva.</p>
+            <ul id="issues"></ul>
+          </details>
+        </section>
+      </aside>
+    </main>
+
+    <footer>
+      <strong>No reemplaza cálculo estructural ni plano aprobado por ingeniero.</strong>
+      <p>Plano esquemático preliminar realizado únicamente con fines presupuestarios y comerciales. No utilizar como guía de armado ni documentación técnica definitiva.</p>
+      <p>Debe ser verificado y aprobado por un ingeniero estructural matriculado antes de su construcción.</p>
+    </footer>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="viewer.mjs?v=3d8"></script>
+  </body>
+</html>

@@ -15,6 +15,18 @@ Proyecto Vite + React en la raíz. `src/LayherEditor.jsx` es el orquestador (ya 
 ver "Arquitectura objetivo" abajo, ya aplicada. V1.3 original queda de referencia en
 `files/LayherEditor_Alzado_V1_3.jsx`.
 
+## Piloto integrado versionado
+
+El piloto online de MasAlto Layout quedo versionado como snapshot aislado en
+`piloto/integracion-layout/`. Incluye landing comun, editor Layout integrado,
+disenador de piezas, visualizador 3D y paquete Netlify de referencia.
+
+Ese snapshot proviene del branch `piloto-netlify-raw` (commit `c30cbe1`) y del
+deploy protegido `masalto-layout-piloto`. No es todavia la migracion final a la
+app raiz: usarlo como fuente controlada para integrar cambios por partes,
+manteniendo `www.masalto.com.ar` y produccion sin cambios hasta completar QA con
+casos reales.
+
 Corré local:
 ```
 npm install
@@ -67,11 +79,11 @@ npm run dev
 
 ### Mejoras de catálogo pendientes
 - **Vigas reticuladas / celosías** — para luces grandes de escenarios
-- **Ménsulas** (2630/2631.xxx) — voladizos laterales
-- **Horizontales U reforzadas T14** (2618.xxx) — para mayor capacidad de carga
-- **Escaleras internas** de acceso
-- **Diagonal en planta** (2622/2623.xxx)
-- **Tacos de madera** bajo husillos (opción terreno blando)
+- ~~**Ménsulas** (2630/2631.xxx) — voladizos laterales~~ ✅ PR#7
+- ~~**Horizontales U reforzadas T14** (2618.xxx) — para mayor capacidad de carga~~ ✅ PR#6
+- ~~**Escaleras internas** de acceso~~ ✅ PR#7
+- ~~**Diagonal en planta** (2622/2623.xxx)~~ ✅ PR#7
+- ~~**Tacos de madera** bajo husillos (opción terreno blando)~~ ✅ PR#6
 
 ### Mejoras visuales (más adelante)
 - Modo "plano técnico" para exportar: líneas simples estilo CAD, sin colores

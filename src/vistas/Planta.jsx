@@ -512,22 +512,39 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
   }
 
   // ── Ménsula (voladizo) → triángulo/flecha indicando dirección del voladizo ──
+  // Soporta orientacion 'x' (brazo en X, triángulo perpendicular en Z)
+  // y 'z' (brazo en Z, triángulo perpendicular en X).
   if (pieza.categoria === 'mensula') {
     const dir = pieza.flip ? -1 : 1;
+    const ori = pieza.orientacion || 'x';
     const pBase = worldToScreen(pieza.x, z);
-    const pTip = worldToScreen(pieza.x + pieza.largo * dir, z);
     const prof = Math.max(4, zoom * 0.06); // profundidad visual del triángulo
     const sw = Math.max(0.8, zoom * 0.012);
-    // Triángulo: base en el vertical, punta en el extremo del voladizo
-    const pTop = { x: pBase.x, y: pBase.y - prof };
-    const pBot = { x: pBase.x, y: pBase.y + prof };
+
+    let pTip, pWingA, pWingB;
+    if (ori === 'z') {
+      // Brazo se extiende en Z (vertical en pantalla), triángulo abre en X
+      pTip = worldToScreen(pieza.x, z + pieza.largo * dir);
+      pWingA = { x: pBase.x - prof, y: pBase.y };
+      pWingB = { x: pBase.x + prof, y: pBase.y };
+    } else {
+      // Brazo se extiende en X (horizontal en pantalla), triángulo abre en Z
+      pTip = worldToScreen(pieza.x + pieza.largo * dir, z);
+      pWingA = { x: pBase.x, y: pBase.y - prof };
+      pWingB = { x: pBase.x, y: pBase.y + prof };
+    }
+
+    const selX = Math.min(pBase.x, pTip.x, pWingA.x, pWingB.x);
+    const selY = Math.min(pBase.y, pTip.y, pWingA.y, pWingB.y);
+    const selW = Math.max(pBase.x, pTip.x, pWingA.x, pWingB.x) - selX;
+    const selH = Math.max(pBase.y, pTip.y, pWingA.y, pWingB.y) - selY;
+
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
-        {seleccionada && <rect x={Math.min(pBase.x, pTip.x) - 3} y={pBase.y - prof - 3}
-          width={Math.abs(pTip.x - pBase.x) + 6} height={prof * 2 + 6}
+        {seleccionada && <rect x={selX - 3} y={selY - 3} width={selW + 6} height={selH + 6}
           fill="none" stroke="#E30613" strokeWidth="2" />}
         {/* Triángulo del voladizo */}
-        <polygon points={`${pTop.x},${pTop.y} ${pBot.x},${pBot.y} ${pTip.x},${pTip.y}`}
+        <polygon points={`${pWingA.x},${pWingA.y} ${pWingB.x},${pWingB.y} ${pTip.x},${pTip.y}`}
           fill={sc} fillOpacity="0.15" stroke={sc} strokeWidth={sw} />
         {/* Línea central (eje del brazo) */}
         <line x1={pBase.x} y1={pBase.y} x2={pTip.x} y2={pTip.y}
@@ -535,43 +552,87 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Punto de conexión al vertical */}
         <circle cx={pBase.x} cy={pBase.y} r={Math.max(2, zoom * 0.025)} fill={sc} />
         {/* Etiqueta */}
-        {zoom > 30 && <text x={(pBase.x + pTip.x) / 2} y={pBase.y - prof - 3}
+        {zoom > 30 && <text x={(pBase.x + pTip.x) / 2}
+          y={Math.min(pBase.y, pTip.y, pWingA.y, pWingB.y) - 3}
           fontSize={Math.max(6, zoom * 0.055)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
-          ▸ {pieza.largo}m
+          {pieza.largo}m
         </text>}
       </g>
     );
   }
 
   // ── Escalera → rectángulo con flecha de subida y peldaños transversales ──
-  // Soporta flip: sube a la derecha (default) o a la izquierda
+  // Soporta orientacion 'x' (largo en X, ancho en Z) y 'z' (largo en Z, ancho en X).
+  // flip controla la dirección de subida (invertida respecto al eje principal).
   if (pieza.categoria === 'escalera') {
     const eDir = pieza.flip ? -1 : 1;
-    const anchoEsc = pieza.anchoEscalera || 0.75; // ancho real ~750mm
-    const pBL = worldToScreen(pieza.x, z - anchoEsc / 2);
-    const pBR = worldToScreen(pieza.x + pieza.largo * eDir, z - anchoEsc / 2);
-    const pTL = worldToScreen(pieza.x, z + anchoEsc / 2);
-    const pTR = worldToScreen(pieza.x + pieza.largo * eDir, z + anchoEsc / 2);
-    const w = Math.abs(pBR.x - pBL.x);
-    const h = Math.abs(pTL.y - pBL.y);
-    const px = Math.min(pBL.x, pBR.x, pTL.x, pTR.x);
-    const py = Math.min(pBL.y, pTL.y);
+    const anchoEsc = pieza.anchoEscalera || 0.64; // ancho real ~640mm
+    const ori = pieza.orientacion || 'x';
     const sw = Math.max(0.8, zoom * 0.012);
-    // Peldaños transversales
+
+    // Calcular esquinas del rectángulo en coordenadas mundo
+    let pCornerA, pCornerB; // esquinas opuestas del rectángulo
+    if (ori === 'z') {
+      // Largo en Z, ancho en X
+      pCornerA = worldToScreen(pieza.x - anchoEsc / 2, z);
+      pCornerB = worldToScreen(pieza.x + anchoEsc / 2, z + pieza.largo * eDir);
+    } else {
+      // Largo en X, ancho en Z (default)
+      pCornerA = worldToScreen(pieza.x, z - anchoEsc / 2);
+      pCornerB = worldToScreen(pieza.x + pieza.largo * eDir, z + anchoEsc / 2);
+    }
+
+    const px = Math.min(pCornerA.x, pCornerB.x);
+    const py = Math.min(pCornerA.y, pCornerB.y);
+    const w = Math.abs(pCornerB.x - pCornerA.x);
+    const h = Math.abs(pCornerB.y - pCornerA.y);
+
+    // Peldaños transversales (perpendiculares al eje largo)
     const numPeld = 8;
     const peldanos = [];
-    for (let i = 1; i <= numPeld; i++) {
-      const t = i / (numPeld + 1);
-      const lx = px + w * t;
-      peldanos.push(<line key={i} x1={lx} y1={py} x2={lx} y2={py + h}
-        stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
+    if (ori === 'z') {
+      // Peldaños horizontales (perpendiculares a Z)
+      for (let i = 1; i <= numPeld; i++) {
+        const t = i / (numPeld + 1);
+        const ly = py + h * t;
+        peldanos.push(<line key={i} x1={px} y1={ly} x2={px + w} y2={ly}
+          stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
+      }
+    } else {
+      // Peldaños verticales (perpendiculares a X)
+      for (let i = 1; i <= numPeld; i++) {
+        const t = i / (numPeld + 1);
+        const lx = px + w * t;
+        peldanos.push(<line key={i} x1={lx} y1={py} x2={lx} y2={py + h}
+          stroke={sc} strokeWidth={sw * 0.7} opacity="0.5" />);
+      }
     }
-    // Flecha de subida (triángulo apuntando en la dirección correcta)
-    const arrowMidY = py + h / 2;
+
+    // Flecha de subida
     const arrowSize = Math.max(3, zoom * 0.035);
-    const arrowX = pieza.flip ? px + w * 0.15 : px + w * 0.85;
-    const arrowTipX = pieza.flip ? arrowX - arrowSize * 1.5 : arrowX + arrowSize * 1.5;
-    const lineStartX = pieza.flip ? px + w * 0.85 : px + w * 0.15;
+    let arrowLine, arrowHead;
+    if (ori === 'z') {
+      // Flecha apunta en Y (pantalla) = Z (mundo)
+      const arrowMidX = px + w / 2;
+      const arrowY = pieza.flip ? py + h * 0.15 : py + h * 0.85;
+      const arrowTipY = pieza.flip ? arrowY - arrowSize * 1.5 : arrowY + arrowSize * 1.5;
+      const lineStartY = pieza.flip ? py + h * 0.85 : py + h * 0.15;
+      arrowLine = <line x1={arrowMidX} y1={lineStartY} x2={arrowMidX} y2={arrowY}
+        stroke={sc} strokeWidth={sw * 1.2} />;
+      arrowHead = <polygon points={`${arrowMidX - arrowSize},${arrowY} ${arrowMidX},${arrowTipY} ${arrowMidX + arrowSize},${arrowY}`}
+        fill={sc} />;
+    } else {
+      // Flecha apunta en X (pantalla)
+      const arrowMidY = py + h / 2;
+      const arrowX = pieza.flip ? px + w * 0.15 : px + w * 0.85;
+      const arrowTipX = pieza.flip ? arrowX - arrowSize * 1.5 : arrowX + arrowSize * 1.5;
+      const lineStartX = pieza.flip ? px + w * 0.85 : px + w * 0.15;
+      arrowLine = <line x1={lineStartX} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
+        stroke={sc} strokeWidth={sw * 1.2} />;
+      arrowHead = <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowTipX},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
+        fill={sc} />;
+    }
+
     return (
       <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
         {seleccionada && <rect x={px - 3} y={py - 3} width={w + 6} height={h + 6}
@@ -582,14 +643,12 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
         {/* Peldaños */}
         {peldanos}
         {/* Línea central con flecha (dirección subida) */}
-        <line x1={lineStartX} y1={arrowMidY} x2={arrowX} y2={arrowMidY}
-          stroke={sc} strokeWidth={sw * 1.2} />
-        <polygon points={`${arrowX},${arrowMidY - arrowSize} ${arrowTipX},${arrowMidY} ${arrowX},${arrowMidY + arrowSize}`}
-          fill={sc} />
+        {arrowLine}
+        {arrowHead}
         {/* Etiqueta */}
         {zoom > 25 && <text x={px + w / 2} y={py - 3}
           fontSize={Math.max(7, zoom * 0.06)} fill={sc} textAnchor="middle" fontFamily="monospace" opacity="0.6">
-          🪜 {pieza.largo}m
+          {pieza.largo}m
         </text>}
       </g>
     );
