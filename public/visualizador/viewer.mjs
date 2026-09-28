@@ -1011,7 +1011,23 @@ resize();
 const transferId = new URLSearchParams(location.hash.slice(1)).get('proyecto');
 if (transferId) {
   try {
-    const text = sessionStorage.getItem(`masalto:visor:${transferId}`);
+    // IndexedDB primero (transferencia desde el editor); sessionStorage como respaldo.
+    let text = null;
+    try {
+      const data = await new Promise((resolve, reject) => {
+        const req = indexedDB.open('masalto-layout', 1);
+        req.onupgradeneeded = () => req.result.createObjectStore('datos');
+        req.onerror = () => reject(req.error);
+        req.onsuccess = () => {
+          const db = req.result;
+          const g = db.transaction('datos', 'readonly').objectStore('datos').get(`visor:${transferId}`);
+          g.onsuccess = () => resolve(g.result);
+          g.onerror = () => reject(g.error);
+        };
+      });
+      if (data) text = typeof data === 'string' ? data : JSON.stringify(data);
+    } catch { /* usar respaldo */ }
+    if (!text) text = sessionStorage.getItem(`masalto:visor:${transferId}`);
     if (!text) throw Error('No se encontró el diseño. Volvé a Layout y pulsá Ver en 3D, o abrí el archivo guardado.');
     load(text, 'Desde Layout · Vista del momento de apertura. Para actualizarla, volvé a pulsar Ver en 3D.');
     const back = document.createElement('button');

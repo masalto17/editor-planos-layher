@@ -18,5 +18,22 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    reg.addEventListener('updatefound', () => {
+      const nw = reg.installing;
+      nw.addEventListener('statechange', () => {
+        if (nw.state === 'activated' && navigator.serviceWorker.controller) {
+          const banner = document.createElement('div');
+          banner.setAttribute('style','position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#E30613;color:#fff;padding:10px 20px;border-radius:8px;font-family:Nunito Sans,system-ui;font-size:14px;z-index:9999;display:flex;align-items:center;gap:12px;box-shadow:0 4px 12px rgba(0,0,0,.3)');
+          banner.innerHTML='Nueva versión disponible <button onclick="location.reload()" style="background:#fff;color:#E30613;border:none;padding:4px 12px;border-radius:4px;font-weight:700;cursor:pointer">Actualizar</button>';
+          document.body.appendChild(banner);
+        }
+      });
+    });
+  });
+}
+</script>
   </body>
 </html>

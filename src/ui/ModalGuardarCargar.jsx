@@ -17,7 +17,9 @@ export default function ModalGuardarCargar({
   const inputRef = useRef(null);
 
   useEffect(() => {
-    setDisenos(listarDisenos());
+    let vivo = true;
+    Promise.resolve(listarDisenos()).then(l => { if (vivo) setDisenos(l); });
+    return () => { vivo = false; };
   }, [listarDisenos]);
 
   useEffect(() => {
@@ -41,9 +43,10 @@ export default function ModalGuardarCargar({
 
   const handleEliminar = (n) => {
     if (confirmEliminar === n) {
-      onEliminar(n);
-      setDisenos(listarDisenos());
       setConfirmEliminar(null);
+      Promise.resolve(onEliminar(n))
+        .then(() => listarDisenos())
+        .then(setDisenos);
     } else {
       setConfirmEliminar(n);
     }
