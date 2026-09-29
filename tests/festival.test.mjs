@@ -146,12 +146,24 @@ test('Visor 3D: entidades de predio sin geometría ni pesos inventados', async (
   const m = parseDesign(JSON.stringify({ piezas }));
   const [valla, reja, gen, tarima, a, r] = m.items;
   assert.ok(valla.rendered && reja.rendered && tarima.rendered && a.rendered && r.rendered);
-  assert.equal(gen.rendered, false, 'el generador sin medidas no se dibuja');
+  const primsGen = m.primitives.filter(q => q.index === 2);
+  assert.equal(gen.representation, 'marcador');
+  assert.ok(primsGen.every(q => q.kind === 'marker'), 'el generador sin medidas solo se marca, sin volumen');
+  assert.ok(m.labels.some(l => l.index === 2 && l.text.includes('sin dimensiones')));
+  assert.ok(m.labels.some(l => l.text.includes('m²')), 'las áreas llevan rótulo con superficie');
   assert.equal(m.weight, null, 'hay pesos sin dato: no se informa total');
   assert.ok(m.issues.some(t => t.includes('sin dimensiones confirmadas')));
   assert.ok(m.issues.some(t => t.includes('profundidad pendientes')));
-  const yMax = Math.max(...m.primitives.filter(q => q.index === 0).flatMap(q => [q.a[1], q.b[1]]));
-  assert.equal(yMax, 1.25, 'el vallado respeta el alto confirmado');
+  const vertices = idx => m.primitives.filter(q => q.index === idx).flatMap(q => (q.type === 'face' ? q.pts : [q.a, q.b]));
+  const vAA = vertices(0);
+  assert.equal(Math.max(...vAA.map(v => v[1])), 1.25, 'el vallado respeta el alto confirmado');
+  // El esquema interno del antiavalancha queda dentro de su envolvente confirmada (1,00 × 1,20), aun rotado.
+  const aa = piezas[0], t = aa.rot * Math.PI / 180;
+  for (const [x, , z] of vAA) {
+    const dx = x - aa.x, dz = z - aa.z;
+    const u = dx * Math.cos(t) + dz * Math.sin(t), w = -dx * Math.sin(t) + dz * Math.cos(t);
+    assert.ok(Math.abs(u) <= 0.5 + 1e-9 && Math.abs(w) <= 0.6 + 1e-9, `vértice fuera de la envolvente: u=${u} w=${w}`);
+  }
 });
 
 test('Datos aproximados existentes marcados como esquemáticos sin cambiar valores', async () => {

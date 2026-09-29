@@ -8,7 +8,7 @@ export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
  if(!doc||!Array.isArray(doc.piezas))throw Error('Elegí un diseño de planos con una lista de piezas; el archivo individual del editor de piezas usa otro formato.');
  if(doc.piezas.length>5000)throw Error('Esta prueba admite hasta 5.000 piezas.');
- const issues=[],items=[],primitives=[];let missingZ=0;
+ const issues=[],items=[],primitives=[],labels=[];let missingZ=0;
  doc.piezas.forEach((p,i)=>{if(!p||typeof p!=='object')throw Error(`Pieza ${i+1}: registro inválido.`);
  const item={index:i,name:String(p.nombre??p.categoria??'Pieza').slice(0,180),category:String(p.categoria??'sin categoría'),ref:String(p.ref??p.tipoId??'—').slice(0,80),raw:p,rendered:false};items.push(item);
  if(p._importada || p.categoria==='importada') {
@@ -27,7 +27,7 @@ export function parseDesign(text){
    return;
  }
  if(esFestival(p)||esTrazo(p)){
-   try{const g=geometriaPredio(p,i);primitives.push(...g.primitives);item.rendered=g.primitives.length>0;if(g.aviso)issues.push(`${item.name}: ${g.aviso}`);}
+   try{const g=geometriaPredio(p,i);primitives.push(...g.primitives);labels.push(...g.labels);item.rendered=g.primitives.length>0;if(g.representacion)item.representation=g.representacion;if(g.aviso)issues.push(`${item.name}: ${g.aviso}`);}
    catch(e){issues.push(`${item.name}: sin representación en este visor (${e.message}).`);}
    return;
  }
@@ -208,5 +208,5 @@ export function parseDesign(text){
  if(!primitives.length){min=[0,0,0];max=[1,1,1]}
  if(missingZ)issues.push(`${missingZ} piezas sin profundidad explícita: ubicadas en Z = 0, como en el editor.`);
  const weights=items.filter(i=>computaMaterial(i.raw)).map(i=>i.raw.peso);const weight=weights.every(w=>typeof w==='number'&&Number.isFinite(w)&&w>=0)?weights.reduce((a,b)=>a+b,0):null;
- return {name:String(doc.nombre??'Diseño sin nombre').slice(0,180),items,primitives,min,max,center:min.map((v,j)=>(v+max[j])/2),issues:[...new Set(issues)],weight};
+ return {name:String(doc.nombre??'Diseño sin nombre').slice(0,180),items,primitives,labels,min,max,center:min.map((v,j)=>(v+max[j])/2),issues:[...new Set(issues)],weight};
 }

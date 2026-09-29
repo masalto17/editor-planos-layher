@@ -30,10 +30,20 @@ sceneHost.append(renderer.domElement);
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x10100f);
-scene.fog = new THREE.Fog(0x10100f, 22, 68);
+const niebla = new THREE.Fog(0x10100f, 22, 68);
+scene.fog = niebla;
 
-const camera = new THREE.PerspectiveCamera(45, 1, 0.02, 240);
+// Perspectiva para la vista general; Alzado, Planta y Lateral son proyecciones ortogonales:
+// escala uniforme, sin fuga, para que las medidas se lean en proporción real.
+const perspCam = new THREE.PerspectiveCamera(45, 1, 0.02, 240);
+const orthoCam = new THREE.OrthographicCamera(-10, 10, 10, -10, 0.01, 1000);
+const ORTOGONALES = new Set(['front', 'top', 'side']);
+let camera = perspCam;
+let modoOrto = null;
+let ortoMedioAlto = 10;
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.minZoom = 0.15;
+controls.maxZoom = 60;
 controls.enableDamping = true;
 controls.dampingFactor = 0.07;
 controls.screenSpacePanning = true;
@@ -44,7 +54,11 @@ controls.maxDistance = 100;
 const root = new THREE.Group();
 const dimensionLayer = new THREE.Group();
 const ghostLayer = new THREE.Group();
-scene.add(root, dimensionLayer, ghostLayer);
+const labelLayer = new THREE.Group();
+const referencia = crearFiguraHumana();
+let mostrarPersona = true;
+referencia.visible = false;
+scene.add(root, dimensionLayer, ghostLayer, labelLayer, referencia);
 
 const floor = new THREE.Mesh(
   new THREE.PlaneGeometry(160, 160),
@@ -101,8 +115,58 @@ const materials = {
   deck: new THREE.MeshStandardMaterial({ color: 0x6b4a2f, metalness: 0.05, roughness: 0.85, side: THREE.DoubleSide }),
   deckTechnical: new THREE.MeshStandardMaterial({ color: 0x8a8a84, metalness: 0.1, roughness: 0.7, side: THREE.DoubleSide }),
 };
-// Áreas: superficies translúcidas, nunca cajas opacas.
-const OPACIDAD_AREA = 0.18;
+materials.festivalNegro = new THREE.MeshStandardMaterial({ color: 0x4a4e54, metalness: 0.35, roughness: 0.5 });
+materials.marker = new THREE.MeshStandardMaterial({ color: 0xe30613, metalness: 0.2, roughness: 0.5 });
+// Áreas: superficies translúcidas, nunca cajas opacas. Color según el uso de cada área o recorrido.
+const OPACIDAD_AREA = 0.22;
+const porColor = new Map();
+function materialDeColor(kind, color) {
+  const key = `${kind}:${color}`;
+  if (!porColor.has(key)) {
+    const base = kind === 'area' ? materials.area : materials.route;
+    const m = base.clone();
+    if (color) m.color.set(color);
+    porColor.set(key, m);
+  }
+  return porColor.get(key);
+}
+
+function crearFiguraHumana() {
+  // Figura de referencia de 1,75 m para leer la escala de un vistazo.
+  const g = new THREE.Group();
+  const mat = new THREE.MeshStandardMaterial({ color: 0xd9d4cc, roughness: 0.85, metalness: 0 });
+  const add = (geo, x, y, z) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.castShadow = true; g.add(m); };
+  add(new THREE.CylinderGeometry(0.07, 0.06, 0.86, 12), -0.1, 0.43, 0);
+  add(new THREE.CylinderGeometry(0.07, 0.06, 0.86, 12), 0.1, 0.43, 0);
+  add(new THREE.CylinderGeometry(0.2, 0.16, 0.62, 16), 0, 1.17, 0);
+  add(new THREE.SphereGeometry(0.11, 16, 12), 0, 1.64, 0);
+  add(new THREE.CylinderGeometry(0.045, 0.04, 0.62, 10), -0.26, 1.14, 0);
+  add(new THREE.CylinderGeometry(0.045, 0.04, 0.62, 10), 0.26, 1.14, 0);
+  g.userData.alto = 1.75;
+  return g;
+}
+
+function rotuloSprite(texto) {
+  const pad = 14, fs = 30;
+  const c = document.createElement('canvas');
+  const ctx = c.getContext('2d');
+  ctx.font = `700 ${fs}px "Nunito Sans", system-ui, sans-serif`;
+  c.width = Math.ceil(ctx.measureText(texto).width) + pad * 2;
+  c.height = fs + pad * 1.4;
+  ctx.font = `700 ${fs}px "Nunito Sans", system-ui, sans-serif`;
+  ctx.fillStyle = 'rgba(16,16,15,0.82)';
+  ctx.beginPath(); ctx.roundRect(0, 0, c.width, c.height, 10); ctx.fill();
+  ctx.fillStyle = '#ffffff'; ctx.textBaseline = 'middle';
+  ctx.fillText(texto, pad, c.height / 2 + 1);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, sizeAttenuation: false, depthTest: false, transparent: true }));
+  const alto = 0.024;
+  sprite.userData.escala = [alto * c.width / c.height, alto];
+  sprite.scale.set(...sprite.userData.escala, 1);
+  sprite.renderOrder = 10;
+  return sprite;
+}
 
 const geometries = {
   rosette: new THREE.TorusGeometry(0.061, 0.006, 8, 24),
@@ -143,7 +207,7 @@ function enrichLine(mesh, length, radius, primitive) {
     mesh.material = materials.edge;
     return;
   }
-  if (['imported', 'envelope', 'festival', 'route'].includes(primitive.kind)) return;
+  if (['imported', 'envelope', 'festival', 'festivalNegro', 'route', 'marker'].includes(primitive.kind)) return;
   if (primitive.kind === 'head') {
     mesh.material = materials.head;
     return;
@@ -262,7 +326,9 @@ function enrichFace(mesh, points, primitive) {
 }
 
 function chooseMaterial(primitive) {
-  if (primitive.kind === 'area') return materials.area;
+  if (primitive.kind === 'area') return materialDeColor('area', primitive.color);
+  if (primitive.kind === 'route') return materialDeColor('route', primitive.color);
+  if (primitive.kind === 'marker') return materials.marker;
   if (primitive.kind === 'deck') return style === 'technical' ? materials.deckTechnical : materials.deck;
   if (primitive.kind === 'wood' && style !== 'technical') return materials.wood;
   if (style === 'technical') return materials.tubeTechnical;
@@ -273,7 +339,7 @@ function chooseMaterial(primitive) {
   if (primitive.kind === 'grating') return materials.edge;
   if (primitive.kind === 'brace') return materials.brace;
   if (primitive.kind === 'festival') return materials.festival;
-  if (primitive.kind === 'route') return materials.route;
+  if (primitive.kind === 'festivalNegro') return materials.festivalNegro;
   return materials.tube;
 }
 
@@ -314,6 +380,8 @@ function setObjectOpacity(object, opacity) {
 }
 
 function resetRoot() {
+  labelLayer.children.forEach(sp => { sp.material.map?.dispose(); sp.material.dispose(); });
+  labelLayer.clear();
   root.clear();
   dimensionLayer.clear();
   ghostLayer.clear();
@@ -335,6 +403,14 @@ function buildScene() {
     pieceMeshes.get(primitive.index).push(mesh);
   });
   addPieceSpecificGeometry();
+  for (const l of model.labels ?? []) {
+    const sp = rotuloSprite(l.text);
+    sp.position.set(...l.pos);
+    labelLayer.add(sp);
+  }
+  // Figura humana junto a la esquina frontal izquierda, fuera del diseño.
+  referencia.position.set(model.min[0] - 1.2, 0, model.max[2] + 1.2);
+  referencia.visible = mostrarPersona;
   buildDimensions();
   applyVisualState();
   frameModel();
@@ -355,7 +431,7 @@ function applyVisualState() {
   });
   document.body.classList.toggle('technical', style === 'technical');
   scene.background.set(style === 'technical' ? 0xf5f5f2 : 0x10100f);
-  scene.fog.color.copy(scene.background);
+  niebla.color.copy(scene.background);
   floor.visible = style !== 'technical';
   grid.material.opacity = style === 'technical' ? 0.13 : 0.16;
   requestRender();
@@ -556,25 +632,49 @@ function poseForMode(mode = 'iso') {
   const span = Math.max(size.x, size.y, size.z, 1);
   const positions = {
     iso: [center.x + span * 0.85, center.y + span * 0.55, center.z + span * 1.05],
-    front: [center.x, center.y + size.y * 0.34, center.z + span * 1.35],
-    top: [center.x, center.y + span * 1.45, center.z + 0.001],
-    side: [center.x + span * 1.35, center.y + size.y * 0.34, center.z],
+    front: [center.x, center.y, center.z + span * 4],
+    top: [center.x, center.y + span * 4, center.z],
+    side: [center.x + span * 4, center.y, center.z],
   };
   const [x, y, z] = positions[mode] ?? positions.iso;
   return { position: [x, y, z], target: [center.x, center.y, center.z], mode };
 }
 
+function usarCamara(mode) {
+  const orto = ORTOGONALES.has(mode);
+  modoOrto = orto ? mode : null;
+  const next = orto ? orthoCam : perspCam;
+  if (camera !== next) { camera = next; controls.object = next; }
+  controls.enableRotate = !orto;
+  scene.fog = orto ? null : niebla;
+  document.body.classList.toggle('ortogonal', orto);
+}
+
 function setCameraPose(pose) {
   const [x, y, z] = pose.position;
   const [tx, ty, tz] = pose.target;
-  const span = model
-    ? Math.max(model.max[0] - model.min[0], model.max[1] - model.min[1], model.max[2] - model.min[2], 1)
-    : 20;
+  const size = model
+    ? [model.max[0] - model.min[0], model.max[1] - model.min[1], model.max[2] - model.min[2]]
+    : [20, 20, 20];
+  const span = Math.max(...size, 1);
+  usarCamara(pose.mode);
+  if (modoOrto) {
+    // Encuadre: el plano de la vista entra completo con 12 % de margen.
+    // +3 m de margen horizontal para que entre la figura humana de referencia.
+    const [w, h] = { front: [size[0] + 3, size[1]], top: [size[0] + 3, size[2] + 3], side: [size[2] + 3, size[1]] }[modoOrto];
+    const aspect = sceneHost.clientWidth / Math.max(sceneHost.clientHeight, 1);
+    ortoMedioAlto = Math.max(h / 2, w / 2 / aspect, 1) * 1.12;
+    orthoCam.up.set(...(modoOrto === 'top' ? [0, 0, -1] : [0, 1, 0]));
+    orthoCam.zoom = pose.zoom ?? 1;
+    orthoCam.near = 0.01;
+    orthoCam.far = span * 12;
+  } else {
+    camera.near = Math.max(span / 500, 0.01);
+    camera.far = span * 12;
+  }
   camera.position.set(x, y, z);
-  camera.near = Math.max(span / 500, 0.01);
-  camera.far = span * 12;
-  camera.updateProjectionMatrix();
   controls.target.set(tx, ty, tz);
+  resize();
   controls.update();
 }
 
@@ -586,8 +686,33 @@ function render() {
   raf = 0;
   updateCameraTween();
   controls.update();
+  ajustarRotulos();
   renderer.render(scene, camera);
+  actualizarEscala();
   if (controls.enableDamping) requestRender();
+}
+
+// Con sizeAttenuation desactivado, la perspectiva mantiene el tamaño en pantalla, pero la
+// ortogonal lo toma en metros: se escala por los metros visibles para igualar el tamaño.
+function ajustarRotulos() {
+  const k = modoOrto ? (orthoCam.top - orthoCam.bottom) / orthoCam.zoom / (2 * Math.tan(THREE.MathUtils.degToRad(perspCam.fov / 2))) : 1;
+  for (const sp of labelLayer.children) sp.scale.set(sp.userData.escala[0] * k, sp.userData.escala[1] * k, 1);
+}
+
+// Barra de escala gráfica: solo en proyecciones ortogonales, donde la escala es uniforme.
+let escalaPrevia = '';
+function actualizarEscala() {
+  const el = $('#escala');
+  if (!el) return;
+  if (!modoOrto) { if (!el.hidden) el.hidden = true; escalaPrevia = ''; return; }
+  const pxPorMetro = sceneHost.clientHeight / ((orthoCam.top - orthoCam.bottom) / orthoCam.zoom);
+  const L = [0.5, 1, 2, 5, 10, 20, 50, 100, 200].find(v => v * pxPorMetro >= 70) ?? 200;
+  const clave = `${L}:${Math.round(L * pxPorMetro)}`;
+  if (clave === escalaPrevia) return;
+  escalaPrevia = clave;
+  el.hidden = false;
+  el.querySelector('i').style.width = `${Math.round(L * pxPorMetro)}px`;
+  el.querySelector('b').textContent = `${fmt(L)} m`;
 }
 
 function updateCameraTween() {
@@ -603,7 +728,11 @@ function updateCameraTween() {
 function animateCameraTo(view, duration = 900, interruptTour = true) {
   if (interruptTour) stopTour(false);
   activePresentationView = view.name;
-  cameraTween = {
+  // No se interpola entre proyecciones distintas: las vistas ortogonales se aplican directo.
+  if (ORTOGONALES.has(view.mode) || modoOrto) {
+    cameraTween = null;
+    setCameraPose(view);
+  } else cameraTween = {
     fromPosition: camera.position.clone(),
     fromTarget: controls.target.clone(),
     toPosition: new THREE.Vector3(...view.position),
@@ -651,6 +780,8 @@ function viewFromCamera(name) {
     name,
     position: camera.position.toArray(),
     target: controls.target.toArray(),
+    mode: modoOrto ?? 'libre',
+    zoom: modoOrto ? orthoCam.zoom : undefined,
     style,
     explode,
     category,
@@ -820,9 +951,12 @@ document.addEventListener('fullscreenchange', () => {
 
 function resize() {
   const { clientWidth, clientHeight } = sceneHost;
+  const aspect = clientWidth / Math.max(clientHeight, 1);
   renderer.setSize(clientWidth, clientHeight);
-  camera.aspect = clientWidth / Math.max(clientHeight, 1);
-  camera.updateProjectionMatrix();
+  perspCam.aspect = aspect;
+  perspCam.updateProjectionMatrix();
+  Object.assign(orthoCam, { left: -ortoMedioAlto * aspect, right: ortoMedioAlto * aspect, top: ortoMedioAlto, bottom: -ortoMedioAlto });
+  orthoCam.updateProjectionMatrix();
   requestRender();
 }
 
@@ -1000,12 +1134,22 @@ $('#focus').onclick = () => {
   const center = box.getCenter(new THREE.Vector3());
   const size = box.getSize(new THREE.Vector3());
   const span = Math.max(size.x, size.y, size.z, 0.8);
+  if (modoOrto) {
+    usarCamara('iso');
+    document.querySelectorAll('[data-view]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.view === 'iso')));
+  }
   controls.target.copy(center);
   camera.position.copy(center.clone().add(new THREE.Vector3(span * 1.8, span * 1.1, span * 1.8)));
   controls.update();
   requestRender();
 };
 $('#tour').onclick = toggleTour;
+$('#persona').onclick = () => {
+  mostrarPersona = !mostrarPersona;
+  referencia.visible = mostrarPersona && !!model;
+  $('#persona').setAttribute('aria-pressed', String(mostrarPersona));
+  requestRender();
+};
 $('#capture').onclick = capturePng;
 $('#present').onclick = togglePresentationMode;
 $('#save-view').onclick = saveCurrentView;
