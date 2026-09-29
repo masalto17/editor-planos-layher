@@ -210,6 +210,52 @@ h1 {
   background: #444;
 }
 
+.bottomcontrols button[aria-pressed=true] {
+  background: #f5f5f2;
+  color: #111;
+}
+
+/* Escala gráfica de las proyecciones ortogonales */
+.escala[hidden] { display: none; }
+.escala {
+  position: absolute;
+  left: 20px;
+  bottom: 64px;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  column-gap: 8px;
+  row-gap: 2px;
+  padding: 7px 10px;
+  background: #252525dd;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #eee;
+  font: 600 12px 'IBM Plex Mono', ui-monospace, monospace;
+  pointer-events: none;
+}
+.escala i {
+  display: block;
+  height: 6px;
+  border: 1.5px solid #f5f5f2;
+  border-top: 0;
+  background: linear-gradient(90deg, #f5f5f2 50%, transparent 50%);
+}
+.escala span {
+  grid-column: 1 / -1;
+  color: #aaa;
+  font: 400 11px 'Nunito Sans', system-ui, sans-serif;
+}
+body.technical .escala {
+  background: #ffffffe6;
+  border-color: #bbb;
+  color: #111;
+}
+body.technical .escala i {
+  border-color: #111;
+  background: linear-gradient(90deg, #111 50%, transparent 50%);
+}
+
 .status {
   display: flex;
   justify-content: space-between;

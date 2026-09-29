@@ -1,4 +1,5 @@
 import { ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js';
+import { esFestival, esTrazo, boundsXZEntidad, boundsAlzadoEntidad, cruzaFilaEntidad } from './entidades.js';
 
 export const uid = () => `p_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 export const roundTo = (v, step) => Math.round(v / step) * step;
@@ -10,6 +11,7 @@ export const roundTo = (v, step) => Math.round(v / step) * step;
 // Diagonales de planta guardan (x1,z1)-(x2,z2) a una única y.
 
 export const piezaMinX = p => {
+  if (esFestival(p) || esTrazo(p)) return boundsXZEntidad(p).xMin;
   if (p.categoria === 'diagonal') return Math.min(p.x1, p.x2);
   if (p.categoria === 'diagonalPlanta') return Math.min(p.x1, p.x2);
   // Ménsula/escalera con flip extiende hacia la izquierda
@@ -21,6 +23,7 @@ export const piezaMinY = p => {
   return p.y;
 };
 export const piezaMinZ = p => {
+  if (esFestival(p) || esTrazo(p)) return boundsXZEntidad(p).zMin;
   if (p.categoria === 'diagonalPlanta') return Math.min(p.z1, p.z2);
   return p.z ?? 0;
 };
@@ -28,6 +31,7 @@ export const piezaMinZ = p => {
 // Bounds en plano X-Y (Alzado). Sólo tiene sentido para piezas que se ven en el alzado
 // de una fila dada — el filtro de fila es responsabilidad del caller.
 export const piezaBounds = p => {
+  if (esFestival(p)) return boundsAlzadoEntidad(p);
   if (p.categoria === 'diagonal') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), yMin: Math.min(p.y1, p.y2), yMax: Math.max(p.y1, p.y2) };
   if (p.categoria === 'diagonalPlanta') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), yMin: p.y, yMax: p.y };
   if (ES_TIPO_VERTICAL(p.categoria)) return { xMin: p.x, xMax: p.x, yMin: p.y, yMax: p.y + p.largo };
@@ -52,6 +56,7 @@ export const piezaBounds = p => {
 
 // Bounds en plano X-Z (Planta).
 export const piezaBoundsXZ = p => {
+  if (esFestival(p) || esTrazo(p)) return boundsXZEntidad(p);
   const z = p.z ?? 0;
   if (p.categoria === 'diagonal') { const xMin = Math.min(p.x1, p.x2), xMax = Math.max(p.x1, p.x2); return { xMin, xMax, zMin: z, zMax: z }; }
   if (p.categoria === 'diagonalPlanta') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), zMin: Math.min(p.z1, p.z2), zMax: Math.max(p.z1, p.z2) };
@@ -83,6 +88,7 @@ export const piezaBoundsXZ = p => {
 // Devuelve true si una horizontal orientada en Z cruza la fila Z=zFila. Para todo
 // lo demás basta con p.z === zFila (verticales, diagonales alzado, horiz-x).
 export const cruzaFilaZ = (p, zFila) => {
+  if (esFestival(p) || esTrazo(p)) return cruzaFilaEntidad(p, zFila);
   if (ES_TIPO_HORIZONTAL(p.categoria) && p.orientacion === 'z') {
     const z0 = p.z ?? 0;
     return zFila >= z0 - 0.001 && zFila <= z0 + p.largo + 0.001;

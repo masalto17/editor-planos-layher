@@ -84,6 +84,33 @@ npm run dev
    grid de filas A-B-C, diagonales visibles en planta, selección compartida resaltada entre vistas)
 2. **Export a PDF** con membrete corporativo MásAlto/MYD, cuadro de datos, sellos legales (stub en `src/export/pdfExporter.js`)
 
+### Catálogo integral para festivales (requerimiento MasAlto 29/09/2026)
+Diagnóstico, matriz de cobertura (133 filas) y plan: https://claude.ai/artifact/UDS22PNb66jdEN2ThiFja7
+
+**Fase 1 — infraestructura + muestra vertical ✅**
+- Fichas v2 en `src/catalogo/festival.js`; geometría y cómputo puros en `public/compartido/entidades.js`
+  (compartido con el visor 3D, reexportado desde `src/modelo/entidades.js`).
+- Tipos de entidad: pieza (`categoria: 'festival'`), área (`'area'`), recorrido (`'recorrido'`).
+  Áreas y recorridos guardan `puntos` relativos a (x, z): mover/copiar/deshacer funcionan igual.
+- Estados: esquemático, pendiente de referencia, validado por MasAlto, archivado.
+- **Dato desconocido = `null`, se muestra «Sin dato», nunca 0.** Si falta un peso, no hay total:
+  solo «Subtotal conocido» (`resumenPeso`).
+- Ejes locales de pieza: u = frente (ancho), v = alto, w = fondo; anclaje en el centro de la huella;
+  `rot` en grados alrededor de Y (R gira 90°, ⇧R 15°).
+- Cada instancia guarda copia de su ficha (`_def`): cambiar el catálogo no altera proyectos guardados.
+- Capas (ver/bloquear), zoom de predio (1,5 px/m), vallado por recorrido (módulos completos + remanente),
+  panel de Propiedades por instancia, formato de guardado 2.1 (`migrarDiseno` no reescribe propiedades).
+- Familias cargadas: vallado antiavalancha 1,00×1,25 (prof. 1,20; negro/plateado; ref. IA),
+  reja 3,00×1,20, reja 2,50×1,25, generador Himoinsa 200 kVA en dos variantes
+  (insonorizado 3,30×1,965×1,20 m, 2.318 kg con líquidos; abierto 2,90×1,634×0,90 m, 1.558 kg en seco;
+  ficha informada y validada por MasAlto; código de modelo y kW pendientes),
+  tarima genérica paramétrica. Truss, vigas IPN y catálogo de evento marcados como esquemáticos.
+- Pendientes de MasAlto: fotos reales del antiavalancha, ficha de rejas, código de modelo y kW del generador,
+  navegador para la prueba de rendimiento. Otras familias con pesos «≈» (T14, ménsulas, escaleras…) sin marcar.
+
+**Fases siguientes:** 2 estructuras/cerramientos/energía · 3 técnica/backstage/servicios ·
+4 documentación integral (numeración, aforo, potencia por sector, PDF de predio, prueba 2.000 instancias).
+
 ### Mejoras de catálogo pendientes
 - **Vigas reticuladas / celosías** — para luces grandes de escenarios
 - ~~**Ménsulas** (2630/2631.xxx) — voladizos laterales~~ ✅ PR#7

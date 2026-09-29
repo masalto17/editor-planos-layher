@@ -2,7 +2,10 @@
 // marcadores de snap. Reciben worldToScreen ya resuelto para el plano de cada vista.
 
 export function Grilla({ worldVisible, worldToScreen, zoom }) {
-  const ls = []; const step = zoom < 30 ? 1 : zoom < 80 ? 0.5 : 0.25;
+  const ls = []; const step = zoom < 3 ? 10 : zoom < 8 ? 5 : zoom < 30 ? 1 : zoom < 80 ? 0.5 : 0.25;
+  // Rótulos con al menos 40 px de separación: a escala de predio se rotula cada n líneas.
+  const cadaN = Math.max(1, Math.ceil(40 / (step * zoom)));
+  const rotular = v => (step >= 5 ? Math.round(v / step) % cadaN === 0 : Math.abs(v - Math.round(v)) < 0.01 && zoom > 25);
   const MODULO = 2.57; // Módulo estándar Layher
   const isModulo = v => { const r = v / MODULO; return Math.abs(r - Math.round(r)) < 0.02 && Math.abs(v) > 0.01; };
   const isRoseta = v => Math.abs((v * 2) - Math.round(v * 2)) < 0.02; // cada 0.50m
@@ -16,14 +19,14 @@ export function Grilla({ worldVisible, worldToScreen, zoom }) {
     const sw = mod ? 1 : ent ? 0.7 : 0.3;
     ls.push(<line key={`v${x.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={stroke} strokeWidth={sw}
       strokeDasharray={mod ? '4 3' : 'none'} />);
-    if (ent && zoom > 25) ls.push(<text key={`vt${x.toFixed(3)}`} x={p1.x + 2} y={12} fontSize="9" fill={mod ? '#E30613' : '#94a3b8'} fontFamily="monospace" fontWeight={mod ? 'bold' : 'normal'} opacity={mod ? 0.6 : 1}>{x.toFixed(0)}</text>);
+    if (rotular(x)) ls.push(<text key={`vt${x.toFixed(3)}`} x={p1.x + 2} y={12} fontSize="9" fill={mod ? '#E30613' : '#94a3b8'} fontFamily="monospace" fontWeight={mod ? 'bold' : 'normal'} opacity={mod ? 0.6 : 1}>{x.toFixed(0)}</text>);
   }
   for (let y = Math.floor(worldVisible.yMin / step) * step; y <= Math.ceil(worldVisible.yMax / step) * step; y += step) {
     const p1 = worldToScreen(worldVisible.xMin, y), p2 = worldToScreen(worldVisible.xMax, y);
     const ent = Math.abs(y - Math.round(y)) < 0.01;
     const ros = isRoseta(y) && !ent;
     ls.push(<line key={`h${y.toFixed(3)}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={ent ? '#c0c4cc' : ros && zoom > 60 ? '#ddd6fe' : '#e8eaed'} strokeWidth={ent ? 0.7 : 0.3} />);
-    if (ent && zoom > 25) ls.push(<text key={`ht${y.toFixed(3)}`} x={4} y={p1.y - 2} fontSize="9" fill="#94a3b8" fontFamily="monospace">{y.toFixed(0)}</text>);
+    if (rotular(y)) ls.push(<text key={`ht${y.toFixed(3)}`} x={4} y={p1.y - 2} fontSize="9" fill="#94a3b8" fontFamily="monospace">{y.toFixed(0)}</text>);
   }
   return <g>{ls}</g>;
 }

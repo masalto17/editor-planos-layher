@@ -221,6 +221,10 @@ export const CATALOGO = {
   ],
 };
 
+// Datos aproximados sin fuente confirmada (autorizado por MasAlto 29/09/2026): se marcan
+// como esquemáticos sin cambiar sus valores, hasta que se validen contra el proveedor.
+for (const k of ['truss', 'vigasIPN']) CATALOGO[k].forEach(p => { p.estado = 'esquematico'; });
+
 // Mapeo de categorías → sección de paleta. `vistas` limita en qué vista se muestra.
 // Orden natural de armado: base → collarín → verticales → horizontales → diagonales → vigas → plataformas → protecciones → complementos
 export const CAT_KEYS = [
