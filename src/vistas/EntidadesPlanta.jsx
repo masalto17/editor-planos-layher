@@ -47,8 +47,35 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
   const { ancho } = dimsDe(pieza);
   const sw = Math.max(1, zoom * 0.02);
 
-  // Sin profundidad confirmada: se dibuja la línea de frente, no una huella inventada.
-  if (!h.profundidadConocida) {
+  // Portón o puerta: postes en los extremos y barrido de cada hoja (luz libre / hojas).
+  if (def.geometria === 'abertura') {
+    const hojas = pieza.opciones?.hojas ?? 2, s = (pieza.opciones?.abre ?? 'fondo') === 'fondo' ? 1 : -1;
+    const hu = ancho / 2, R = ancho / hojas;
+    const W = (u, w) => aPantalla(worldToScreen, localAMundo(pieza, u, w));
+    const bisagras = hojas === 2 ? [[-hu, 1], [hu, -1]] : [[-hu, 1]];
+    const a = W(-hu, 0), b = W(hu, 0), post = Math.max(3, zoom * 0.08);
+    return (
+      <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="transparent" strokeWidth="12" />
+        {seleccionada && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={SEL} strokeWidth="8" opacity="0.25" />}
+        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeWidth="1" strokeDasharray="3 3" />
+        {bisagras.map(([u0, dir], i) => {
+          const arco = [...Array(9)].map((_, k) => { const t = (k / 8) * Math.PI / 2; const q = W(u0 + dir * R * Math.cos(t), s * R * Math.sin(t)); return `${q.x},${q.y}`; }).join(' ');
+          const abierta = W(u0, s * R), gozne = W(u0, 0);
+          return <g key={i}>
+            <polyline points={arco} fill="none" stroke={color} strokeWidth="1" strokeDasharray="4 3" />
+            <line x1={gozne.x} y1={gozne.y} x2={abierta.x} y2={abierta.y} stroke={color} strokeWidth={Math.max(1.5, zoom * 0.03)} />
+          </g>;
+        })}
+        {[a, b].map((q, i) => <rect key={i} x={q.x - post / 2} y={q.y - post / 2} width={post} height={post} fill={color} />)}
+        {(seleccionada || zoom > 30) && <Etiqueta x={c.x} y={c.y + 12} texto={`${def.salidaEmergencia ? 'Salida emerg. · ' : ''}luz ${fmt(ancho)} m`} color={color} size={8} />}
+      </g>
+    );
+  }
+
+  // Reja (o pieza sin profundidad confirmada): línea de frente; en la reja, patas de la base
+  // en los extremos cuando la ficha informa su fondo.
+  if (!h.profundidadConocida || def.familia === 'rejaModular') {
     const a = aPantalla(worldToScreen, localAMundo(pieza, -ancho / 2, 0));
     const b = aPantalla(worldToScreen, localAMundo(pieza, ancho / 2, 0));
     const grosor = Math.max(3, zoom * 0.06);
@@ -58,7 +85,14 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
         {seleccionada && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={SEL} strokeWidth={grosor + 6} opacity="0.25" />}
         <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeWidth={grosor} strokeDasharray={provisional ? `${grosor * 2} ${grosor * 0.6}` : 'none'} />
         {[a, b].map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={grosor * 0.7} fill="white" stroke={color} strokeWidth="1" />)}
-        {(seleccionada || zoom > 90) && <Etiqueta x={c.x} y={c.y - grosor - 6} texto={`${fmt(ancho)} m · prof. sin dato`} color={color} size={8} />}
+        {h.profundidadConocida && (() => {
+          const { profundidad } = dimsDe(pieza);
+          return [-ancho / 2 + 0.08, ancho / 2 - 0.08].map((u, i) => {
+            const p1 = aPantalla(worldToScreen, localAMundo(pieza, u, -profundidad / 2)), p2 = aPantalla(worldToScreen, localAMundo(pieza, u, profundidad / 2));
+            return <line key={`b${i}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={Math.max(1.5, grosor * 0.5)} />;
+          });
+        })()}
+        {(seleccionada || zoom > 90) && <Etiqueta x={c.x} y={c.y - grosor - 6} texto={`${fmt(ancho)} m · ${h.profundidadConocida ? `base ${fmt(dimsDe(pieza).profundidad)} m` : 'prof. sin dato'}`} color={color} size={8} />}
       </g>
     );
   }
@@ -70,7 +104,10 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
     const { profundidad } = dimsDe(pieza);
     const m = aPantalla(worldToScreen, localAMundo(pieza, 0, -profundidad / 2));
     const t = aPantalla(worldToScreen, localAMundo(pieza, 0, -profundidad / 2 - Math.min(0.5, 12 / zoom)));
-    return { m, t };
+    // Línea del panel dentro de la huella (proporción de fotos y croquis).
+    const wp = -profundidad / 2 + profundidad * (def.esquema?.panel ?? 0.66);
+    const pa = aPantalla(worldToScreen, localAMundo(pieza, -ancho / 2, wp)), pb = aPantalla(worldToScreen, localAMundo(pieza, ancho / 2, wp));
+    return { m, t, pa, pb };
   })() : null;
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
@@ -79,6 +116,7 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
         strokeDasharray={provisional ? `${Math.max(4, sw * 3)} ${Math.max(2, sw * 1.5)}` : 'none'} />
       {esTarima && <line x1={pts[0].x} y1={pts[0].y} x2={pts[2].x} y2={pts[2].y} stroke={color} strokeWidth={sw * 0.6} opacity="0.5" />}
       {esTarima && <line x1={pts[1].x} y1={pts[1].y} x2={pts[3].x} y2={pts[3].y} stroke={color} strokeWidth={sw * 0.6} opacity="0.5" />}
+      {frentePub && <line x1={frentePub.pa.x} y1={frentePub.pa.y} x2={frentePub.pb.x} y2={frentePub.pb.y} stroke={color} strokeWidth={Math.max(1.5, sw * 1.5)} />}
       {frentePub && zoom > 12 && (
         <line x1={frentePub.m.x} y1={frentePub.m.y} x2={frentePub.t.x} y2={frentePub.t.y} stroke={color} strokeWidth="1.2" markerEnd="url(#arrowR)" />
       )}
@@ -100,10 +138,27 @@ function AreaPlanta({ pieza, worldToScreen, seleccionada, op, cur, onMouseDown, 
         stroke={color} strokeWidth={seleccionada ? 2.5 : 1.5} strokeDasharray="8 4" pointerEvents="none" />
       {/* Se selecciona por el borde: el interior queda libre para colocar y seleccionar lo que contiene. */}
       <polygon points={pts.map(q => `${q.x},${q.y}`).join(' ')} fill="none" stroke="transparent" strokeWidth="10" pointerEvents="stroke" />
-      <Etiqueta x={cs.x} y={cs.y - 6} texto={pieza.nombre} color={color} size={11} />
+      <Etiqueta x={cs.x} y={cs.y - 6} texto={`${pieza.codigo ? `${pieza.codigo} · ` : ''}${pieza.nombre}`} color={color} size={11} />
       <Etiqueta x={cs.x} y={cs.y + 9} texto={`${fmt(superficie(abs))} m²`} color={color} size={9} />
     </g>
   );
+}
+
+// Flechas de sentido de circulación a mitad de cada tramo.
+function FlechasSentido({ pts, sentido, color }) {
+  const out = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], L = Math.hypot(b.x - a.x, b.y - a.y);
+    if (L < 30) continue;
+    const ux = (b.x - a.x) / L, uy = (b.y - a.y) / L, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const flecha = (dir, off) => {
+      const cx = mx + ux * off, cy = my + uy * off, tx = ux * dir, ty = uy * dir;
+      return `M${cx - tx * 6 - ty * 5},${cy - ty * 6 + tx * 5} L${cx + tx * 6},${cy + ty * 6} L${cx - tx * 6 + ty * 5},${cy - ty * 6 - tx * 5}`;
+    };
+    if (sentido === 'ida' || sentido === 'doble') out.push(<path key={`i${i}`} d={flecha(1, sentido === 'doble' ? 10 : 0)} fill="none" stroke={color} strokeWidth="2" />);
+    if (sentido === 'vuelta' || sentido === 'doble') out.push(<path key={`v${i}`} d={flecha(-1, sentido === 'doble' ? -10 : 0)} fill="none" stroke={color} strokeWidth="2" />);
+  }
+  return <g pointerEvents="none">{out}</g>;
 }
 
 function RecorridoPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur, onMouseDown, modoTecnico }) {
@@ -119,8 +174,9 @@ function RecorridoPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur, on
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
       <polyline points={d} fill="none" stroke="transparent" strokeWidth={Math.max(12, banda)} />
       {banda > 0 && <polyline points={d} fill="none" stroke={color} strokeWidth={banda} strokeOpacity="0.14" strokeLinejoin="round" />}
-      <polyline points={d} fill="none" stroke={color} strokeWidth={seleccionada ? 2.5 : 1.5} strokeDasharray="10 5" markerEnd="url(#arrowR)" />
-      <Etiqueta x={m.x} y={m.y - 8} texto={`${pieza.nombre} · ${fmt(largoPolilinea(abs))} m${pieza.ancho ? ` · ancho ${fmt(pieza.ancho)} m` : ' · ancho sin dato'}`} color={color} size={9} />
+      <polyline points={d} fill="none" stroke={color} strokeWidth={seleccionada ? 2.5 : 1.5} strokeDasharray="10 5" />
+      {pieza.sentido && <FlechasSentido pts={pts} sentido={pieza.sentido} color={color} />}
+      <Etiqueta x={m.x} y={m.y - 8} texto={`${pieza.codigo ? `${pieza.codigo} · ` : ''}${pieza.nombre} · ${fmt(largoPolilinea(abs))} m${pieza.ancho ? ` · ancho ${fmt(pieza.ancho)} m` : ' · ancho sin dato'}${pieza.cota != null ? ` · cota ${fmt(pieza.cota)} m` : ''}`} color={color} size={9} />
     </g>
   );
 }
@@ -130,7 +186,13 @@ export default function EntidadPlanta(props) {
   const op = fantasma ? 0.45 : 1;
   const cur = fantasma ? 'none' : 'pointer';
   const p = { ...props, op, cur };
-  if (esFestival(pieza)) return <PiezaFestivalPlanta {...p} />;
+  if (esFestival(pieza)) {
+    const c = props.worldToScreen(pieza.x, pieza.z ?? 0);
+    return <g>
+      <PiezaFestivalPlanta {...p} />
+      {pieza.codigo && !fantasma && props.zoom > 20 && <Etiqueta x={c.x} y={c.y - 14} texto={pieza.codigo} color={props.seleccionada ? SEL : '#111'} size={8} />}
+    </g>;
+  }
   if (esArea(pieza)) return <AreaPlanta {...p} />;
   if (esRecorrido(pieza)) return <RecorridoPlanta {...p} />;
   return null;
@@ -175,4 +237,18 @@ export function TrazoEnCurso({ herramienta, puntos, cursor, worldToScreen, zoom 
       {informe && <Etiqueta x={ult.x} y={ult.y - 14} texto={informe} color={color} size={10} />}
     </g>
   );
+}
+
+// Recuadro y rótulo de cada conjunto (torre) visible: código, uso y medidas.
+export function EtiquetasConjuntos({ conjuntos, worldToScreen, seleccionadas }) {
+  return <g pointerEvents="none">
+    {conjuntos.map(g => {
+      const a = worldToScreen(g.xMin, g.zMin), b = worldToScreen(g.xMax, g.zMax), sel = g.ids.some(id => seleccionadas.includes(id));
+      const color = sel ? SEL : '#1e3a8a';
+      return <g key={g.id}>
+        <rect x={a.x - 6} y={a.y - 6} width={b.x - a.x + 12} height={b.y - a.y + 12} fill="none" stroke={color} strokeWidth={sel ? 1.5 : 1} strokeDasharray="2 3" />
+        <Etiqueta x={(a.x + b.x) / 2} y={a.y - 14} texto={`${g.codigo ?? ''} · ${g.nombre}`} color={color} size={9} />
+      </g>;
+    })}
+  </g>;
 }

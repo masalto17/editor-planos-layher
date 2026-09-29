@@ -206,12 +206,14 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     e.stopPropagation(); if (herramientaActiva) return;
     const yaSel = piezasSeleccionadas.includes(pieza.id);
     if (e.shiftKey) { setPiezasSeleccionadas(yaSel ? prev => prev.filter(id => id !== pieza.id) : prev => [...prev, pieza.id]); return; }
-    let ids = yaSel ? piezasSeleccionadas : [pieza.id];
-    if (!yaSel) setPiezasSeleccionadas([pieza.id]);
+    // Una pieza de un conjunto (torre) selecciona el conjunto entero; ⇧clic la suma o quita sola.
+    const idsGrupo = pieza.grupo ? piezas.filter(q => q.grupo?.id === pieza.grupo.id).map(q => q.id) : [pieza.id];
+    let ids = yaSel ? piezasSeleccionadas : idsGrupo;
+    if (!yaSel) setPiezasSeleccionadas(idsGrupo);
     const rect = svgRef.current.getBoundingClientRect();
     const sx = e.clientX - rect.left, sy = e.clientY - rect.top, w = screenToWorld(sx, sy);
     const snap = {};
-    ids.forEach(id => { const p = piezasFila.find(x => x.id === id); if (!p) return; snap[id] = p.categoria === 'diagonal' ? { x1: p.x1, y1: p.y1, x2: p.x2, y2: p.y2 } : { x: p.x, y: p.y }; });
+    ids.forEach(id => { const p = piezas.find(x => x.id === id); if (!p) return; snap[id] = p.categoria === 'diagonal' ? { x1: p.x1, y1: p.y1, x2: p.x2, y2: p.y2 } : { x: p.x, y: p.y }; });
     const offX = w.x - (pieza.categoria === 'diagonal' ? pieza.x1 : pieza.x);
     const offY = w.y - (pieza.categoria === 'diagonal' ? pieza.y1 : pieza.y);
     setArrastrando({ idsAMover: ids, piezaAnclaId: pieza.id, categoriaAncla: pieza.categoria, offsetX: offX, offsetY: offY, snapshotPosiciones: snap, moved: false, mouseIniPx: { x: sx, y: sy } });

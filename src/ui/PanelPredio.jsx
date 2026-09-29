@@ -101,6 +101,23 @@ function SelectCapa({ id, valor, onChange }) {
 export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas }) {
   const [verPendientes, setVerPendientes] = useState(false);
   const sel = piezas.filter(p => piezasSeleccionadas.includes(p.id));
+  // Conjunto (torre) seleccionado entero: resumen del grupo.
+  const g = sel[0]?.grupo;
+  if (g && sel.length > 1 && sel.every(p => p.grupo?.id === g.id)) {
+    const peso = Math.round(sel.reduce((t, p) => t + (p.peso ?? 0), 0) * 10) / 10;
+    const porCat = sel.reduce((m, p) => { m[p.nombre] = (m[p.nombre] || 0) + 1; return m; }, {});
+    return (
+      <div className="bg-white/97 border border-gray-300 rounded shadow-sm text-[11px] w-64 p-2 space-y-1">
+        <div className="font-bold text-gray-800">{g.codigo} · {g.nombre}</div>
+        <Fila label="Piezas"><span className="font-mono">{sel.length}</span></Fila>
+        <Fila label="Peso"><span className="font-mono">{fmt(peso)} kg</span></Fila>
+        <ul className="text-[10px] text-gray-600 max-h-28 overflow-y-auto">
+          {Object.entries(porCat).map(([n, c]) => <li key={n} className="flex justify-between"><span className="truncate">{n}</span><span className="font-mono">×{c}</span></li>)}
+        </ul>
+        <div className="text-[9px] text-gray-400">Piezas Layher de catálogo. ⇧clic selecciona una pieza suelta.</div>
+      </div>
+    );
+  }
   if (sel.length !== 1) return null;
   const p = sel[0];
   if (!esFestival(p) && !esArea(p) && !esRecorrido(p)) return null;
@@ -122,7 +139,16 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
           <span className="font-bold text-gray-800 leading-tight flex-1">{def.nombre}</span>
           {est && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded text-white shrink-0" style={{ background: est.color }}>{est.label}</span>}
         </div>
+        <Fila label="Código"><CampoTexto id={`${idb}-cod`} valor={p.codigo} onCommit={v => v && upd({ codigo: v })} /></Fila>
         <Fila label="Nombre"><CampoTexto id={`${idb}-nom`} valor={p.nombre} onCommit={v => upd({ nombre: v ?? def.nombre })} /></Fila>
+        {def.opciones?.map(o => (
+          <Fila key={o.clave} label={o.label}>
+            <select id={`${idb}-op-${o.clave}`} value={String(p.opciones?.[o.clave] ?? o.defecto)} className="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px]"
+              onChange={e => { const v = o.valores.find(([k]) => String(k) === e.target.value)[0]; upd(q => ({ opciones: { ...(q.opciones ?? {}), [o.clave]: v } })); }}>
+              {o.valores.map(([k, l]) => <option key={k} value={String(k)}>{l}</option>)}
+            </select>
+          </Fila>
+        ))}
         {(def.marca || def.modelo || def.variante || def.acabado) && (
           <Fila label="Modelo">
             <span>{[def.marca, def.modelo ?? (def.marca ? 'modelo pendiente' : null), def.variante, def.acabado].filter(Boolean).join(' · ')}</span>
@@ -132,6 +158,10 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
         <Fila label="Alto">{dimCampo('alto')}</Fila>
         <Fila label="Fondo (w)">{dimCampo('profundidad')}</Fila>
         <Fila label="Peso">{p.peso == null ? SIN_DATO : <span className="font-mono">{fmt(p.peso)} kg</span>}</Fila>
+        {def.detalle && Object.entries(def.detalle).map(([k, v]) => (
+          <Fila key={k} label={k[0].toUpperCase() + k.slice(1)}><span className="text-gray-700">{v}</span></Fila>
+        ))}
+        {def.conexion?.tipo && <Fila label="Unión"><span className="text-gray-700">{def.conexion.tipo}</span></Fila>}
         {def.electrico && (
           <Fila label="Potencia">
             <span className="font-mono">{def.electrico.kVA ?? '—'} kVA · </span>{def.electrico.kW == null ? SIN_DATO : <span className="font-mono">{def.electrico.kW} kW</span>}
@@ -161,6 +191,7 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
   return (
     <div className="bg-white/97 border border-gray-300 rounded shadow-sm text-[11px] w-64 p-2 space-y-1">
       <div className="font-bold text-gray-800">{esArea(p) ? 'Área' : 'Recorrido'}</div>
+      <Fila label="Código"><CampoTexto id={`${idb}-cod`} valor={p.codigo} onCommit={v => v && upd({ codigo: v })} /></Fila>
       <Fila label="Nombre"><CampoTexto id={`${idb}-nom`} valor={p.nombre} onCommit={v => upd({ nombre: v ?? p.nombre })} /></Fila>
       <Fila label="Uso">
         <select id={`${idb}-uso`} value={p.uso} className="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px]"
@@ -177,6 +208,14 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
         : <>
             <Fila label="Largo"><span className="font-mono">{fmt(largoPolilinea(abs))} m</span></Fila>
             <Fila label="Ancho útil"><CampoNumero id={`${idb}-ancho`} valor={p.ancho} min={0.1} sufijo="m" vacioPermitido onCommit={v => upd({ ancho: v })} /></Fila>
+            <Fila label="Sentido">
+              <select id={`${idb}-sentido`} value={p.sentido ?? ''} className="w-full px-1 py-0.5 border border-gray-300 rounded text-[11px]"
+                onChange={e => upd({ sentido: e.target.value || null })}>
+                <option value="">Sin indicar</option><option value="ida">Del primer punto al último</option>
+                <option value="vuelta">Del último punto al primero</option><option value="doble">Doble sentido</option>
+              </select>
+            </Fila>
+            <Fila label="Cota"><CampoNumero id={`${idb}-cota`} valor={p.cota ?? null} min={0} sufijo="m" vacioPermitido onCommit={v => upd({ cota: v })} /></Fila>
           </>}
       <Fila label="Capa"><SelectCapa id={`${idb}-capa`} valor={capaDe(p)} onChange={v => upd({ capa: v })} /></Fila>
       <Fila label="Notas"><CampoTexto id={`${idb}-obs`} valor={p.obs} onCommit={v => upd({ obs: v })} multilinea /></Fila>

@@ -3,6 +3,7 @@ import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle
 import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
+import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, OPCIONES_DIAGONALES, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -330,6 +331,7 @@ function SeccionImportadas({ piezasImportadas, activa, onSelect, onEliminar, onI
 // ─── Sección Predio / Festival ─────────────────────────────────────
 const GRUPOS_FESTIVAL = [
   { titulo: 'Vallados', familias: ['valladoAntiavalancha', 'rejaModular'] },
+  { titulo: 'Accesos', familias: ['porton', 'puertaEmergencia'] },
   { titulo: 'Energía', familias: ['generador'] },
   { titulo: 'Escenario', familias: ['tarima'] },
 ];
@@ -363,10 +365,24 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
   const [usoArea, setUsoArea] = useState('campo');
   const [usoRec, setUsoRec] = useState('circulacion');
   const [valla, setValla] = useState('REJA-300');
+  const [torre, setTorre] = useState({ uso: 'pa', frente: 2.57, fondo: 1.57, alto: 6, diagonales: 2 });
   const coincide = d => !termino || [d.nombre, ...(d.aliases ?? [])].some(t => t.toLowerCase().includes(termino));
   const grupos = GRUPOS_FESTIVAL.map(g => ({ ...g, defs: DEFINICIONES_FESTIVAL.filter(d => g.familias.includes(d.familia) && coincide(d)) })).filter(g => g.defs.length);
   const trazos = vista === 'planta' ? HERRAMIENTAS_TRAZO.filter(coincide) : [];
-  if (!grupos.length && !trazos.length) return null;
+  const verTorres = vista === 'planta' && (!termino || ['torre', 'pa', 'delay', 'video', 'foh', 'iluminación', 'vigilancia', 'conjunto'].some(t => t.includes(termino) || termino.includes(t)));
+  if (!grupos.length && !trazos.length && !verTorres) return null;
+  const fmt2 = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+  const herramientaTorre = (t) => {
+    const u = USOS_TORRE.find(x => x.id === t.uso);
+    return { id: 'TORRE', categoria: 'torre', ...t, nombre: `${u.label} ${fmt2(t.frente)} × ${fmt2(t.fondo)} × ${fmt2(t.alto)} m` };
+  };
+  const cambiarTorre = (clave, conv) => e => {
+    const t = { ...torre, [clave]: conv(e.target.value) };
+    setTorre(t);
+    if (activa?.categoria === 'torre') onSelect(herramientaTorre(t));
+  };
+  const altos = [];
+  for (let a = ALTO_MIN; a <= ALTO_MAX + 1e-9; a += 0.5) altos.push(a);
 
   const herramientaTrazo = (h, valor) => {
     if (h.categoria === 'area') { const u = USOS_AREA.find(x => x.id === (valor ?? usoArea)); return { ...h, uso: u.id, nombre: `Área · ${u.label}` }; }
@@ -387,7 +403,7 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
         className="w-full flex items-center gap-1.5 px-1.5 py-1 text-[11px] font-extrabold rounded hover:bg-gray-50 text-gray-700">
         {abierto ? <ChevronDown size={11} className="shrink-0" /> : <ChevronRight size={11} className="shrink-0" />}
         <span>🎪</span><span className="truncate">Predio / Festival</span>
-        <span className="ml-auto text-[8px] font-bold text-amber-700 border border-amber-600 rounded px-1">FASE 1</span>
+        <span className="ml-auto text-[8px] font-bold text-amber-700 border border-amber-600 rounded px-1">FASE 2</span>
       </button>
       {abierto && (
         <div className="pl-2 border-l-2 border-gray-100 ml-2 mt-0.5 space-y-1">
@@ -397,6 +413,35 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
               <div className="space-y-0.5">{g.defs.map(d => <ItemFestival key={d.id} def={d} sel={activa?.id === d.id} onSelect={onSelect} />)}</div>
             </div>
           ))}
+          {verTorres && (
+            <div>
+              <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">Estructuras Layher</div>
+              <div className={`rounded border px-1.5 py-1 ${activa?.categoria === 'torre' ? 'border-red-600 bg-red-50' : 'border-gray-200 bg-white'}`}>
+                <button onClick={() => onSelect(herramientaTorre(torre))}
+                  className={`w-full text-left text-[11px] font-semibold ${activa?.categoria === 'torre' ? 'text-red-700' : 'text-gray-800'}`}>
+                  ▦ Torre (conjunto de piezas Layher)
+                </button>
+                <select id="torre-uso" className={selectCls} value={torre.uso} onChange={cambiarTorre('uso', v => v)}>
+                  {USOS_TORRE.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}
+                </select>
+                <div className="grid grid-cols-3 gap-1">
+                  <label className="text-[9px] text-gray-500">Frente
+                    <select id="torre-frente" className={selectCls} value={torre.frente} onChange={cambiarTorre('frente', Number)}>{MEDIDAS_TORRE.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Fondo
+                    <select id="torre-fondo" className={selectCls} value={torre.fondo} onChange={cambiarTorre('fondo', Number)}>{MEDIDAS_FONDO.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Alto
+                    <select id="torre-alto" className={selectCls} value={torre.alto} onChange={cambiarTorre('alto', Number)}>{altos.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
+                  </label>
+                </div>
+                <label className="text-[9px] text-gray-500 block">Diagonales
+                  <select id="torre-diagonales" className={selectCls} value={torre.diagonales} onChange={cambiarTorre('diagonales', Number)}>{OPCIONES_DIAGONALES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+                </label>
+                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">Clic en planta = esquina de menor X y Z. Pisos de 2,00 m; sin diagonal de planta ni plataforma en el tope.</p>
+              </div>
+            </div>
+          )}
           {trazos.length > 0 && (
             <div>
               <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">Trazar en planta</div>
@@ -436,7 +481,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
       <div className="flex flex-wrap gap-1 mt-0.5 px-0.5">
         {recientes.map(p => {
           const sel = activa?.id === p.id;
-          const esEv = CATS_EVENTO.has(p.categoria) || ['festival', 'area', 'recorrido', 'valladoRecorrido'].includes(p.categoria);
+          const esEv = CATS_EVENTO.has(p.categoria) || ['festival', 'area', 'recorrido', 'valladoRecorrido', 'torre'].includes(p.categoria);
           const medida = esEv ? null : p.categoria === 'diagonal'
             ? `${p.ancho.toFixed(2)}×${p.alto.toFixed(2)}`
             : p.anchoPlat ? `${p.anchoPlat.toFixed(2)}×${p.largo.toFixed(2)}`

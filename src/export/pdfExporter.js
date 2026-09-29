@@ -105,7 +105,7 @@ function calcularDespiece(todas) {
       });
       return;
     }
-    if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p._def?.nombre ?? p.nombre, categoria: p.categoria, peso: p.peso ?? null, ref: p.ref, cantidad: 0 };
+    if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p._def?.nombre ?? p.nombre, categoria: p.categoria === 'diagonalLateral' ? 'diagonal' : p.categoria, peso: p.peso ?? null, ref: p.ref, cantidad: 0 };
     ag[p.tipoId].cantidad += 1;
   });
   const lista = Object.values(ag).sort((a, b) => (DESPIECE_ORDER[a.categoria] ?? 99) - (DESPIECE_ORDER[b.categoria] ?? 99));

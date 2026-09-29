@@ -196,6 +196,7 @@ export function crearInstanciaFestival(def, { x, y = 0, z = 0, rot = 0 }, id) {
     x: r3(x), y: r3(y), z: r3(z), rot: normRot(rot), capa: def.capa,
     largo: def.dimensiones?.ancho ?? null, peso: def.peso ?? null,
     ref: def.modelo ?? def.id, color: def.color,
+    ...(def.opciones?.length ? { opciones: Object.fromEntries(def.opciones.map(o => [o.clave, o.defecto])) } : {}),
     // Copia de la definición: si el catálogo cambia, el proyecto guardado no se altera.
     _def: structuredClone(def),
   };
@@ -211,9 +212,14 @@ export function crearArea(puntos, uso, id) {
   return { id, categoria: 'area', tipoEntidad: 'area', tipoId: 'AREA', nombre: uso.label, uso: uso.id, capa: uso.capa, color: uso.color, y: 0, ...relativos(puntos) };
 }
 
+// sentido: null (sin indicar), 'ida' (del primer punto al último), 'vuelta' o 'doble'.
+// cota: altura del recorrido sobre el terreno (bandejas); null = sin dato.
 export function crearRecorrido(puntos, uso, id, ancho = null) {
   if (puntos.length < 2) throw Error('Un recorrido necesita al menos 2 puntos.');
-  return { id, categoria: 'recorrido', tipoEntidad: 'recorrido', tipoId: 'RECORRIDO', nombre: uso.label, uso: uso.id, capa: uso.capa, color: uso.color, ancho: num(ancho), y: 0, ...relativos(puntos) };
+  return {
+    id, categoria: 'recorrido', tipoEntidad: 'recorrido', tipoId: 'RECORRIDO', nombre: uso.label, uso: uso.id, capa: uso.capa, color: uso.color,
+    ancho: num(ancho), sentido: uso.sentido ?? null, cota: null, y: 0, ...relativos(puntos),
+  };
 }
 
 export function normalizarCapas(capas, ids) {
@@ -222,9 +228,78 @@ export function normalizarCapas(capas, ids) {
   return out;
 }
 
-// Proyectos guardados antes de 2.1 abren tal cual: solo se completa z=0 donde faltaba.
-// No se reescribe ninguna propiedad existente.
+// ---------- Numeración con prefijos ----------
+// Cada entidad de predio y cada conjunto (torre) lleva un código legible (GE-01, VA-001…).
+// El código es estable: mover no lo cambia; duplicar o pegar asigna uno nuevo.
+const PREFIJO_FAMILIA = {
+  valladoAntiavalancha: 'VA', rejaModular: 'RJ', generador: 'GE', tarima: 'TA',
+  porton: 'PT', puertaEmergencia: 'PE',
+};
+const PREFIJOS_LARGOS = new Set(['VA', 'RJ']); // familias que suelen contarse por centenas
+
+export function prefijoDe(p) {
+  if (esArea(p)) return 'AR';
+  if (esRecorrido(p)) return 'RC';
+  if (esFestival(p)) return p._def?.prefijo ?? PREFIJO_FAMILIA[p._def?.familia ?? p.familia] ?? 'FE';
+  return null;
+}
+export const formatoCodigo = (pref, n) => `${pref}-${String(n).padStart(PREFIJOS_LARGOS.has(pref) ? 3 : 2, '0')}`;
+const numeroDe = (codigo, pref) => {
+  const m = typeof codigo === 'string' && codigo.match(/^(.+)-(\d+)$/);
+  return m && m[1] === pref ? Number(m[2]) : null;
+};
+
+// Asigna código a las piezas `nuevas` que no lo tienen (o lo repiten) y a sus conjuntos,
+// continuando la numeración existente de cada prefijo. Las piezas Layher sueltas no se numeran:
+// se cuentan en el despiece. Devuelve copias; no muta.
+export function asignarCodigos(existentes, nuevas) {
+  const maximo = {}, usados = new Set(), gruposUsados = new Set(), codigoGrupo = {};
+  const anotar = (codigo) => {
+    const m = typeof codigo === 'string' && codigo.match(/^(.+)-(\d+)$/);
+    if (m) maximo[m[1]] = Math.max(maximo[m[1]] ?? 0, Number(m[2]));
+  };
+  for (const p of existentes) {
+    if (p.codigo) { usados.add(p.codigo); anotar(p.codigo); }
+    if (p.grupo?.codigo) { codigoGrupo[p.grupo.id] = p.grupo.codigo; gruposUsados.add(p.grupo.codigo); anotar(p.grupo.codigo); }
+  }
+  const siguiente = pref => { maximo[pref] = (maximo[pref] ?? 0) + 1; return formatoCodigo(pref, maximo[pref]); };
+  return nuevas.map(p => {
+    let q = p;
+    const pref = prefijoDe(p);
+    if (pref && (!p.codigo || usados.has(p.codigo) || numeroDe(p.codigo, pref) == null)) q = { ...q, codigo: siguiente(pref) };
+    if (q.codigo) usados.add(q.codigo);
+    if (p.grupo) {
+      let cod = codigoGrupo[p.grupo.id];
+      if (!cod) {
+        cod = p.grupo.codigo && !gruposUsados.has(p.grupo.codigo) ? p.grupo.codigo : siguiente(p.grupo.prefijo ?? 'CJ');
+        codigoGrupo[p.grupo.id] = cod; gruposUsados.add(cod);
+      }
+      if (cod !== p.grupo.codigo) q = { ...q, grupo: { ...p.grupo, codigo: cod } };
+    }
+    return q;
+  });
+}
+
+// Prepara copias para pegar o duplicar: sin código propio y con conjuntos nuevos,
+// para que asignarCodigos les dé numeración propia.
+export function paraCopia(piezas, nuevoId) {
+  const grupos = {};
+  return piezas.map(p => {
+    const { codigo, ...resto } = p;
+    if (!p.grupo) return resto;
+    grupos[p.grupo.id] ??= nuevoId();
+    const { codigo: _c, ...g } = p.grupo;
+    return { ...resto, grupo: { ...g, id: grupos[p.grupo.id] } };
+  });
+}
+
+// Proyectos guardados antes de 2.1 abren tal cual: solo se completa z=0 donde faltaba
+// y el código de las entidades de predio que no lo tienen. No se reescribe ninguna propiedad existente.
 export function migrarDiseno(doc) {
   if (!doc || !Array.isArray(doc.piezas)) throw Error('El archivo no contiene una lista de piezas.');
-  return { ...doc, piezas: doc.piezas.map(p => ({ z: 0, ...p })) };
+  const piezas = doc.piezas.map(p => ({ z: 0, ...p }));
+  const conCodigo = piezas.filter(p => p.codigo || p.grupo?.codigo);
+  const sinCodigo = piezas.filter(p => !(p.codigo || p.grupo?.codigo));
+  const asignadas = new Map(asignarCodigos(conCodigo, sinCodigo).map(p => [p.id, p]));
+  return { ...doc, piezas: piezas.map(p => asignadas.get(p.id) ?? p) };
 }

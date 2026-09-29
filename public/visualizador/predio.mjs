@@ -2,10 +2,11 @@ import { esFestival, esArea, esRecorrido, dimsDe, localAMundo, puntosAbs, superf
 
 const f = v => v.toLocaleString('es-AR', { maximumFractionDigits: 2 });
 
-// Proporciones internas del antiavalancha tomadas de la referencia visual (sin escala).
-// Solo ubican placa, panel y escalón dentro de la envolvente confirmada: no son datos
-// de la pieza ni entran en ningún cómputo.
-const ESQUEMA_ANTIAVALANCHA = { panel: 0.55, escalon: 0.36, tornapunta: 0.85 };
+// Proporciones internas del antiavalancha medidas sobre las fotos reales y el croquis lateral
+// (fracciones del fondo y del alto). Solo ubican placa, panel, tornapuntas y escalón dentro de
+// la envolvente confirmada: no son datos de la pieza ni entran en ningún cómputo.
+// La ficha puede traer su propio `esquema`; este es el valor por defecto.
+const ESQUEMA_ANTIAVALANCHA = { panel: 0.66, escalon: 0.39, tornapunta: 0.97, tornapuntaU: 0.2 };
 const PASO_BARROTES = 0.15; // visual: el relleno real de la reja está pendiente
 
 // Proporciones del grupo electrógeno medidas sobre la foto de frente (fracciones del largo u y
@@ -61,22 +62,23 @@ export function geometriaPredio(p, index) {
     face(pts.map(q => [q.x, 0.02, q.z]), 'area', { color: p.color });
     pts.forEach((q, i) => { const n = pts[(i + 1) % pts.length]; line([q.x, 0.03, q.z], [n.x, 0.03, n.z], 0.03, 'route', { color: p.color }); });
     const c = centroide(pts);
-    label([c.x, 0.6, c.z], `${p.nombre} · ${f(superficie(pts))} m²`);
+    label([c.x, 0.6, c.z], `${p.codigo ? `${p.codigo} · ` : ''}${p.nombre} · ${f(superficie(pts))} m²`);
     return { primitives, labels, aviso: null };
   }
 
   if (esRecorrido(p)) {
     const pts = puntosAbs(p);
+    const yc = typeof p.cota === 'number' ? p.cota : 0; // bandejas: altura sobre el terreno
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], b = pts[i];
-      line([a.x, 0.05, a.z], [b.x, 0.05, b.z], 0.05, 'route', { color: p.color });
+      line([a.x, yc + 0.05, a.z], [b.x, yc + 0.05, b.z], 0.05, 'route', { color: p.color });
       if (p.ancho) {
         const L = Math.hypot(b.x - a.x, b.z - a.z) || 1, nx = -(b.z - a.z) / L * p.ancho / 2, nz = (b.x - a.x) / L * p.ancho / 2;
-        face([[a.x + nx, 0.025, a.z + nz], [b.x + nx, 0.025, b.z + nz], [b.x - nx, 0.025, b.z - nz], [a.x - nx, 0.025, a.z - nz]], 'area', { color: p.color });
+        face([[a.x + nx, yc + 0.025, a.z + nz], [b.x + nx, yc + 0.025, b.z + nz], [b.x - nx, yc + 0.025, b.z - nz], [a.x - nx, yc + 0.025, a.z - nz]], 'area', { color: p.color });
       }
     }
     const m = pts[Math.floor(pts.length / 2)];
-    label([m.x, 0.6, m.z], `${p.nombre} · ${f(largoPolilinea(pts))} m`);
+    label([m.x, yc + 0.6, m.z], `${p.codigo ? `${p.codigo} · ` : ''}${p.nombre} · ${f(largoPolilinea(pts))} m`);
     return { primitives, labels, aviso: p.ancho == null ? 'recorrido sin ancho útil informado: se dibuja su eje.' : null };
   }
 
@@ -96,13 +98,48 @@ export function geometriaPredio(p, index) {
   const kind = def.acabado === 'negro' ? 'festivalNegro' : 'festival';
   const hu = d.ancho / 2;
 
-  if (d.profundidad == null) {
-    // Reja: marco y barrotes en el plano del frente. Bases y profundidad pendientes.
-    const c = [W(-hu, 0), W(hu, 0), W(hu, d.alto), W(-hu, d.alto)];
-    c.forEach((q, i) => line(q, c[(i + 1) % 4], 0.02, kind));
-    const n = Math.max(2, Math.round(d.ancho / PASO_BARROTES));
-    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; line(W(u, 0), W(u, d.alto), 0.008, kind); }
-    return { primitives, labels, representacion: 'esquema', aviso: 'marco y barrotes esquemáticos; bases, relleno y profundidad pendientes.' };
+  if (def.geometria === 'abertura') {
+    // Portón / puerta: postes en los extremos y hojas cerradas en el plano del frente.
+    const hojas = p.opciones?.hojas ?? 2, H = d.alto, paso = d.ancho / hojas;
+    for (const u of [-hu, hu]) line(W(u, 0), W(u, H), 0.04, kind);
+    for (let k = 0; k < hojas; k++) {
+      const u0 = -hu + k * paso + 0.02, u1 = -hu + (k + 1) * paso - 0.02;
+      const c = [W(u0, 0.05), W(u1, 0.05), W(u1, H - 0.02), W(u0, H - 0.02)];
+      c.forEach((q, i) => line(q, c[(i + 1) % 4], 0.02, kind));
+      line(W(u0, H / 2), W(u1, H / 2), 0.012, kind);
+    }
+    if (def.salidaEmergencia) label(W(0, H + 0.35), `${p.codigo ?? ''} Salida de emergencia`.trim());
+    return { primitives, labels, representacion: 'esquema', aviso: `abertura paramétrica: luz libre ${f(d.ancho)} m, alto ${f(H)} m; hojas y postes esquemáticos.` };
+  }
+
+  if (def.familia === 'rejaModular' || d.profundidad == null) {
+    // Reja: marco y barrotes en el plano del frente (w = 0) y base según la ficha.
+    const E = def.esquema ?? {};
+    const tubo = def.acabado === 'pintura en polvo' ? ['route', { color: def.color }] : [kind];
+    const L = (a, b, r) => line(a, b, r, ...tubo);
+    const c = [W(-hu, 0.02), W(hu, 0.02), W(hu, d.alto), W(-hu, d.alto)];
+    c.forEach((q, i) => L(q, c[(i + 1) % 4], 0.019));
+    const n = Math.max(2, Math.round(d.ancho / (E.pasoBarrotes ?? PASO_BARROTES)));
+    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; L(W(u, 0.02), W(u, d.alto), 0.008); }
+    if (d.profundidad != null) {
+      const hwb = d.profundidad / 2;
+      for (const u of [-hu + 0.08, hu - 0.08]) {
+        if (E.base === 'patas') {
+          // Patas inclinadas hacia ambos lados desde el pie del marco.
+          L(W(u, d.alto * 0.28), W(u, 0, -hwb), 0.019);
+          L(W(u, d.alto * 0.28), W(u, 0, hwb), 0.019);
+        } else {
+          // Tubos soldados apoyados en el piso, a lo largo del fondo de la base.
+          for (const du of [-0.04, 0.04]) L(W(u + du, 0.02, -hwb), W(u + du, 0.02, hwb), 0.019);
+        }
+      }
+    }
+    return {
+      primitives, labels, representacion: 'esquema',
+      aviso: d.profundidad == null
+        ? 'marco y barrotes esquemáticos; bases, relleno y profundidad pendientes.'
+        : `${f(d.ancho)} × ${f(d.alto)} m, base ${f(d.profundidad)} m según ficha de referencia; unión entre módulos sin paso definido.`,
+    };
   }
 
   const hw = d.profundidad / 2;
@@ -115,25 +152,28 @@ export function geometriaPredio(p, index) {
   }
 
   if (def.familia === 'valladoAntiavalancha') {
-    // Frente público en -w (placa de piso), seguridad en +w (tornapuntas y escalón).
-    const E = ESQUEMA_ANTIAVALANCHA;
-    const wp = -hw + d.profundidad * E.panel;
-    face([W(-hu, 0.03, -hw), W(hu, 0.03, -hw), W(hu, 0.03, wp), W(-hu, 0.03, wp)], 'plate');
-    for (let k = 1; k < 8; k++) { const w = -hw + (k * (wp + hw)) / 8; line(W(-hu, 0.035, w), W(hu, 0.035, w), 0.006, kind); }
-    const marco = [W(-hu, 0, wp), W(hu, 0, wp), W(hu, d.alto, wp), W(-hu, d.alto, wp)];
-    marco.forEach((q, i) => line(q, marco[(i + 1) % 4], 0.025, kind));
-    for (const v of [d.alto * 0.33, d.alto * 0.66]) line(W(-hu, v, wp), W(hu, v, wp), 0.014, kind);
-    const n = Math.round(d.ancho / 0.08);
-    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; line(W(u, 0, wp), W(u, d.alto, wp), 0.004, kind); }
-    for (const u of [-hu + 0.06, hu - 0.06]) {
-      line(W(u, d.alto * E.tornapunta, wp), W(u, 0, hw), 0.022, kind);
+    // Lado público en -w: placa de piso lisa (el público la pisa y la carga).
+    // Lado seguridad en +w: dos tornapuntas interiores y el escalón entre ellas.
+    const E = { ...ESQUEMA_ANTIAVALANCHA, ...(def.esquema ?? {}) };
+    const H = d.alto, wp = -hw + d.profundidad * E.panel;
+    const negro = def.acabado === 'negro', chapa = negro ? 'chapaNegra' : 'chapaPlata', placa = negro ? 'placaNegra' : 'placaPlata';
+    const wr = -hw + (E.rampa ?? 0); // con rampa, la placa arranca a nivel del piso en el borde público
+    face([W(-hu, 0.02, wr), W(hu, 0.02, wr), W(hu, 0.02, wp), W(-hu, 0.02, wp)], placa);
+    if (E.rampa) face([W(-hu, 0, -hw), W(hu, 0, -hw), W(hu, 0.02, wr), W(-hu, 0.02, wr)], placa);
+    const marco = [W(-hu, 0, wp), W(hu, 0, wp), W(hu, H, wp), W(-hu, H, wp)];
+    marco.forEach((q, i) => line(q, marco[(i + 1) % 4], 0.022, kind));
+    face([W(-hu + 0.02, 0.02, wp), W(hu - 0.02, 0.02, wp), W(hu - 0.02, H - 0.02, wp), W(-hu + 0.02, H - 0.02, wp)], chapa);
+    const ut = d.ancho * E.tornapuntaU, vt = H * E.tornapunta, ve = H * E.escalon;
+    for (const u of [-ut, ut]) {
+      line(W(u, 0, wp), W(u, vt, wp), 0.018, kind);
+      line(W(u, vt, wp), W(u, 0, hw), 0.022, kind);
       line(W(u, 0.02, wp), W(u, 0.02, hw), 0.022, kind);
     }
-    const we = wp + (hw - wp) * 0.5;
-    face([W(-hu + 0.06, d.alto * E.escalon, wp), W(hu - 0.06, d.alto * E.escalon, wp), W(hu - 0.06, d.alto * E.escalon, we), W(-hu + 0.06, d.alto * E.escalon, we)], 'plate');
+    const we = wp + (hw - wp) * (1 - ve / vt); // el escalón llega hasta la tornapunta
+    face([W(-ut, ve, wp), W(ut, ve, wp), W(ut, ve, we), W(-ut, ve, we)], placa);
     return {
       primitives, labels, representacion: 'esquema',
-      aviso: `${f(d.ancho)} × ${f(d.alto)} × ${f(d.profundidad)} m confirmados; placa, panel y escalón en proporción esquemática según la referencia visual.`,
+      aviso: `${f(d.ancho)} × ${f(H)} × ${f(d.profundidad)} m confirmados; placa, panel, tornapuntas y escalón en proporción según fotos y croquis de MasAlto.`,
     };
   }
 

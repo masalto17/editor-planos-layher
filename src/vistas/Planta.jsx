@@ -6,7 +6,7 @@ import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartid
 import CotasPlanta from './CotasPlanta.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import PiezaTooltip from '../ui/PiezaTooltip.jsx';
-import EntidadPlanta, { TrazoEnCurso } from './EntidadesPlanta.jsx';
+import EntidadPlanta, { TrazoEnCurso, EtiquetasConjuntos } from './EntidadesPlanta.jsx';
 import { PanelCapas, PanelPropiedades } from '../ui/PanelPredio.jsx';
 import { esFestival, esTrazo, capaDe } from '../modelo/entidades.js';
 
@@ -464,6 +464,19 @@ function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraA
     );
   }
 
+  // ── Diagonal lateral (cara de fondo de torre) → línea en Z, punteada ──
+  if (pieza.categoria === 'diagonalLateral') {
+    const pA = worldToScreen(pieza.x, z), pB = worldToScreen(pieza.x, z + pieza.ancho);
+    const sw = Math.max(1, zoom * 0.015);
+    return (
+      <g opacity={op * 0.7} onMouseDown={onMouseDown} style={{ cursor: cur }}>
+        <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y} stroke="transparent" strokeWidth={Math.max(8, sw * 4)} />
+        {seleccionada && <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y} stroke="#E30613" strokeWidth={sw + 6} opacity="0.2" strokeLinecap="round" />}
+        <line x1={pA.x} y1={pA.y} x2={pB.x} y2={pB.y} stroke={sc} strokeWidth={sw} strokeDasharray="4 3" strokeLinecap="round" />
+      </g>
+    );
+  }
+
   // ── Diagonal alzado → línea X con rombo sutil + dimensiones reales ──
   if (pieza.categoria === 'diagonal') {
     const pA = worldToScreen(pieza.x1, z);
@@ -915,11 +928,24 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     clipboard, orientacionActiva, filas, alturaY,
     diagonalPlantaOrigen, setDiagonalPlantaOrigen,
     colocarPiezaPlanta, colocarDiagonalPlanta, calcularSnapPlanta, moverPiezasZ, commitPiezasActuales, pegar,
-    capas, toggleCapa, rotacionActiva, colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, actualizarPiezas,
+    capas, toggleCapa, rotacionActiva, colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, actualizarPiezas,
   } = modelo;
 
   // Capas: las ocultas no se dibujan; las bloqueadas se ven pero no se seleccionan ni se mueven.
   const piezasVisibles = useMemo(() => piezas.filter(p => capas[capaDe(p)]?.visible !== false), [piezas, capas]);
+  // Conjuntos (torres) visibles con su caja en planta, para rotularlos.
+  const conjuntos = useMemo(() => {
+    const m = new Map();
+    for (const p of piezasVisibles) {
+      if (!p.grupo) continue;
+      const b = piezaBoundsXZ(p);
+      const g = m.get(p.grupo.id) ?? { ...p.grupo, ids: [], xMin: Infinity, xMax: -Infinity, zMin: Infinity, zMax: -Infinity };
+      g.ids.push(p.id);
+      g.xMin = Math.min(g.xMin, b.xMin); g.xMax = Math.max(g.xMax, b.xMax); g.zMin = Math.min(g.zMin, b.zMin); g.zMax = Math.max(g.zMax, b.zMax);
+      m.set(p.grupo.id, g);
+    }
+    return [...m.values()];
+  }, [piezasVisibles]);
   const esBloqueada = useCallback(p => !!capas[capaDe(p)]?.bloqueada, [capas]);
   // El trazo en curso pertenece a una herramienta: al cambiarla, queda descartado sin esperar un efecto.
   const claveTrazo = esHerramientaTrazo(herramientaActiva) ? `${herramientaActiva.id}:${herramientaActiva.uso ?? herramientaActiva.defId ?? ''}` : null;
@@ -1075,6 +1101,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         return;
       }
       if (esFestival(herramientaActiva)) { colocarFestival(herramientaActiva, pos.x, 0, pos.z); return; }
+      if (herramientaActiva.categoria === 'torre') { setInforme({ torre: colocarTorre(herramientaActiva, pos.x, pos.z) }); return; }
       if (esHerramientaTrazo(herramientaActiva)) { setTrazo(t => [...t, { x: pos.x, z: pos.z }]); return; }
       colocarPiezaPlanta(herramientaActiva, pos.x, pos.z);
       return;
@@ -1135,8 +1162,10 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     e.stopPropagation();
     const yaSel = piezasSeleccionadas.includes(pieza.id);
     if (e.shiftKey) { setPiezasSeleccionadas(yaSel ? prev => prev.filter(id => id !== pieza.id) : prev => [...prev, pieza.id]); return; }
-    let ids = yaSel ? piezasSeleccionadas : [pieza.id];
-    if (!yaSel) setPiezasSeleccionadas([pieza.id]);
+    // Una pieza de un conjunto (torre) selecciona el conjunto entero; ⇧clic la suma o quita sola.
+    const idsGrupo = pieza.grupo ? piezas.filter(q => q.grupo?.id === pieza.grupo.id).map(q => q.id) : [pieza.id];
+    let ids = yaSel ? piezasSeleccionadas : idsGrupo;
+    if (!yaSel) setPiezasSeleccionadas(idsGrupo);
     const rect = svgRef.current.getBoundingClientRect();
     const sx = e.clientX - rect.left, sy = e.clientY - rect.top, w = screenToWorld(sx, sy);
     const snap = {};
@@ -1268,7 +1297,16 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
               onMouseDown={(e) => onMouseDownPieza(e, p)} />
           </g>
         ))}
-        {mouseEnCanvas && herramientaActiva && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !esHerramientaTrazo(herramientaActiva) && !panneando && !arrastrando && (
+        <EtiquetasConjuntos conjuntos={conjuntos} worldToScreen={worldToScreen} seleccionadas={piezasSeleccionadas} />
+        {mouseEnCanvas && herramientaActiva?.categoria === 'torre' && !panneando && (() => {
+          const a = worldToScreen(mousePos.x, mousePos.z), b = worldToScreen(mousePos.x + herramientaActiva.frente, mousePos.z + herramientaActiva.fondo);
+          return <g pointerEvents="none" opacity="0.6">
+            <rect x={a.x} y={a.y} width={b.x - a.x} height={b.y - a.y} fill="#1e40af" fillOpacity="0.08" stroke="#1e40af" strokeWidth="1.5" strokeDasharray="6 3" />
+            {[[a.x, a.y], [b.x, a.y], [a.x, b.y], [b.x, b.y]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="4" fill="#1e40af" />)}
+            <text x={a.x} y={a.y - 6} fontSize="10" fill="#1e40af" fontFamily="monospace" fontWeight="bold">{herramientaActiva.nombre}</text>
+          </g>;
+        })()}
+        {mouseEnCanvas && herramientaActiva && herramientaActiva.categoria !== 'torre' && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !esHerramientaTrazo(herramientaActiva) && !panneando && !arrastrando && (
           <PiezaPlanta pieza={esFestival(herramientaActiva)
             ? { ...herramientaActiva, _def: herramientaActiva, x: mousePos.x, y: 0, z: mousePos.z, rot: rotacionActiva, id: 'ghost' }
             : { ...herramientaActiva, x: mousePos.x, z: mousePos.z, id: 'ghost', orientacion: orientacionActiva }} worldToScreen={worldToScreen} zoom={zoom} fantasma modoTecnico={modoTecnico} />
@@ -1335,7 +1373,14 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         <div className={`absolute top-12 left-1/2 -translate-x-1/2 max-w-md text-[11px] px-3 py-2 rounded shadow border ${informe.error ? 'bg-red-50 border-red-300 text-red-800' : 'bg-white border-gray-300 text-gray-800'}`}>
           <div className="flex items-start gap-3">
             <div className="flex-1">
-              {informe.error ? informe.error : <>
+              {informe.error ? informe.error : informe.torre ? <>
+                <div className="font-bold">{informe.torre.grupo.codigo} · {informe.torre.grupo.nombre}</div>
+                <div>{informe.torre.cantidad} piezas Layher · {informe.torre.peso.toLocaleString('es-AR')} kg</div>
+                {informe.torre.faltantes.length > 0
+                  ? <div className="text-amber-700 font-semibold">Sin pieza de catálogo: {informe.torre.faltantes.join(' · ')}.</div>
+                  : <div className="text-green-700">Diagonales en {informe.torre.grupo.diagonales === 4 ? 'las 4 caras' : 'las 2 caras del lado largo'}, cada piso.</div>}
+                <div className="text-gray-500">Sin plataforma, barandas ni diagonal de planta (regla de MasAlto). Clic en cualquier pieza selecciona la torre entera.</div>
+              </> : <>
                 <div className="font-bold">{informe.cantidad} × {informe.nombre}</div>
                 <div>Largo del recorrido {informe.largoRecorrido.toLocaleString('es-AR')} m · nominal colocado {informe.largoNominal.toLocaleString('es-AR')} m</div>
                 {informe.remanentes.length > 0

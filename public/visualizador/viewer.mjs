@@ -116,6 +116,12 @@ const materials = {
   deckTechnical: new THREE.MeshStandardMaterial({ color: 0x8a8a84, metalness: 0.1, roughness: 0.7, side: THREE.DoubleSide }),
 };
 materials.festivalNegro = new THREE.MeshStandardMaterial({ color: 0x4a4e54, metalness: 0.35, roughness: 0.5 });
+// Chapa perforada del antiavalancha: se ve el paño y, a través, la estructura de atrás.
+materials.chapaNegra = new THREE.MeshStandardMaterial({ color: 0x2b2e33, metalness: 0.3, roughness: 0.6, transparent: true, opacity: 0.62, side: THREE.DoubleSide, depthWrite: false });
+materials.chapaPlata = new THREE.MeshStandardMaterial({ color: 0xc3c7cc, metalness: 0.7, roughness: 0.35, transparent: true, opacity: 0.55, side: THREE.DoubleSide, depthWrite: false });
+materials.placaNegra = new THREE.MeshStandardMaterial({ color: 0x3a3d42, metalness: 0.35, roughness: 0.55, side: THREE.DoubleSide });
+materials.placaPlata = new THREE.MeshStandardMaterial({ color: 0xa9adb3, metalness: 0.65, roughness: 0.35, side: THREE.DoubleSide });
+const OPACIDAD_CHAPA = { chapaNegra: 0.62, chapaPlata: 0.55 };
 materials.generadorCabina = new THREE.MeshStandardMaterial({ color: 0xc8161d, metalness: 0.25, roughness: 0.45, side: THREE.DoubleSide });
 materials.generadorBase = new THREE.MeshStandardMaterial({ color: 0x1c1d1f, metalness: 0.3, roughness: 0.6, side: THREE.DoubleSide });
 materials.marker =new THREE.MeshStandardMaterial({ color: 0xe30613, metalness: 0.2, roughness: 0.5 });
@@ -342,7 +348,7 @@ function chooseMaterial(primitive) {
   if (primitive.kind === 'brace') return materials.brace;
   if (primitive.kind === 'festival') return materials.festival;
   if (primitive.kind === 'festivalNegro') return materials.festivalNegro;
-  if (primitive.kind === 'generadorCabina' || primitive.kind === 'generadorBase') return materials[primitive.kind];
+  if (['generadorCabina', 'generadorBase', 'chapaNegra', 'chapaPlata', 'placaNegra', 'placaPlata'].includes(primitive.kind)) return materials[primitive.kind];
   return materials.tube;
 }
 
@@ -352,8 +358,9 @@ function setMeshState(mesh, primitive) {
   mesh.visible = visibleByCategory;
   if (!visibleByCategory) return;
   setObjectMaterial(mesh, primitive.index === selected ? materials.selected : chooseMaterial(primitive));
-  mesh.userData.baseOpacity = (selected < 0 || primitive.index === selected ? 1 : 0.2) * (primitive.kind === 'area' ? OPACIDAD_AREA : 1);
-  if (primitive.index !== selected || primitive.kind === 'area') {
+  const propia = primitive.kind === 'area' ? OPACIDAD_AREA : OPACIDAD_CHAPA[primitive.kind];
+  mesh.userData.baseOpacity = (selected < 0 || primitive.index === selected ? 1 : 0.2) * (propia ?? 1);
+  if (primitive.index !== selected || propia != null) {
     setObjectOpacity(mesh, mesh.userData.baseOpacity);
   }
   const source = primitive.type === 'face' ? primitive.pts[0] : primitive.source ?? primitive.a;

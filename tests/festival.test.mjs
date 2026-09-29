@@ -23,9 +23,14 @@ test('Definiciones: ids únicos, estados válidos y ningún peso o medida invent
   }
 });
 
-test('Vallado antiavalancha: 1,00 × 1,25 m, negro y plateado con la misma geometría', () => {
+test('Vallado antiavalancha: 1,00 × 1,30 m validado, unión con tornillo a paso 1,00 m', () => {
   const neg = inst('VALL-AA-100-NEG'), pla = inst('VALL-AA-100-PLA');
-  assert.deepEqual(dimsDe(neg), { ancho: 1, alto: 1.25, profundidad: 1.2 });
+  assert.deepEqual(dimsDe(neg), { ancho: 1, alto: 1.3, profundidad: 1.2 });
+  assert.equal(neg._def.estado, 'validado');
+  assert.equal(pla._def.estado, 'esquematico', 'el de aluminio no es de MasAlto');
+  const r = resumenVallado([inst('VALL-AA-100-NEG'), inst('VALL-AA-100-NEG'), inst('VALL-AA-100-NEG')]);
+  assert.equal(r.coberturaInstalada, 3, 'con paso real conocido hay cobertura instalada');
+  assert.equal(resumenVallado([neg, pla]).coberturaInstalada, null, 'si un módulo no tiene paso, no hay cobertura');
   assert.deepEqual(dimsDe(pla), dimsDe(neg));
   assert.notEqual(neg._def.acabado, pla._def.acabado);
   assert.equal(neg.peso, null);
@@ -33,8 +38,12 @@ test('Vallado antiavalancha: 1,00 × 1,25 m, negro y plateado con la misma geome
 
 test('Rejas: variantes 3,00 × 1,20 y 2,50 × 1,25 diferenciadas y sin escalado libre', () => {
   const r3 = inst('REJA-300'), r25 = inst('REJA-250');
-  assert.deepEqual(dimsDe(r3), { ancho: 3, alto: 1.2, profundidad: null });
-  assert.deepEqual(dimsDe(r25), { ancho: 2.5, alto: 1.25, profundidad: null });
+  assert.deepEqual(dimsDe(r3), { ancho: 3, alto: 1.2, profundidad: 0.6 });
+  assert.deepEqual(dimsDe(r25), { ancho: 2.5, alto: 1.25, profundidad: 0.6 });
+  assert.equal(r3.peso, 24);
+  assert.equal(r25.peso, 16.5);
+  assert.notEqual(r3._def.conexion.tipo, r25._def.conexion.tipo);
+  assert.equal(r3._def.conexion.paso, null, 'el paso real entre módulos sigue sin dato');
   const estirada = { ...r3, dims: { ancho: 3.4 } };
   assert.equal(dimsDe(estirada).ancho, 3, 'una variante fija ignora medidas de instancia');
 });
@@ -93,7 +102,7 @@ test('Generador guardado sin medidas conserva su ficha: sin geometría inventada
 test('Datos faltantes: peso nulo queda pendiente y no hay total', () => {
   const layher = { id: 'v', categoria: 'vertical', nombre: 'Vertical 2.00m', peso: 7.7, x: 0, y: 0, z: 0 };
   const area = crearArea([{ x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: 10 }], USOS_AREA[0], 'a');
-  const r = resumenPeso([layher, inst('REJA-300'), crearInstanciaFestival(GEN_V1, { x: 0, z: 0 }, 'g'), area]);
+  const r = resumenPeso([layher, inst('TARIMA-GEN'), crearInstanciaFestival(GEN_V1, { x: 0, z: 0 }, 'g'), area]);
   assert.equal(r.conocido, 7.7);
   assert.equal(r.total, null);
   assert.equal(r.completo, false);
@@ -125,7 +134,7 @@ test('Rotación: huella y proyección en alzado coherentes', () => {
   assert.ok(Math.abs(b.zMax - b.zMin - 1.0) < 1e-9);
   const a = boundsAlzadoEntidad(v);
   assert.ok(Math.abs(a.xMax - a.xMin - 1.2) < 1e-9);
-  assert.equal(a.yMax, 1.25);
+  assert.equal(a.yMax, 1.3);
   assert.ok(cruzaFilaEntidad(v, 20.4));
   assert.ok(!cruzaFilaEntidad(v, 21));
   assert.equal(normRot(-90), 270);
@@ -172,10 +181,11 @@ test('Visor 3D: entidades de predio sin geometría ni pesos inventados', async (
   assert.ok(m.labels.some(l => l.text.includes('m²')), 'las áreas llevan rótulo con superficie');
   assert.equal(m.weight, null, 'hay pesos sin dato: no se informa total');
   assert.ok(m.issues.some(t => t.includes('sin dimensiones confirmadas')));
-  assert.ok(m.issues.some(t => t.includes('profundidad pendientes')));
+  assert.ok(m.issues.some(t => t.includes('base 0,6 m según ficha')));
   const vertices = idx => m.primitives.filter(q => q.index === idx).flatMap(q => (q.type === 'face' ? q.pts : [q.a, q.b]));
   const vAA = vertices(0);
-  assert.equal(Math.max(...vAA.map(v => v[1])), 1.25, 'el vallado respeta el alto confirmado');
+  assert.ok(Math.max(...vertices(1).map(v => v[1])) <= 1.2 + 1e-9, 'la reja respeta su alto');
+  assert.equal(Math.max(...vAA.map(v => v[1])), 1.3, 'el vallado respeta el alto confirmado');
   // El esquema interno del antiavalancha queda dentro de su envolvente confirmada (1,00 × 1,20), aun rotado.
   const aa = piezas[0], t = aa.rot * Math.PI / 180;
   for (const [x, , z] of vAA) {
