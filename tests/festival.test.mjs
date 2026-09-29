@@ -77,6 +77,8 @@ test('Generador 200 kVA: medidas de ficha por variante, sin conversión automát
   assert.equal(ins._def.electrico.kW, null);
   assert.equal(abi._def.electrico.depositoL, null);
   assert.equal(ins._def.modelo, null, 'el código de modelo sigue pendiente');
+  assert.equal(ins._def.estado, 'validado');
+  assert.equal(abi._def.estado, 'validado');
   const b = boundsXZEntidad(ins);
   assert.ok(Math.abs(b.xMax - b.xMin - 3.3) < 1e-9 && Math.abs(b.zMax - b.zMin - 1.2) < 1e-9);
 });
