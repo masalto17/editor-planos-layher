@@ -3,7 +3,7 @@ import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle
 import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
-import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
+import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, OPCIONES_DIAGONALES, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -365,7 +365,7 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
   const [usoArea, setUsoArea] = useState('campo');
   const [usoRec, setUsoRec] = useState('circulacion');
   const [valla, setValla] = useState('REJA-300');
-  const [torre, setTorre] = useState({ uso: 'pa', frente: 2.57, fondo: 1.57, alto: 6 });
+  const [torre, setTorre] = useState({ uso: 'pa', frente: 2.57, fondo: 1.57, alto: 6, diagonales: 2 });
   const coincide = d => !termino || [d.nombre, ...(d.aliases ?? [])].some(t => t.toLowerCase().includes(termino));
   const grupos = GRUPOS_FESTIVAL.map(g => ({ ...g, defs: DEFINICIONES_FESTIVAL.filter(d => g.familias.includes(d.familia) && coincide(d)) })).filter(g => g.defs.length);
   const trazos = vista === 'planta' ? HERRAMIENTAS_TRAZO.filter(coincide) : [];
@@ -435,7 +435,10 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
                     <select id="torre-alto" className={selectCls} value={torre.alto} onChange={cambiarTorre('alto', Number)}>{altos.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
                   </label>
                 </div>
-                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">Clic en planta = esquina de menor X y Z. Pisos de 2,00 m; diagonales en frente y contrafrente; sin plataforma en el tope.</p>
+                <label className="text-[9px] text-gray-500 block">Diagonales
+                  <select id="torre-diagonales" className={selectCls} value={torre.diagonales} onChange={cambiarTorre('diagonales', Number)}>{OPCIONES_DIAGONALES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+                </label>
+                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">Clic en planta = esquina de menor X y Z. Pisos de 2,00 m; sin diagonal de planta ni plataforma en el tope.</p>
               </div>
             </div>
           )}

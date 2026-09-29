@@ -114,13 +114,12 @@ Diagnóstico, matriz de cobertura (133 filas) y plan: https://claude.ai/artifact
 - Numeración con prefijos (`asignarCodigos` / `paraCopia` en `entidades.js`): GE-01, VA-001, AR-01…
   Estable al mover; duplicar o pegar asigna código nuevo; proyectos viejos lo reciben al abrir.
 - Torres como conjuntos Layher (`src/catalogo/torres.js`): usos PA, delay, video, FOH, iluminación,
-  vigilancia; frente = largo con diagonal de 2,00 m, fondo = cualquier horizontal O; pisos de 2,00 m.
-  Regla de MasAlto: diagonales solo en frente y contrafrente, sin diagonal de planta, sin plataforma,
-  barandas ni rodapiés en el tope.
+  vigilancia; frente y fondo = cualquier horizontal O; pisos de 2,00 m.
+  Regla de MasAlto: diagonales en todos los pisos, en las 2 caras del lado largo (por defecto) o en las 4
+  caras (opción válida); sin diagonal de planta, sin plataforma, barandas ni rodapiés en el tope.
   Las piezas llevan `grupo` {id, uso, codigo…}; clic en una pieza selecciona la torre entera (⇧clic, suelta).
   Lo que no se arma con catálogo (p. ej. diagonal 1,57 × 1,00) se informa como faltante, no se inventa.
-- `diagonalLateral`: diagonal vertical en el plano X = x (caras de fondo), disponible aunque las torres no la
-  usen. Guarda x, y, z, ancho (en Z), alto, invertida; en el despiece suma con las diagonales.
+- `diagonalLateral`: diagonal vertical en el plano X = x (caras laterales de la torre). Guarda x, y, z, ancho (en Z), alto, invertida; en el despiece suma con las diagonales.
 - Portón y puerta de emergencia paramétricos (luz libre, alto, hojas, sentido de apertura), peso sin dato.
 - Áreas: sector de carga de generadores, área de combustible. Recorridos: carril de acceso,
   bandeja portacables; `sentido` (ida/vuelta/doble) y `cota` (null = sin dato).

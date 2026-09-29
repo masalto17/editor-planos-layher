@@ -8,7 +8,7 @@ const CAT_COLOR = {
   horizontalO: '#22c55e', vigaPuente: '#f59e0b', horizontalU: '#f59e0b',
   mensula: '#38bdf8', stringer: '#94a3b8', plataforma: '#e11d48',
   fenolico: '#b45309', barandilla: '#22d3ee', rodapie: '#f59e0b',
-  diagonal: '#a78bfa', diagonalPlanta: '#a78bfa', escalera: '#818cf8',
+  diagonal: '#a78bfa', diagonalPlanta: '#a78bfa', diagonalLateral: '#a78bfa', escalera: '#818cf8',
   apoyaTecho: '#6b7280', celosia: '#64748b', cumbrera: '#a8a29e',
   techo: '#94a3b8', truss: '#6b7280', vigaIPN: '#6b7280', importada: '#9ca3af',
 };
@@ -18,7 +18,7 @@ const CAT_NOMBRE = {
   horizontalO: 'Horizontal O', vigaPuente: 'Viga Puente U', horizontalU: 'Horizontal U',
   mensula: 'Ménsula', stringer: 'Stringer', plataforma: 'Plataforma',
   fenolico: 'Fenólico', barandilla: 'Barandilla', rodapie: 'Rodapié',
-  diagonal: 'Diagonal', diagonalPlanta: 'Diagonal Planta', escalera: 'Escalera',
+  diagonal: 'Diagonal', diagonalPlanta: 'Diagonal Planta', diagonalLateral: 'Diagonal lateral', escalera: 'Escalera',
   apoyaTecho: 'Apoyo Techo', celosia: 'Celosía', cumbrera: 'Cumbrera',
   techo: 'Techo', truss: 'Truss', vigaIPN: 'Viga IPN', importada: 'Importada',
 };
@@ -45,6 +45,12 @@ export default function PiezaTooltip({ hoverPieza, svgRef, vista }) {
       posLines.push(`De: (${p.x1.toFixed(2)}, Z${p.z1.toFixed(2)})`);
       posLines.push(`A: (${p.x2.toFixed(2)}, Z${p.z2.toFixed(2)})`);
       posLines.push(`Nivel Y: ${(p.y ?? 0).toFixed(2)}m`);
+    } else if (p.categoria === 'diagonal') {
+      posLines.push(`X: ${Math.min(p.x1, p.x2).toFixed(2)}–${Math.max(p.x1, p.x2).toFixed(2)}m · Z: ${(p.z ?? 0).toFixed(2)}m`);
+      posLines.push(`Nivel Y: ${Math.min(p.y1, p.y2).toFixed(2)}–${Math.max(p.y1, p.y2).toFixed(2)}m`);
+    } else if (p.categoria === 'diagonalLateral') {
+      posLines.push(`X: ${p.x.toFixed(2)}m · Z: ${(p.z ?? 0).toFixed(2)}–${((p.z ?? 0) + p.ancho).toFixed(2)}m`);
+      posLines.push(`Nivel Y: ${p.y.toFixed(2)}–${(p.y + p.alto).toFixed(2)}m`);
     } else {
       posLines.push(`X: ${p.x.toFixed(2)}m · Z: ${(p.z ?? 0).toFixed(2)}m`);
       posLines.push(`Nivel Y: ${(p.y ?? 0).toFixed(2)}m`);

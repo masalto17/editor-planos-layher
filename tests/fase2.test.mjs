@@ -91,6 +91,18 @@ test('Torre: regla MasAlto — diagonales solo en frente y contrafrente, sin pla
   }
 });
 
+test('Torre: 2 caras van en el lado largo; 4 caras a elección', () => {
+  const cuenta = (r, cat) => r.piezas.filter(p => p.categoria === cat).length;
+  const fondoLargo = generarTorre({ frente: 1.57, fondo: 2.57, alto: 4, grupoId: 'g', nuevoId: id });
+  assert.equal(cuenta(fondoLargo, 'diagonal'), 0);
+  assert.equal(cuenta(fondoLargo, 'diagonalLateral'), 4, 'el lado largo es el fondo');
+  const cuatro = generarTorre({ frente: 2.57, fondo: 1.57, alto: 4, diagonales: 4, grupoId: 'g', nuevoId: id });
+  assert.equal(cuenta(cuatro, 'diagonal'), 4);
+  assert.equal(cuenta(cuatro, 'diagonalLateral'), 4);
+  assert.equal(cuatro.grupo.diagonales, 4);
+  assert.throws(() => generarTorre({ diagonales: 3, grupoId: 'g', nuevoId: id }));
+});
+
 test('Diagonal lateral: geometría coherente (queda disponible para armados a mano)', () => {
   const lat = { id: 'dl', categoria: 'diagonalLateral', ancho: 2.07, alto: 2, x: 0, y: 0, z: 0, invertida: false };
   assert.deepEqual(extremosDiagonalLateral(lat), [[0, 0, 0], [0, 2, 2.07]]);
@@ -104,10 +116,10 @@ test('Torre: lo que no se arma con catálogo se informa, no se inventa', () => {
   assert.equal(r.faltantes.length, 1, 'piso superior de 1,00 m sin diagonal 1,57 × 1,00');
   assert.deepEqual(tramosVertical(5), [4, 1]);
   assert.deepEqual(nivelesTorre(5), [0, 2, 4, 5]);
-  assert.throws(() => generarTorre({ frente: 0.73, fondo: 1.57, alto: 4, grupoId: 'g', nuevoId: id }));
-  assert.ok(generarTorre({ frente: 2.57, fondo: 0.73, alto: 4, grupoId: 'g', nuevoId: id }).piezas.length, 'el fondo admite cualquier horizontal O');
+  const sinDiag = generarTorre({ frente: 0.73, fondo: 0.73, alto: 4, grupoId: 'g', nuevoId: id });
+  assert.equal(sinDiag.faltantes.length, 2, 'no hay diagonal 0,73 en catálogo: se informa por piso');
+  assert.ok(!sinDiag.piezas.some(p => p.categoria === 'diagonal'));
   assert.throws(() => generarTorre({ frente: 2.57, fondo: 1.57, alto: 4.2, grupoId: 'g', nuevoId: id }));
-  assert.ok(!MEDIDAS_TORRE.includes(0.73));
 });
 
 test('Torre: código de conjunto por uso y copia con conjunto nuevo', () => {

@@ -18,14 +18,14 @@ export const USOS_TORRE = [
   { id: 'vigilancia', label: 'Torre de vigilancia', prefijo: 'VG' },
 ];
 
-// Regla de armado de MasAlto (29/09/2026): diagonales solo en las 2 caras de frente
-// (frente y contrafrente), en todos los pisos; sin diagonal de planta; sin plataforma,
-// barandas ni rodapiés en el tope.
-// Frente: largos de horizontal O con diagonal de 2,00 m en catálogo. Fondo: cualquier horizontal O.
-export const MEDIDAS_TORRE = CATALOGO.horizontalesO
-  .map(h => h.largo)
-  .filter(l => CATALOGO.diagonales.some(d => d.ancho === l && d.alto === 2));
+// Regla de armado de MasAlto (29/09/2026): diagonales en todos los pisos, en las 2 caras del
+// lado largo (frente y contrafrente) o, a elección, en las 4 caras; sin diagonal de planta;
+// sin plataforma, barandas ni rodapiés en el tope.
+// Frente y fondo: cualquier horizontal O. Si una cara con diagonal no tiene diagonal de catálogo
+// para su largo y alto de piso, se informa como faltante.
 export const MEDIDAS_FONDO = CATALOGO.horizontalesO.map(h => h.largo);
+export const MEDIDAS_TORRE = MEDIDAS_FONDO;
+export const OPCIONES_DIAGONALES = [[2, '2 caras (lado largo)'], [4, '4 caras']];
 export const ALTURA_PISO = 2.00;
 export const ALTO_MIN = 2.00, ALTO_MAX = 16.00;
 
@@ -53,15 +53,15 @@ export function nivelesTorre(alto) {
   return niveles;
 }
 
-export function generarTorre({ uso = 'pa', frente = 2.57, fondo = 1.57, alto = 6, x = 0, z = 0, grupoId, nuevoId }) {
+export function generarTorre({ uso = 'pa', frente = 2.57, fondo = 1.57, alto = 6, diagonales = 2, x = 0, z = 0, grupoId, nuevoId }) {
   const u = USOS_TORRE.find(t => t.id === uso);
   if (!u) throw Error(`Uso de torre desconocido: ${uso}`);
-  if (!MEDIDAS_TORRE.includes(frente)) throw Error('El frente debe ser un largo de horizontal con diagonal en catálogo.');
-  if (!MEDIDAS_FONDO.includes(fondo)) throw Error('El fondo debe ser un largo de horizontal O de catálogo.');
+  if (!MEDIDAS_FONDO.includes(frente) || !MEDIDAS_FONDO.includes(fondo)) throw Error('Frente y fondo deben ser largos de horizontal O de catálogo.');
+  if (diagonales !== 2 && diagonales !== 4) throw Error('Las diagonales van en 2 o en 4 caras.');
   if (!(alto >= ALTO_MIN && alto <= ALTO_MAX) || Math.abs(alto * 2 - Math.round(alto * 2)) > 1e-9) throw Error('El alto va de 2,00 a 16,00 m en pasos de 0,50 m (rosetas).');
 
   const fmt = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2 });
-  const grupo = { id: grupoId, tipo: 'torre', uso: u.id, prefijo: u.prefijo, nombre: `${u.label} ${fmt(frente)} × ${fmt(fondo)} × ${fmt(alto)} m`, frente, fondo, alto };
+  const grupo = { id: grupoId, tipo: 'torre', uso: u.id, prefijo: u.prefijo, nombre: `${u.label} ${fmt(frente)} × ${fmt(fondo)} × ${fmt(alto)} m`, frente, fondo, alto, diagonales };
   const piezas = [], faltantes = [];
   const add = p => piezas.push({ id: nuevoId(), ...p, grupo });
   const x2 = r3(x + frente), z2 = r3(z + fondo);
@@ -88,13 +88,23 @@ export function generarTorre({ uso = 'pa', frente = 2.57, fondo = 1.57, alto = 6
     for (const cx of [x, x2]) add(pieza(hoFondo, 'horizontalO', { largo: fondo, x: cx, y, z, orientacion: 'z' }));
   }
 
-  // Diagonales en cada piso, solo en las caras de frente, alternando el sentido piso a piso
+  // Diagonales en cada piso, alternando el sentido piso a piso. Con 2 caras van en el lado
+  // largo: caras de frente (plano X-Y) o, si el fondo es más largo, caras laterales (plano X = x).
+  const enFrente = diagonales === 4 || frente >= fondo;
+  const enLateral = diagonales === 4 || fondo > frente;
   for (let i = 1; i < niveles.length; i++) {
     const y0 = niveles[i - 1], h = r3(niveles[i] - y0), sube = i % 2 === 1;
-    const dFrente = cat('diagonales', d => d.ancho === frente && d.alto === h);
-    if (dFrente) for (const cz of [z, z2]) {
-      add(pieza(dFrente, 'diagonal', { ancho: frente, alto: h, x1: x, y1: sube ? y0 : r3(y0 + h), x2, y2: sube ? r3(y0 + h) : y0, z: cz }));
-    } else faltantes.push(`Diagonal ${fmt(frente)} × ${fmt(h)} m (piso ${fmt(y0)}–${fmt(niveles[i])} m): no está en catálogo`);
+    const piso = `piso ${fmt(y0)}–${fmt(niveles[i])} m`;
+    if (enFrente) {
+      const d = cat('diagonales', q => q.ancho === frente && q.alto === h);
+      if (d) for (const cz of [z, z2]) add(pieza(d, 'diagonal', { ancho: frente, alto: h, x1: x, y1: sube ? y0 : r3(y0 + h), x2, y2: sube ? r3(y0 + h) : y0, z: cz }));
+      else faltantes.push(`Diagonal ${fmt(frente)} × ${fmt(h)} m (frente y contrafrente, ${piso}): no está en catálogo`);
+    }
+    if (enLateral) {
+      const d = cat('diagonales', q => q.ancho === fondo && q.alto === h);
+      if (d) for (const cx of [x, x2]) add(pieza(d, 'diagonalLateral', { ancho: fondo, alto: h, x: cx, y: y0, z, invertida: !sube }));
+      else faltantes.push(`Diagonal ${fmt(fondo)} × ${fmt(h)} m (caras laterales, ${piso}): no está en catálogo`);
+    }
   }
 
   return { piezas, faltantes, grupo };

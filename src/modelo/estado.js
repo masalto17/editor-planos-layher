@@ -271,7 +271,7 @@ export function useDisenoState() {
   // Torre como conjunto de piezas Layher: (x, z) es la esquina de menor X y Z.
   // Devuelve el grupo con su código y lo que no se pudo armar con piezas de catálogo.
   const colocarTorre = useCallback((h, x, z) => {
-    const r = generarTorre({ uso: h.uso, frente: h.frente, fondo: h.fondo, alto: h.alto, x: roundTo(x, 0.01), z: roundTo(z, 0.01), grupoId: uid(), nuevoId: uid });
+    const r = generarTorre({ uso: h.uso, frente: h.frente, fondo: h.fondo, alto: h.alto, diagonales: h.diagonales ?? 2, x: roundTo(x, 0.01), z: roundTo(z, 0.01), grupoId: uid(), nuevoId: uid });
     const nuevas = asignarCodigos(stateRef.current.piezas, r.piezas);
     commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id));
     return { grupo: nuevas[0].grupo, cantidad: nuevas.length, peso: Math.round(nuevas.reduce((s, p) => s + p.peso, 0) * 10) / 10, faltantes: r.faltantes };
