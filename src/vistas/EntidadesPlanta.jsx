@@ -96,7 +96,10 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
     const { profundidad } = dimsDe(pieza);
     const m = aPantalla(worldToScreen, localAMundo(pieza, 0, -profundidad / 2));
     const t = aPantalla(worldToScreen, localAMundo(pieza, 0, -profundidad / 2 - Math.min(0.5, 12 / zoom)));
-    return { m, t };
+    // Línea del panel dentro de la huella (proporción de fotos y croquis).
+    const wp = -profundidad / 2 + profundidad * (def.esquema?.panel ?? 0.66);
+    const pa = aPantalla(worldToScreen, localAMundo(pieza, -ancho / 2, wp)), pb = aPantalla(worldToScreen, localAMundo(pieza, ancho / 2, wp));
+    return { m, t, pa, pb };
   })() : null;
   return (
     <g opacity={op} onMouseDown={onMouseDown} style={{ cursor: cur }}>
@@ -105,6 +108,7 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
         strokeDasharray={provisional ? `${Math.max(4, sw * 3)} ${Math.max(2, sw * 1.5)}` : 'none'} />
       {esTarima && <line x1={pts[0].x} y1={pts[0].y} x2={pts[2].x} y2={pts[2].y} stroke={color} strokeWidth={sw * 0.6} opacity="0.5" />}
       {esTarima && <line x1={pts[1].x} y1={pts[1].y} x2={pts[3].x} y2={pts[3].y} stroke={color} strokeWidth={sw * 0.6} opacity="0.5" />}
+      {frentePub && <line x1={frentePub.pa.x} y1={frentePub.pa.y} x2={frentePub.pb.x} y2={frentePub.pb.y} stroke={color} strokeWidth={Math.max(1.5, sw * 1.5)} />}
       {frentePub && zoom > 12 && (
         <line x1={frentePub.m.x} y1={frentePub.m.y} x2={frentePub.t.x} y2={frentePub.t.y} stroke={color} strokeWidth="1.2" markerEnd="url(#arrowR)" />
       )}

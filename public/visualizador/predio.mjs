@@ -2,10 +2,11 @@ import { esFestival, esArea, esRecorrido, dimsDe, localAMundo, puntosAbs, superf
 
 const f = v => v.toLocaleString('es-AR', { maximumFractionDigits: 2 });
 
-// Proporciones internas del antiavalancha tomadas de la referencia visual (sin escala).
-// Solo ubican placa, panel y escalón dentro de la envolvente confirmada: no son datos
-// de la pieza ni entran en ningún cómputo.
-const ESQUEMA_ANTIAVALANCHA = { panel: 0.55, escalon: 0.36, tornapunta: 0.85 };
+// Proporciones internas del antiavalancha medidas sobre las fotos reales y el croquis lateral
+// (fracciones del fondo y del alto). Solo ubican placa, panel, tornapuntas y escalón dentro de
+// la envolvente confirmada: no son datos de la pieza ni entran en ningún cómputo.
+// La ficha puede traer su propio `esquema`; este es el valor por defecto.
+const ESQUEMA_ANTIAVALANCHA = { panel: 0.66, escalon: 0.39, tornapunta: 0.97, tornapuntaU: 0.2 };
 const PASO_BARROTES = 0.15; // visual: el relleno real de la reja está pendiente
 
 // Proporciones del grupo electrógeno medidas sobre la foto de frente (fracciones del largo u y
@@ -130,25 +131,26 @@ export function geometriaPredio(p, index) {
   }
 
   if (def.familia === 'valladoAntiavalancha') {
-    // Frente público en -w (placa de piso), seguridad en +w (tornapuntas y escalón).
-    const E = ESQUEMA_ANTIAVALANCHA;
-    const wp = -hw + d.profundidad * E.panel;
-    face([W(-hu, 0.03, -hw), W(hu, 0.03, -hw), W(hu, 0.03, wp), W(-hu, 0.03, wp)], 'plate');
-    for (let k = 1; k < 8; k++) { const w = -hw + (k * (wp + hw)) / 8; line(W(-hu, 0.035, w), W(hu, 0.035, w), 0.006, kind); }
-    const marco = [W(-hu, 0, wp), W(hu, 0, wp), W(hu, d.alto, wp), W(-hu, d.alto, wp)];
-    marco.forEach((q, i) => line(q, marco[(i + 1) % 4], 0.025, kind));
-    for (const v of [d.alto * 0.33, d.alto * 0.66]) line(W(-hu, v, wp), W(hu, v, wp), 0.014, kind);
-    const n = Math.round(d.ancho / 0.08);
-    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; line(W(u, 0, wp), W(u, d.alto, wp), 0.004, kind); }
-    for (const u of [-hu + 0.06, hu - 0.06]) {
-      line(W(u, d.alto * E.tornapunta, wp), W(u, 0, hw), 0.022, kind);
+    // Lado público en -w: placa de piso lisa (el público la pisa y la carga).
+    // Lado seguridad en +w: dos tornapuntas interiores y el escalón entre ellas.
+    const E = { ...ESQUEMA_ANTIAVALANCHA, ...(def.esquema ?? {}) };
+    const H = d.alto, wp = -hw + d.profundidad * E.panel;
+    const negro = def.acabado === 'negro', chapa = negro ? 'chapaNegra' : 'chapaPlata', placa = negro ? 'placaNegra' : 'placaPlata';
+    face([W(-hu, 0.02, -hw), W(hu, 0.02, -hw), W(hu, 0.02, wp), W(-hu, 0.02, wp)], placa);
+    const marco = [W(-hu, 0, wp), W(hu, 0, wp), W(hu, H, wp), W(-hu, H, wp)];
+    marco.forEach((q, i) => line(q, marco[(i + 1) % 4], 0.022, kind));
+    face([W(-hu + 0.02, 0.02, wp), W(hu - 0.02, 0.02, wp), W(hu - 0.02, H - 0.02, wp), W(-hu + 0.02, H - 0.02, wp)], chapa);
+    const ut = d.ancho * E.tornapuntaU, vt = H * E.tornapunta, ve = H * E.escalon;
+    for (const u of [-ut, ut]) {
+      line(W(u, 0, wp), W(u, vt, wp), 0.018, kind);
+      line(W(u, vt, wp), W(u, 0, hw), 0.022, kind);
       line(W(u, 0.02, wp), W(u, 0.02, hw), 0.022, kind);
     }
-    const we = wp + (hw - wp) * 0.5;
-    face([W(-hu + 0.06, d.alto * E.escalon, wp), W(hu - 0.06, d.alto * E.escalon, wp), W(hu - 0.06, d.alto * E.escalon, we), W(-hu + 0.06, d.alto * E.escalon, we)], 'plate');
+    const we = wp + (hw - wp) * (1 - ve / vt); // el escalón llega hasta la tornapunta
+    face([W(-ut, ve, wp), W(ut, ve, wp), W(ut, ve, we), W(-ut, ve, we)], placa);
     return {
       primitives, labels, representacion: 'esquema',
-      aviso: `${f(d.ancho)} × ${f(d.alto)} × ${f(d.profundidad)} m confirmados; placa, panel y escalón en proporción esquemática según la referencia visual.`,
+      aviso: `${f(d.ancho)} × ${f(H)} × ${f(d.profundidad)} m confirmados; placa, panel, tornapuntas y escalón en proporción según fotos y croquis de MasAlto.`,
     };
   }
 

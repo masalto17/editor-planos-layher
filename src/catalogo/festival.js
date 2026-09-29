@@ -40,11 +40,17 @@ export const DEFINICIONES_FESTIVAL = [
     marca: null, modelo: null, variante: '1,00 m', acabado: 'negro',
     estado: 'esquematico',
     dimensiones: { ancho: 1.00, alto: 1.25, profundidad: 1.20 },
-    procedencia: { ancho: `Confirmado por MasAlto (${HOY})`, alto: `Confirmado por MasAlto (${HOY})`, profundidad: `Referencia visual IA con medidas generales confirmadas (${HOY})` },
+    procedencia: { ancho: `Confirmado por MasAlto (${HOY})`, alto: `Confirmado por MasAlto (${HOY})`, profundidad: `Confirmado por MasAlto con fotos reales y croquis (${HOY})` },
     peso: null,
     conexion: { tipo: null, paso: null },
-    referencias: [{ tipo: 'visualizacionIA', descripcion: 'Frente, lateral y perspectiva generados por IA. Placa de piso del lado público y escalón del lado seguridad.', fecha: HOY }],
-    pendientes: ['Fotos reales de frente, lateral y perspectiva', 'Largo de la placa de piso', 'Altura del escalón', 'Unión entre módulos', 'Esquineros', 'Peso por acabado'],
+    referencias: [
+      { tipo: 'visualizacionIA', descripcion: 'Frente, lateral y perspectiva generados por IA.', fecha: HOY },
+      { tipo: 'foto', descripcion: 'Fotos reales MasAlto: panel de chapa perforada negra con logo, placa de piso lisa del lado público, dos tornapuntas interiores y escalón del lado seguridad; módulos en línea continua.', fecha: HOY },
+      { tipo: 'croquis', descripcion: 'Croquis «Valla Freestanding» 100 × 120 con vista lateral: panel a 1/3 del fondo desde el lado seguridad. Indica alto 130, distinto del 1,25 confirmado.', fecha: HOY },
+    ],
+    pendientes: ['Confirmar alto: el croquis dice 1,30 m, la ficha 1,25 m', 'Cota de la placa de piso y del escalón', 'Unión entre módulos (paso real)', 'Esquineros', 'Peso por acabado'],
+    // Proporciones de dibujo medidas sobre fotos y croquis (no son cotas): ver predio.mjs.
+    esquema: { panel: 0.66, escalon: 0.39, tornapunta: 0.97, tornapuntaU: 0.2 },
     geometria: 'antiavalancha', color: '#1f2937',
   },
   {
@@ -58,8 +64,12 @@ export const DEFINICIONES_FESTIVAL = [
     procedencia: { ancho: `Confirmado por MasAlto (${HOY})`, alto: `Confirmado por MasAlto (${HOY})`, profundidad: `Referencia visual IA con medidas generales confirmadas (${HOY})` },
     peso: null,
     conexion: { tipo: null, paso: null },
-    referencias: [{ tipo: 'visualizacionIA', descripcion: 'Variante plateada de la misma referencia IA.', fecha: HOY }],
-    pendientes: ['Fotos reales', 'Material del acabado plateado', 'Peso'],
+    referencias: [
+      { tipo: 'visualizacionIA', descripcion: 'Variante plateada de la misma referencia IA.', fecha: HOY },
+      { tipo: 'fotoProducto', descripcion: 'Foto de producto plateado: chapa perforada de aluminio, placa de piso con rampa en el borde. Confirmar si es el modelo de MasAlto.', fecha: HOY },
+    ],
+    pendientes: ['Confirmar si la foto plateada es el modelo de MasAlto', 'Material del acabado plateado', 'Confirmar alto (1,25 o 1,30 m)', 'Unión entre módulos', 'Peso'],
+    esquema: { panel: 0.66, escalon: 0.39, tornapunta: 0.97, tornapuntaU: 0.2 },
     geometria: 'antiavalancha', color: '#9ca3af',
   },
   {
