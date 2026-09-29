@@ -82,6 +82,7 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
       {frentePub && zoom > 12 && (
         <line x1={frentePub.m.x} y1={frentePub.m.y} x2={frentePub.t.x} y2={frentePub.t.y} stroke={color} strokeWidth="1.2" markerEnd="url(#arrowR)" />
       )}
+      {zoom > 25 && def.familia === 'generador' && <Etiqueta x={c.x} y={c.y} texto={`GE ${def.electrico?.kVA ?? ''} kVA`} color={color} size={8} />}
       {zoom > 40 && esTarima && <Etiqueta x={c.x} y={c.y} texto={`h ${fmt(dimsDe(pieza).alto)} m`} color={color} size={8} />}
     </g>
   );

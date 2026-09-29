@@ -137,6 +137,9 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
             <span className="font-mono">{def.electrico.kVA ?? '—'} kVA · </span>{def.electrico.kW == null ? SIN_DATO : <span className="font-mono">{def.electrico.kW} kW</span>}
           </Fila>
         )}
+        {def.electrico && 'depositoL' in def.electrico && (
+          <Fila label="Depósito">{def.electrico.depositoL == null ? SIN_DATO : <span className="font-mono">{def.electrico.depositoL} L</span>}</Fila>
+        )}
         <Fila label="Rotación"><CampoNumero id={`${idb}-rot`} valor={p.rot ?? 0} paso={1} sufijo="°  (R / ⇧R)" onCommit={v => upd({ rot: normRot(v) })} /></Fila>
         <Fila label="Cota apoyo"><CampoNumero id={`${idb}-y`} valor={p.y ?? 0} min={0} sufijo="m" onCommit={v => upd({ y: v })} /></Fila>
         <Fila label="Capa"><SelectCapa id={`${idb}-capa`} valor={capaDe(p)} onChange={v => upd({ capa: v })} /></Fila>

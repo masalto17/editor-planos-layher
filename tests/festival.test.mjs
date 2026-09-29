@@ -60,21 +60,38 @@ test('Recorrido no divisible: módulos completos y remanente informado', () => {
   assert.deepEqual(r.remanentes, [{ segmento: 1, largo: 1 }, { segmento: 2, largo: 2 }]);
   assert.equal(r.giros, 1);
   assert.deepEqual(r.modulos[3], { x: 10, z: 1.5, rot: 90 });
-  assert.throws(() => valladoPorRecorrido([{ x: 0, z: 0 }, { x: 5, z: 0 }], def('GEN-HIM-200')));
+  assert.throws(() => valladoPorRecorrido([{ x: 0, z: 0 }, { x: 5, z: 0 }], def('GEN-HIM-200')), /solo admite vallas/);
+  assert.throws(() => valladoPorRecorrido([{ x: 0, z: 0 }, { x: 5, z: 0 }], { ...def('REJA-300'), dimensiones: { ancho: null } }), /ancho confirmado/);
 });
 
-test('Generador 200 kVA: sin geometría inventada ni conversión automática a kW', () => {
-  const g = inst('GEN-HIM-200');
+// Ficha de la Fase 1 (sin medidas), tal como quedó copiada en instancias ya guardadas.
+const GEN_V1 = { ...def('GEN-HIM-200'), version: 1, estado: 'pendienteReferencia', dimensiones: { ancho: null, alto: null, profundidad: null }, peso: null };
+
+test('Generador 200 kVA: medidas de ficha por variante, sin conversión automática a kW', () => {
+  const ins = inst('GEN-HIM-200'), abi = inst('GEN-HIM-200-ABI');
+  assert.deepEqual(dimsDe(ins), { ancho: 3.3, alto: 1.965, profundidad: 1.2 });
+  assert.deepEqual(dimsDe(abi), { ancho: 2.9, alto: 1.634, profundidad: 0.9 });
+  assert.equal(ins.peso, 2318);
+  assert.equal(abi.peso, 1558);
+  assert.equal(ins._def.electrico.kVA, 200);
+  assert.equal(ins._def.electrico.kW, null);
+  assert.equal(abi._def.electrico.depositoL, null);
+  assert.equal(ins._def.modelo, null, 'el código de modelo sigue pendiente');
+  const b = boundsXZEntidad(ins);
+  assert.ok(Math.abs(b.xMax - b.xMin - 3.3) < 1e-9 && Math.abs(b.zMax - b.zMin - 1.2) < 1e-9);
+});
+
+test('Generador guardado sin medidas conserva su ficha: sin geometría inventada', () => {
+  const g = crearInstanciaFestival(GEN_V1, { x: 0, z: 0 }, 'gv1');
   assert.deepEqual(dimsDe(g), { ancho: null, alto: null, profundidad: null });
   assert.equal(huellaXZ(g), null);
-  assert.equal(g._def.electrico.kVA, 200);
-  assert.equal(g._def.electrico.kW, null);
+  assert.equal(g.peso, null);
 });
 
 test('Datos faltantes: peso nulo queda pendiente y no hay total', () => {
   const layher = { id: 'v', categoria: 'vertical', nombre: 'Vertical 2.00m', peso: 7.7, x: 0, y: 0, z: 0 };
   const area = crearArea([{ x: 0, z: 0 }, { x: 10, z: 0 }, { x: 10, z: 10 }], USOS_AREA[0], 'a');
-  const r = resumenPeso([layher, inst('REJA-300'), inst('GEN-HIM-200'), area]);
+  const r = resumenPeso([layher, inst('REJA-300'), crearInstanciaFestival(GEN_V1, { x: 0, z: 0 }, 'g'), area]);
   assert.equal(r.conocido, 7.7);
   assert.equal(r.total, null);
   assert.equal(r.completo, false);
@@ -142,7 +159,7 @@ test('Visor 3D: entidades de predio sin geometría ni pesos inventados', async (
   assert.equal(soloMedidos.weight, 7.7, 'áreas y recorridos no afectan el peso');
   assert.ok(soloMedidos.primitives.some(q => q.kind === 'area'));
 
-  const piezas = [inst('VALL-AA-100-NEG', { rot: 45 }), inst('REJA-300'), inst('GEN-HIM-200'), inst('TARIMA-GEN'), area, rec];
+  const piezas = [inst('VALL-AA-100-NEG', { rot: 45 }), inst('REJA-300'), crearInstanciaFestival(GEN_V1, { x: 0, z: 0 }, 'g'), inst('TARIMA-GEN'), area, rec];
   const m = parseDesign(JSON.stringify({ piezas }));
   const [valla, reja, gen, tarima, a, r] = m.items;
   assert.ok(valla.rendered && reja.rendered && tarima.rendered && a.rendered && r.rendered);
@@ -164,6 +181,24 @@ test('Visor 3D: entidades de predio sin geometría ni pesos inventados', async (
     const u = dx * Math.cos(t) + dz * Math.sin(t), w = -dx * Math.sin(t) + dz * Math.cos(t);
     assert.ok(Math.abs(u) <= 0.5 + 1e-9 && Math.abs(w) <= 0.6 + 1e-9, `vértice fuera de la envolvente: u=${u} w=${w}`);
   }
+
+  // Generador con ficha: volumen dentro de 3,30 × 1,965 × 1,20, cabina y bancada.
+  for (const id of ['GEN-HIM-200', 'GEN-HIM-200-ABI']) {
+    const g = inst(id, { x: 5, z: 5, rot: 90 });
+    const mg = parseDesign(JSON.stringify({ piezas: [g] }));
+    const d = dimsDe(g), tg = g.rot * Math.PI / 180;
+    assert.equal(mg.items[0].representation, 'esquema');
+    assert.equal(mg.weight, g.peso);
+    const vs = mg.primitives.flatMap(q => (q.type === 'face' ? q.pts : [q.a, q.b]));
+    assert.ok(Math.abs(Math.max(...vs.map(v => v[1])) - d.alto) < 1e-9, `${id}: alto de ficha`);
+    for (const [x, , z] of vs) {
+      const dx = x - g.x, dz = z - g.z;
+      const u = dx * Math.cos(tg) + dz * Math.sin(tg), w = -dx * Math.sin(tg) + dz * Math.cos(tg);
+      assert.ok(Math.abs(u) <= d.ancho / 2 + 0.01 && Math.abs(w) <= d.profundidad / 2 + 0.01, `${id}: fuera de la envolvente u=${u} w=${w}`);
+    }
+  }
+  assert.ok(parseDesign(JSON.stringify({ piezas: [inst('GEN-HIM-200')] })).primitives.some(q => q.kind === 'generadorCabina'));
+  assert.ok(!parseDesign(JSON.stringify({ piezas: [inst('GEN-HIM-200-ABI')] })).primitives.some(q => q.kind === 'generadorCabina'));
 });
 
 test('Datos aproximados existentes marcados como esquemáticos sin cambiar valores', async () => {

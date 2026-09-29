@@ -101,9 +101,11 @@ Diagnóstico, matriz de cobertura (133 filas) y plan: https://claude.ai/artifact
 - Capas (ver/bloquear), zoom de predio (1,5 px/m), vallado por recorrido (módulos completos + remanente),
   panel de Propiedades por instancia, formato de guardado 2.1 (`migrarDiseno` no reescribe propiedades).
 - Familias cargadas: vallado antiavalancha 1,00×1,25 (prof. 1,20; negro/plateado; ref. IA),
-  reja 3,00×1,20, reja 2,50×1,25, generador Himoinsa 200 kVA (modelo y medidas pendientes),
+  reja 3,00×1,20, reja 2,50×1,25, generador Himoinsa 200 kVA en dos variantes
+  (insonorizado 3,30×1,965×1,20 m, 2.318 kg con líquidos; abierto 2,90×1,634×0,90 m, 1.558 kg en seco;
+  ficha informada por MasAlto; código de modelo y kW pendientes),
   tarima genérica paramétrica. Truss, vigas IPN y catálogo de evento marcados como esquemáticos.
-- Pendientes de MasAlto: fotos reales del antiavalancha, ficha de rejas, modelo exacto del generador,
+- Pendientes de MasAlto: fotos reales del antiavalancha, ficha de rejas, código de modelo y kW del generador,
   navegador para la prueba de rendimiento. Otras familias con pesos «≈» (T14, ménsulas, escaleras…) sin marcar.
 
 **Fases siguientes:** 2 estructuras/cerramientos/energía · 3 técnica/backstage/servicios ·

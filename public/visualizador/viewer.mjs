@@ -116,7 +116,9 @@ const materials = {
   deckTechnical: new THREE.MeshStandardMaterial({ color: 0x8a8a84, metalness: 0.1, roughness: 0.7, side: THREE.DoubleSide }),
 };
 materials.festivalNegro = new THREE.MeshStandardMaterial({ color: 0x4a4e54, metalness: 0.35, roughness: 0.5 });
-materials.marker = new THREE.MeshStandardMaterial({ color: 0xe30613, metalness: 0.2, roughness: 0.5 });
+materials.generadorCabina = new THREE.MeshStandardMaterial({ color: 0xc8161d, metalness: 0.25, roughness: 0.45, side: THREE.DoubleSide });
+materials.generadorBase = new THREE.MeshStandardMaterial({ color: 0x1c1d1f, metalness: 0.3, roughness: 0.6, side: THREE.DoubleSide });
+materials.marker =new THREE.MeshStandardMaterial({ color: 0xe30613, metalness: 0.2, roughness: 0.5 });
 // Áreas: superficies translúcidas, nunca cajas opacas. Color según el uso de cada área o recorrido.
 const OPACIDAD_AREA = 0.22;
 const porColor = new Map();
@@ -340,6 +342,7 @@ function chooseMaterial(primitive) {
   if (primitive.kind === 'brace') return materials.brace;
   if (primitive.kind === 'festival') return materials.festival;
   if (primitive.kind === 'festivalNegro') return materials.festivalNegro;
+  if (primitive.kind === 'generadorCabina' || primitive.kind === 'generadorBase') return materials[primitive.kind];
   return materials.tube;
 }
 

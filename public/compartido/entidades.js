@@ -112,6 +112,7 @@ export function centroide(pts) {
 // el tramo que no alcanza para un módulo se informa como remanente.
 // El paso entre módulos es el ancho nominal; la separación real depende de la unión (pendiente).
 export function valladoPorRecorrido(puntos, def) {
+  if (!FAMILIAS_VALLA.has(def?.familia)) throw Error('El vallado por recorrido solo admite vallas.');
   const ancho = num(def?.dimensiones?.ancho);
   if (ancho == null || ancho <= 0) throw Error('La valla elegida no tiene ancho confirmado.');
   const modulos = [], remanentes = [];

@@ -8,6 +8,45 @@ const f = v => v.toLocaleString('es-AR', { maximumFractionDigits: 2 });
 const ESQUEMA_ANTIAVALANCHA = { panel: 0.55, escalon: 0.36, tornapunta: 0.85 };
 const PASO_BARROTES = 0.15; // visual: el relleno real de la reja está pendiente
 
+// Proporciones del grupo electrógeno medidas sobre la foto de frente (fracciones del largo u y
+// del alto v). Solo ubican bancada, puertas y tablero dentro de la envolvente de la ficha.
+const ESQUEMA_GENERADOR = {
+  apoyo: 0.03, bancada: 0.23,
+  puertas: [[0.05, 0.31], [0.33, 0.53], [0.58, 0.79]], puertaV: [0.34, 0.94],
+  tablero: { u: 0.12, v: 0.78, lado: 0.08 }, franja: [0.87, 0.95],
+};
+
+// Caja en coordenadas locales (u, v, w) con sus 6 caras.
+function caja(W, face, [u0, u1], [v0, v1], [w0, w1], kind) {
+  const b = [[u0, v0, w0], [u1, v0, w0], [u1, v1, w0], [u0, v1, w0], [u0, v0, w1], [u1, v0, w1], [u1, v1, w1], [u0, v1, w1]].map(([u, v, w]) => W(u, v, w));
+  [[0, 1, 2, 3], [4, 5, 6, 7], [3, 2, 6, 7], [0, 1, 5, 4], [0, 3, 7, 4], [1, 2, 6, 5]].forEach(q => face(q.map(k => b[k]), kind));
+}
+
+function generador(d, def, W, face, line, label) {
+  const E = ESQUEMA_GENERADOR, L = d.ancho, H = d.alto, hu = L / 2, hw = d.profundidad / 2;
+  const U = t => -hu + t * L;
+  const vb = H * E.bancada, va = H * E.apoyo;
+  for (const t of [0.25, 0.75]) caja(W, face, [U(t) - 0.12, U(t) + 0.12], [0, va], [-hw + 0.05, hw - 0.05], 'generadorBase');
+  caja(W, face, [-hu, hu], [va, vb], [-hw, hw], 'generadorBase');
+  const cabina = def.carroceria !== 'abierto';
+  if (cabina) {
+    caja(W, face, [-hu, hu], [vb, H], [-hw, hw], 'generadorCabina');
+    const wf = hw + 0.006; // frente (tablero) en +w, hacia la vista de Alzado; apenas por delante de la cara
+    for (const [a, b] of E.puertas) {
+      const c = [W(U(a), H * E.puertaV[0], wf), W(U(b), H * E.puertaV[0], wf), W(U(b), H * E.puertaV[1], wf), W(U(a), H * E.puertaV[1], wf)];
+      c.forEach((q, i) => line(q, c[(i + 1) % 4], 0.006, 'festivalNegro'));
+    }
+    const T = E.tablero, s = (T.lado * L) / 2;
+    face([W(U(T.u) - s, H * T.v - s, wf), W(U(T.u) + s, H * T.v - s, wf), W(U(T.u) + s, H * T.v + s, wf), W(U(T.u) - s, H * T.v + s, wf)], 'generadorBase');
+    face([W(U(E.franja[0]), vb, wf), W(U(E.franja[1]), vb, wf), W(U(E.franja[1]), H * 0.94, wf), W(U(E.franja[0]), H * 0.94, wf)], 'generadorBase');
+  } else {
+    // Abierto sobre bancada: bloque motor-alternador y radiador en un extremo, sin cabina.
+    caja(W, face, [-hu + 0.1, hu - 0.35], [vb, H * 0.8], [-hw + 0.12, hw - 0.12], 'festival');
+    caja(W, face, [hu - 0.3, hu - 0.12], [vb, H], [-hw + 0.05, hw - 0.05], 'generadorBase');
+  }
+  label(W(0, H + 0.45, 0), `GE ${def.electrico?.kVA ?? ''} kVA · ${cabina ? 'insonorizado' : 'abierto'}`);
+}
+
 // Geometría 3D de entidades de predio a partir de la ficha guardada en cada instancia.
 // Las medidas confirmadas se respetan; lo que falta se informa como aviso, no se supone.
 export function geometriaPredio(p, index) {
@@ -95,6 +134,14 @@ export function geometriaPredio(p, index) {
     return {
       primitives, labels, representacion: 'esquema',
       aviso: `${f(d.ancho)} × ${f(d.alto)} × ${f(d.profundidad)} m confirmados; placa, panel y escalón en proporción esquemática según la referencia visual.`,
+    };
+  }
+
+  if (def.familia === 'generador') {
+    generador(d, def, W, face, line, label);
+    return {
+      primitives, labels, representacion: 'esquema',
+      aviso: `${f(d.ancho)} × ${f(d.alto)} × ${f(d.profundidad)} m según ficha; puertas, tablero y bancada en proporción esquemática según la foto.`,
     };
   }
 
