@@ -61,22 +61,23 @@ export function geometriaPredio(p, index) {
     face(pts.map(q => [q.x, 0.02, q.z]), 'area', { color: p.color });
     pts.forEach((q, i) => { const n = pts[(i + 1) % pts.length]; line([q.x, 0.03, q.z], [n.x, 0.03, n.z], 0.03, 'route', { color: p.color }); });
     const c = centroide(pts);
-    label([c.x, 0.6, c.z], `${p.nombre} · ${f(superficie(pts))} m²`);
+    label([c.x, 0.6, c.z], `${p.codigo ? `${p.codigo} · ` : ''}${p.nombre} · ${f(superficie(pts))} m²`);
     return { primitives, labels, aviso: null };
   }
 
   if (esRecorrido(p)) {
     const pts = puntosAbs(p);
+    const yc = typeof p.cota === 'number' ? p.cota : 0; // bandejas: altura sobre el terreno
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], b = pts[i];
-      line([a.x, 0.05, a.z], [b.x, 0.05, b.z], 0.05, 'route', { color: p.color });
+      line([a.x, yc + 0.05, a.z], [b.x, yc + 0.05, b.z], 0.05, 'route', { color: p.color });
       if (p.ancho) {
         const L = Math.hypot(b.x - a.x, b.z - a.z) || 1, nx = -(b.z - a.z) / L * p.ancho / 2, nz = (b.x - a.x) / L * p.ancho / 2;
-        face([[a.x + nx, 0.025, a.z + nz], [b.x + nx, 0.025, b.z + nz], [b.x - nx, 0.025, b.z - nz], [a.x - nx, 0.025, a.z - nz]], 'area', { color: p.color });
+        face([[a.x + nx, yc + 0.025, a.z + nz], [b.x + nx, yc + 0.025, b.z + nz], [b.x - nx, yc + 0.025, b.z - nz], [a.x - nx, yc + 0.025, a.z - nz]], 'area', { color: p.color });
       }
     }
     const m = pts[Math.floor(pts.length / 2)];
-    label([m.x, 0.6, m.z], `${p.nombre} · ${f(largoPolilinea(pts))} m`);
+    label([m.x, yc + 0.6, m.z], `${p.codigo ? `${p.codigo} · ` : ''}${p.nombre} · ${f(largoPolilinea(pts))} m`);
     return { primitives, labels, aviso: p.ancho == null ? 'recorrido sin ancho útil informado: se dibuja su eje.' : null };
   }
 
@@ -95,6 +96,20 @@ export function geometriaPredio(p, index) {
 
   const kind = def.acabado === 'negro' ? 'festivalNegro' : 'festival';
   const hu = d.ancho / 2;
+
+  if (def.geometria === 'abertura') {
+    // Portón / puerta: postes en los extremos y hojas cerradas en el plano del frente.
+    const hojas = p.opciones?.hojas ?? 2, H = d.alto, paso = d.ancho / hojas;
+    for (const u of [-hu, hu]) line(W(u, 0), W(u, H), 0.04, kind);
+    for (let k = 0; k < hojas; k++) {
+      const u0 = -hu + k * paso + 0.02, u1 = -hu + (k + 1) * paso - 0.02;
+      const c = [W(u0, 0.05), W(u1, 0.05), W(u1, H - 0.02), W(u0, H - 0.02)];
+      c.forEach((q, i) => line(q, c[(i + 1) % 4], 0.02, kind));
+      line(W(u0, H / 2), W(u1, H / 2), 0.012, kind);
+    }
+    if (def.salidaEmergencia) label(W(0, H + 0.35), `${p.codigo ?? ''} Salida de emergencia`.trim());
+    return { primitives, labels, representacion: 'esquema', aviso: `abertura paramétrica: luz libre ${f(d.ancho)} m, alto ${f(H)} m; hojas y postes esquemáticos.` };
+  }
 
   if (d.profundidad == null) {
     // Reja: marco y barrotes en el plano del frente. Bases y profundidad pendientes.

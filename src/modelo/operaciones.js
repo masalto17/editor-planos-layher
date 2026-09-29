@@ -9,6 +9,8 @@ export const roundTo = (v, step) => Math.round(v / step) * step;
 // Horizontales tienen `orientacion: 'x' | 'z'` que indica a qué eje se extienden.
 // Diagonales de alzado guardan (x1,y1)-(x2,y2) a una única z.
 // Diagonales de planta guardan (x1,z1)-(x2,z2) a una única y.
+// Diagonales laterales (caras de fondo de una torre) viven en el plano X = x: van de (y, z) a
+// (y + alto, z + ancho), o de (y + alto, z) a (y, z + ancho) si `invertida`.
 
 export const piezaMinX = p => {
   if (esFestival(p) || esTrazo(p)) return boundsXZEntidad(p).xMin;
@@ -34,6 +36,7 @@ export const piezaBounds = p => {
   if (esFestival(p)) return boundsAlzadoEntidad(p);
   if (p.categoria === 'diagonal') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), yMin: Math.min(p.y1, p.y2), yMax: Math.max(p.y1, p.y2) };
   if (p.categoria === 'diagonalPlanta') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), yMin: p.y, yMax: p.y };
+  if (p.categoria === 'diagonalLateral') return { xMin: p.x, xMax: p.x, yMin: p.y, yMax: p.y + p.alto };
   if (ES_TIPO_VERTICAL(p.categoria)) return { xMin: p.x, xMax: p.x, yMin: p.y, yMax: p.y + p.largo };
   if (ES_TIPO_HORIZONTAL(p.categoria)) {
     // orientacion='z' se ve en el alzado como un punto (perpendicular al plano).
@@ -60,6 +63,7 @@ export const piezaBoundsXZ = p => {
   const z = p.z ?? 0;
   if (p.categoria === 'diagonal') { const xMin = Math.min(p.x1, p.x2), xMax = Math.max(p.x1, p.x2); return { xMin, xMax, zMin: z, zMax: z }; }
   if (p.categoria === 'diagonalPlanta') return { xMin: Math.min(p.x1, p.x2), xMax: Math.max(p.x1, p.x2), zMin: Math.min(p.z1, p.z2), zMax: Math.max(p.z1, p.z2) };
+  if (p.categoria === 'diagonalLateral') return { xMin: p.x, xMax: p.x, zMin: z, zMax: z + p.ancho };
   if (ES_TIPO_VERTICAL(p.categoria)) return { xMin: p.x, xMax: p.x, zMin: z, zMax: z };
   if (ES_TIPO_HORIZONTAL(p.categoria)) {
     if (p.orientacion === 'z') return { xMin: p.x, xMax: p.x, zMin: z, zMax: z + p.largo };
@@ -89,9 +93,9 @@ export const piezaBoundsXZ = p => {
 // lo demás basta con p.z === zFila (verticales, diagonales alzado, horiz-x).
 export const cruzaFilaZ = (p, zFila) => {
   if (esFestival(p) || esTrazo(p)) return cruzaFilaEntidad(p, zFila);
-  if (ES_TIPO_HORIZONTAL(p.categoria) && p.orientacion === 'z') {
-    const z0 = p.z ?? 0;
-    return zFila >= z0 - 0.001 && zFila <= z0 + p.largo + 0.001;
+  if ((ES_TIPO_HORIZONTAL(p.categoria) && p.orientacion === 'z') || p.categoria === 'diagonalLateral') {
+    const z0 = p.z ?? 0, largo = p.categoria === 'diagonalLateral' ? p.ancho : p.largo;
+    return zFila >= z0 - 0.001 && zFila <= z0 + largo + 0.001;
   }
   return (p.z ?? 0) === zFila;
 };
@@ -101,4 +105,10 @@ export const desplazarPieza = (p, dx = 0, dy = 0, dz = 0) => {
   if (p.categoria === 'diagonal') return { ...p, x1: p.x1 + dx, y1: p.y1 + dy, x2: p.x2 + dx, y2: p.y2 + dy, z: (p.z ?? 0) + dz };
   if (p.categoria === 'diagonalPlanta') return { ...p, x1: p.x1 + dx, x2: p.x2 + dx, z1: p.z1 + dz, z2: p.z2 + dz, y: p.y + dy };
   return { ...p, x: p.x + dx, y: p.y + dy, z: (p.z ?? 0) + dz };
+};
+
+// Extremos 3D de una diagonal lateral.
+export const extremosDiagonalLateral = p => {
+  const z0 = p.z ?? 0, z1 = z0 + p.ancho, yb = p.y, yt = p.y + p.alto;
+  return p.invertida ? [[p.x, yt, z0], [p.x, yb, z1]] : [[p.x, yb, z0], [p.x, yt, z1]];
 };

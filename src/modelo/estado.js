@@ -8,9 +8,10 @@ import {
 import { idbGet, idbSet, idbDel, idbKeys } from './storage.js';
 import { uid, roundTo, piezaMinX, piezaMinY, piezaMinZ, desplazarPieza, cruzaFilaZ } from './operaciones.js';
 import { CAPAS, USOS_AREA, USOS_RECORRIDO, definicionPorId } from '../catalogo/festival.js';
+import { generarTorre } from '../catalogo/torres.js';
 import {
   VERSION_DISENO, esFestival, crearInstanciaFestival, crearArea, crearRecorrido, valladoPorRecorrido,
-  normalizarCapas, migrarDiseno, normRot,
+  normalizarCapas, migrarDiseno, normRot, asignarCodigos, paraCopia,
 } from './entidades.js';
 
 const CAPA_IDS = CAPAS.map(c => c.id);
@@ -149,7 +150,7 @@ export function useDisenoState() {
     const bx = roundTo(hasPunto ? (puntoBase.x ?? 0) : 0, ROSETA_STEP);
     const by = vista === 'alzado' ? Math.max(0, roundTo(hasPunto ? (puntoBase.y ?? 0) : origY, ROSETA_STEP)) : origY;
     const bz = vista === 'planta' ? roundTo(hasPunto ? (puntoBase.z ?? 0) : origZ, ROSETA_STEP) : origZ;
-    const n = cl.map(p => ({ ...desplazarPieza(p, bx, by, bz), id: uid() }));
+    const n = asignarCodigos(pz, paraCopia(cl, uid).map(p => ({ ...desplazarPieza(p, bx, by, bz), id: uid() })));
     commit([...pz, ...n]); setPiezasSeleccionadas(n.map(p => p.id));
   }, [commit]);
   const duplicar = useCallback((vista = 'alzado') => {
@@ -158,7 +159,7 @@ export function useDisenoState() {
     // Desplaza medio metro en el eje secundario visible de cada vista (Y en Alzado, Z en Planta).
     const dy = vista === 'alzado' ? 0.5 : 0;
     const dz = vista === 'planta' ? 0.5 : 0;
-    const n = s.map(p => ({ ...desplazarPieza(p, 0.5, dy, dz), id: uid() }));
+    const n = asignarCodigos(pz, paraCopia(s, uid).map(p => ({ ...desplazarPieza(p, 0.5, dy, dz), id: uid() })));
     commit([...pz, ...n]); setPiezasSeleccionadas(n.map(p => p.id));
   }, [commit]);
   const eliminarSeleccion = useCallback(() => {
@@ -246,26 +247,34 @@ export function useDisenoState() {
   // desde la Planta apoya en el terreno (y = 0). La cota se edita luego en Propiedades.
   const colocarFestival = useCallback((def, x, y, z) => {
     const { piezas: pz, rotacionActiva: rot } = stateRef.current;
-    const n = crearInstanciaFestival(def, { x, y, z, rot }, uid());
+    const [n] = asignarCodigos(pz, [crearInstanciaFestival(def, { x, y, z, rot }, uid())]);
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
   const colocarArea = useCallback((puntos, usoId = 'generica') => {
     const uso = USOS_AREA.find(u => u.id === usoId) ?? USOS_AREA[USOS_AREA.length - 1];
-    const n = crearArea(puntos, uso, uid());
+    const [n] = asignarCodigos(stateRef.current.piezas, [crearArea(puntos, uso, uid())]);
     commit([...stateRef.current.piezas, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
   const colocarRecorrido = useCallback((puntos, usoId = 'circulacion') => {
     const uso = USOS_RECORRIDO.find(u => u.id === usoId) ?? USOS_RECORRIDO[0];
-    const n = crearRecorrido(puntos, uso, uid());
+    const [n] = asignarCodigos(stateRef.current.piezas, [crearRecorrido(puntos, uso, uid())]);
     commit([...stateRef.current.piezas, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
   // Devuelve el informe (módulos, largo nominal, remanentes) para mostrarlo al usuario.
   const colocarValladoRecorrido = useCallback((puntos, defId) => {
     const def = definicionPorId(defId);
     const r = valladoPorRecorrido(puntos, def);
-    const nuevas = r.modulos.map(m => crearInstanciaFestival(def, { x: m.x, y: 0, z: m.z, rot: m.rot }, uid()));
+    const nuevas = asignarCodigos(stateRef.current.piezas, r.modulos.map(m => crearInstanciaFestival(def, { x: m.x, y: 0, z: m.z, rot: m.rot }, uid())));
     if (nuevas.length) { commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id)); }
     return { ...r, nombre: def.nombre };
+  }, [commit]);
+  // Torre como conjunto de piezas Layher: (x, z) es la esquina de menor X y Z.
+  // Devuelve el grupo con su código y lo que no se pudo armar con piezas de catálogo.
+  const colocarTorre = useCallback((h, x, z) => {
+    const r = generarTorre({ uso: h.uso, frente: h.frente, fondo: h.fondo, alto: h.alto, x: roundTo(x, 0.01), z: roundTo(z, 0.01), grupoId: uid(), nuevoId: uid });
+    const nuevas = asignarCodigos(stateRef.current.piezas, r.piezas);
+    commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id));
+    return { grupo: nuevas[0].grupo, cantidad: nuevas.length, peso: Math.round(nuevas.reduce((s, p) => s + p.peso, 0) * 10) / 10, faltantes: r.faltantes };
   }, [commit]);
   // Edición de instancia (Propiedades). `cambios` es un objeto o una función (pieza) => objeto.
   const actualizarPiezas = useCallback((ids, cambios) => {
@@ -645,6 +654,6 @@ export function useDisenoState() {
     guardar, cargar, listarDisenos, eliminarDiseno,
     guardarComoArchivo, cargarDesdeArchivo,
     capas, toggleCapa, rotacionActiva, setRotacionActiva,
-    colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, actualizarPiezas, rotarSeleccion,
+    colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, actualizarPiezas, rotarSeleccion,
   };
 }

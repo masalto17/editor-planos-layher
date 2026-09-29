@@ -142,6 +142,49 @@ export const DEFINICIONES_FESTIVAL = [
     geometria: 'generador', carroceria: 'abierto', color: '#c8161d',
   },
   {
+    // Aberturas: portón y puerta de emergencia. Paramétricas porque no hay modelo comercial
+    // cargado; luz libre y alto son parámetros del proyecto, no datos de un producto.
+    id: 'PORTON-GEN', version: 1, schema: '2.0',
+    nombre: 'Portón de ingreso / egreso',
+    aliases: ['portón', 'porton', 'ingreso', 'egreso', 'acceso', 'puerta', 'tranquera'],
+    familia: 'porton', tipoEntidad: 'pieza', capa: 'publico',
+    marca: null, modelo: null, variante: 'Paramétrico', acabado: null,
+    estado: 'esquematico',
+    parametrico: true,
+    dimensiones: { ancho: 4.00, alto: 2.00, profundidad: null },
+    rangos: { ancho: [0.80, 12], alto: [1.00, 4.00] },
+    opciones: [
+      { clave: 'hojas', label: 'Hojas', valores: [[1, '1 hoja'], [2, '2 hojas']], defecto: 2 },
+      { clave: 'abre', label: 'Abre hacia', valores: [['fondo', 'Fondo (w+)'], ['frente', 'Frente (w−)']], defecto: 'fondo' },
+    ],
+    procedencia: { ancho: 'Parámetro editable: luz libre', alto: 'Parámetro editable' },
+    peso: null,
+    referencias: [],
+    pendientes: ['Modelo real (hojas, postes, bases)', 'Peso'],
+    geometria: 'abertura', color: '#0f766e',
+  },
+  {
+    id: 'PUERTA-EMER', version: 1, schema: '2.0',
+    nombre: 'Puerta de emergencia',
+    aliases: ['emergencia', 'salida', 'evacuación', 'puerta', 'salida de emergencia'],
+    familia: 'puertaEmergencia', tipoEntidad: 'pieza', capa: 'seguridad',
+    marca: null, modelo: null, variante: 'Paramétrica', acabado: null,
+    estado: 'esquematico',
+    parametrico: true,
+    dimensiones: { ancho: 2.00, alto: 2.00, profundidad: null },
+    rangos: { ancho: [0.80, 12], alto: [1.00, 4.00] },
+    opciones: [
+      { clave: 'hojas', label: 'Hojas', valores: [[1, '1 hoja'], [2, '2 hojas']], defecto: 2 },
+      { clave: 'abre', label: 'Abre hacia', valores: [['fondo', 'Fondo (w+)'], ['frente', 'Frente (w−)']], defecto: 'fondo' },
+    ],
+    procedencia: { ancho: 'Parámetro editable: luz libre; el ancho exigido sale del cálculo de evacuación', alto: 'Parámetro editable' },
+    peso: null,
+    salidaEmergencia: true,
+    referencias: [],
+    pendientes: ['Luz libre según cálculo de evacuación (Fase 4)', 'Modelo real', 'Peso'],
+    geometria: 'abertura', color: '#16a34a',
+  },
+  {
     id: 'TARIMA-GEN', version: 1, schema: '2.0',
     nombre: 'Tarima genérica',
     aliases: ['tarima', 'deck', 'praticable', 'escenario modular'],
@@ -168,6 +211,8 @@ export const USOS_AREA = [
   { id: 'estacionamiento', label: 'Estacionamiento', capa: 'logistica', color: '#64748b' },
   { id: 'deposito', label: 'Depósito', capa: 'logistica', color: '#78716c' },
   { id: 'exclusion', label: 'Zona de exclusión', capa: 'seguridad', color: '#dc2626' },
+  { id: 'cargaGeneradores', label: 'Sector de carga de generadores', capa: 'energia', color: '#eab308' },
+  { id: 'combustible', label: 'Área de combustible', capa: 'energia', color: '#b91c1c' },
   { id: 'predio', label: 'Límite de predio', capa: 'entorno', color: '#65a30d' },
   { id: 'generica', label: 'Área genérica', capa: 'documentacion', color: '#94a3b8' },
 ];
@@ -175,9 +220,11 @@ export const USOS_AREA = [
 export const USOS_RECORRIDO = [
   { id: 'circulacion', label: 'Circulación', capa: 'publico', color: '#2563eb' },
   { id: 'evacuacion', label: 'Evacuación', capa: 'seguridad', color: '#16a34a' },
-  { id: 'pmr', label: 'Acceso PMR', capa: 'publico', color: '#0891b2' },
+  { id: 'acceso', label: 'Carril de acceso', capa: 'publico', color: '#1d4ed8', sentido: 'ida' },
+  { id: 'pmr', label: 'Acceso PMR', capa: 'publico', color: '#0891b2', sentido: 'ida' },
   { id: 'vehicular', label: 'Vehicular', capa: 'logistica', color: '#475569' },
   { id: 'energia', label: 'Distribución eléctrica', capa: 'energia', color: '#ca8a04' },
+  { id: 'bandeja', label: 'Bandeja portacables', capa: 'energia', color: '#a16207', conCota: true },
 ];
 
 // Herramientas de trazado (no son piezas de catálogo): se colocan con varios clics.

@@ -4,6 +4,7 @@ import { DESPIECE_ORDER } from '../catalogo/constantes.js';
 import { CAT_KEYS } from '../catalogo/piezas.js';
 import { CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { resumenPeso, resumenVallado, resumenTrazos, computaMaterial } from '../modelo/entidades.js';
+import { resumenConjuntos } from '../catalogo/torres.js';
 
 const CAT_LABEL = { ...Object.fromEntries([...CAT_KEYS, ...CAT_KEYS_EVENTO].map(ck => [ck.cat, ck.label])), festival: '🎪 Predio / Festival' };
 const kg = (v, dec = 1) => (v == null ? 'Sin dato' : `${v.toFixed(dec)} kg`);
@@ -95,7 +96,7 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
         return;
       }
       // Agrupa por modelo + variante + acabado (en festival, cada variante tiene su propio id).
-      if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p._def?.nombre ?? p.nombre, categoria: p.categoria, peso: p.peso ?? null, ref: p.ref, cantidad: 0, estado: p._def?.estado ?? p.estado };
+      if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p._def?.nombre ?? p.nombre, categoria: p.categoria === 'diagonalLateral' ? 'diagonal' : p.categoria, peso: p.peso ?? null, ref: p.ref, cantidad: 0, estado: p._def?.estado ?? p.estado };
       ag[p.tipoId].cantidad += 1;
     });
     const lista = Object.values(ag).sort((a, b) => (DESPIECE_ORDER[a.categoria] ?? 99) - (DESPIECE_ORDER[b.categoria] ?? 99));
@@ -112,7 +113,7 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
     });
     const peso = resumenPeso(piezas);
     const maxPesoGrupo = Math.max(...grupos.map(g => g.pesoGrupo), 1);
-    return { grupos, peso, pesoTotal: peso.conocido, cantidadTotal: materiales.length, maxPesoGrupo, vallado: resumenVallado(piezas), trazos: resumenTrazos(piezas) };
+    return { grupos, peso, pesoTotal: peso.conocido, cantidadTotal: materiales.length, maxPesoGrupo, vallado: resumenVallado(piezas), trazos: resumenTrazos(piezas), conjuntos: resumenConjuntos(piezas) };
   }, [piezas]);
 
   const piezaUnica = piezasSeleccionadas.length === 1 ? piezas.find(p => p.id === piezasSeleccionadas[0]) : null;
@@ -324,6 +325,16 @@ export default function Despiece({ piezas, piezasSeleccionadas, setPiezasSelecci
                 ))}
                 <div className="flex justify-between border-t border-gray-100 mt-0.5 pt-0.5 font-semibold"><span>Largo nominal</span><span className="font-mono">{num(despiece.vallado.largoNominal)} m</span></div>
                 <div className="flex justify-between text-gray-500"><span>Cobertura instalada</span><span className={despiece.vallado.coberturaInstalada == null ? 'text-amber-700' : 'font-mono'}>{despiece.vallado.coberturaInstalada == null ? 'Sin dato (unión pendiente)' : `${num(despiece.vallado.coberturaInstalada)} m`}</span></div>
+              </div>
+            )}
+            {despiece.conjuntos.length > 0 && (
+              <div className="mt-3 text-[10px] border border-gray-200 rounded p-1.5">
+                <div className="font-bold text-gray-700 mb-0.5">Torres <span className="font-normal text-gray-400">(sus piezas ya están en el despiece)</span></div>
+                {despiece.conjuntos.map(g => (
+                  <button key={g.id} onClick={() => setPiezasSeleccionadas(g.ids)} className="w-full flex justify-between gap-2 hover:bg-gray-50">
+                    <span className="truncate text-left">{g.codigo} · {g.nombre}</span><span className="font-mono shrink-0">{num(g.peso)} kg</span>
+                  </button>
+                ))}
               </div>
             )}
             {/* Exportar */}

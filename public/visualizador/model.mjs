@@ -2,7 +2,7 @@ import { roofGeometry } from './roof.mjs';
 import { importedGeometry } from './imported.mjs';
 import { geometriaPredio } from './predio.mjs';
 import { esFestival, esTrazo, computaMaterial } from '../compartido/entidades.js';
-export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','plataforma','base','collarin','tacoMadera','celosia','truss','rodapie','horizontalU','horizontalUT14','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer','lineArray','pantallaLED','luz']);
+export const SUPPORTED=new Set(['vertical','horizontalO','barandilla','diagonal','diagonalPlanta','diagonalLateral','plataforma','base','collarin','tacoMadera','celosia','truss','rodapie','horizontalU','horizontalUT14','vigaPuente','vigaIPN','techo','mensula','apoyaTecho','fenolico','escalera','stringer','lineArray','pantallaLED','luz']);
 const n=(v,key,fallback)=>{const a=v[key]??fallback;if(typeof a!=='number'||!Number.isFinite(a)||Math.abs(a)>1000)throw Error(`Dato inválido: ${key}.`);return a;};
 export function parseDesign(text){
  let doc;try{doc=JSON.parse(text)}catch{throw Error('El archivo no contiene JSON válido.')}
@@ -39,6 +39,7 @@ export function parseDesign(text){
  let z=n(p,'z',0);if(p.z==null&&p.categoria!=='diagonalPlanta')missingZ++;
  if(p.categoria==='diagonal'){line([n(p,'x1'),n(p,'y1'),z],[n(p,'x2'),n(p,'y2'),z],.024,'brace');}
  else if(p.categoria==='diagonalPlanta'){line([n(p,'x1'),n(p,'y'),n(p,'z1')],[n(p,'x2'),n(p,'y'),n(p,'z2')],.024,'brace');}
+ else if(p.categoria==='diagonalLateral'){const x=n(p,'x'),y=n(p,'y'),a=n(p,'alto'),w=n(p,'ancho'),z1=z+w;line(p.invertida?[x,y+a,z]:[x,y,z],p.invertida?[x,y,z1]:[x,y+a,z1],.024,'brace');}
  else{
  let x=n(p,'x'),y=n(p,'y'),len=n(p,'largo',p.categoria==='collarin'?.1:undefined);if(len<=0||len>50)throw Error('Largo fuera del rango admitido (0–50 m).');
  if(p.orientacion!=null&&!['x','z'].includes(p.orientacion))throw Error('Orientación no admitida.');

@@ -108,8 +108,26 @@ Diagnóstico, matriz de cobertura (133 filas) y plan: https://claude.ai/artifact
 - Pendientes de MasAlto: fotos reales del antiavalancha, ficha de rejas, código de modelo y kW del generador,
   navegador para la prueba de rendimiento. Otras familias con pesos «≈» (T14, ménsulas, escaleras…) sin marcar.
 
-**Fases siguientes:** 2 estructuras/cerramientos/energía · 3 técnica/backstage/servicios ·
-4 documentación integral (numeración, aforo, potencia por sector, PDF de predio, prueba 2.000 instancias).
+**Fase 2a — lo que no depende de datos de MasAlto (en curso)**
+- Numeración con prefijos (`asignarCodigos` / `paraCopia` en `entidades.js`): GE-01, VA-001, AR-01…
+  Estable al mover; duplicar o pegar asigna código nuevo; proyectos viejos lo reciben al abrir.
+- Torres como conjuntos Layher (`src/catalogo/torres.js`): usos PA, delay, video, FOH, iluminación,
+  vigilancia; frente/fondo = largos con diagonal de 2,00 m; pisos de 2,00 m; diagonales en las 4 caras.
+  Las piezas llevan `grupo` {id, uso, codigo…}; clic en una pieza selecciona la torre entera (⇧clic, suelta).
+  Lo que no se arma con catálogo (p. ej. diagonal 1,57 × 1,00) se informa como faltante, no se inventa.
+- `diagonalLateral`: diagonal vertical en el plano X = x (caras de fondo). Guarda x, y, z, ancho (en Z),
+  alto, invertida; se mueve con x/y/z como cualquier pieza y en el despiece suma con las diagonales.
+- Portón y puerta de emergencia paramétricos (luz libre, alto, hojas, sentido de apertura), peso sin dato.
+- Áreas: sector de carga de generadores, área de combustible. Recorridos: carril de acceso,
+  bandeja portacables; `sentido` (ida/vuelta/doble) y `cota` (null = sin dato).
+- Pendiente de Huguito: regla de plataformas y barandas en el tope de torre.
+
+**Fase 2b — espera datos de MasAlto:** lastres, anclajes y vientos, motores, trusses por sistema,
+bases de truss, eslingas, molinetes, tableros, cajas de potencia, transformadores/UPS, bobinas,
+pasacables tipo Yellow Jacket, tanque auxiliar, roof grid con cargas.
+
+**Fases siguientes:** 3 técnica/backstage/servicios ·
+4 documentación integral (aforo, potencia por sector, PDF de predio, prueba 2.000 instancias).
 
 ### Mejoras de catálogo pendientes
 - **Vigas reticuladas / celosías** — para luces grandes de escenarios
