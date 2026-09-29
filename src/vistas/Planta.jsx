@@ -1378,8 +1378,8 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
                 <div>{informe.torre.cantidad} piezas Layher · {informe.torre.peso.toLocaleString('es-AR')} kg</div>
                 {informe.torre.faltantes.length > 0
                   ? <div className="text-amber-700 font-semibold">Sin pieza de catálogo: {informe.torre.faltantes.join(' · ')}.</div>
-                  : <div className="text-green-700">Diagonales en las cuatro caras, cada piso.</div>}
-                <div className="text-gray-500">Sin plataforma ni barandas en el tope: se agregan a mano. Clic en cualquier pieza selecciona la torre entera.</div>
+                  : <div className="text-green-700">Diagonales en frente y contrafrente, cada piso.</div>}
+                <div className="text-gray-500">Sin plataforma, barandas ni diagonal de planta (regla de MasAlto). Clic en cualquier pieza selecciona la torre entera.</div>
               </> : <>
                 <div className="font-bold">{informe.cantidad} × {informe.nombre}</div>
                 <div>Largo del recorrido {informe.largoRecorrido.toLocaleString('es-AR')} m · nominal colocado {informe.largoNominal.toLocaleString('es-AR')} m</div>

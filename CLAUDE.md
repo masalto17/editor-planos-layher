@@ -100,28 +100,30 @@ Diagnóstico, matriz de cobertura (133 filas) y plan: https://claude.ai/artifact
 - Cada instancia guarda copia de su ficha (`_def`): cambiar el catálogo no altera proyectos guardados.
 - Capas (ver/bloquear), zoom de predio (1,5 px/m), vallado por recorrido (módulos completos + remanente),
   panel de Propiedades por instancia, formato de guardado 2.1 (`migrarDiseno` no reescribe propiedades).
-- Familias cargadas: vallado antiavalancha 1,00×1,25 (prof. 1,20; negro/plateado; fotos reales y croquis:
-  chapa perforada, placa de piso del lado público, panel a 2/3 del fondo, 2 tornapuntas y escalón; el croquis dice alto 1,30),
-  reja 3,00×1,20, reja 2,50×1,25, generador Himoinsa 200 kVA en dos variantes
+- Familias cargadas: vallado antiavalancha MasAlto negro 1,00×1,30×1,20 **validado** (chapa perforada, placa de piso
+  del lado público, panel a 2/3 del fondo, 2 tornapuntas y escalón; unión con tornillo, paso real 1,00 m);
+  antiavalancha de aluminio de uso habitual (no es de MasAlto, esquemático); reja 3,00×1,20 pesada galvanizada
+  y reja 2,50×1,25 municipal apilable (base 0,60, pesos aprox. 24,0 y 16,5 kg según ficha de referencia), generador Himoinsa 200 kVA en dos variantes
   (insonorizado 3,30×1,965×1,20 m, 2.318 kg con líquidos; abierto 2,90×1,634×0,90 m, 1.558 kg en seco;
   ficha informada y validada por MasAlto; código de modelo y kW pendientes),
   tarima genérica paramétrica. Truss, vigas IPN y catálogo de evento marcados como esquemáticos.
-- Pendientes de MasAlto: alto del antiavalancha (1,25 o 1,30) y unión entre módulos, ficha de rejas, código de modelo y kW del generador,
+- Pendientes de MasAlto: peso del antiavalancha, paso real de las rejas, código de modelo y kW del generador,
   navegador para la prueba de rendimiento. Otras familias con pesos «≈» (T14, ménsulas, escaleras…) sin marcar.
 
 **Fase 2a — lo que no depende de datos de MasAlto (en curso)**
 - Numeración con prefijos (`asignarCodigos` / `paraCopia` en `entidades.js`): GE-01, VA-001, AR-01…
   Estable al mover; duplicar o pegar asigna código nuevo; proyectos viejos lo reciben al abrir.
 - Torres como conjuntos Layher (`src/catalogo/torres.js`): usos PA, delay, video, FOH, iluminación,
-  vigilancia; frente/fondo = largos con diagonal de 2,00 m; pisos de 2,00 m; diagonales en las 4 caras.
+  vigilancia; frente = largo con diagonal de 2,00 m, fondo = cualquier horizontal O; pisos de 2,00 m.
+  Regla de MasAlto: diagonales solo en frente y contrafrente, sin diagonal de planta, sin plataforma,
+  barandas ni rodapiés en el tope.
   Las piezas llevan `grupo` {id, uso, codigo…}; clic en una pieza selecciona la torre entera (⇧clic, suelta).
   Lo que no se arma con catálogo (p. ej. diagonal 1,57 × 1,00) se informa como faltante, no se inventa.
-- `diagonalLateral`: diagonal vertical en el plano X = x (caras de fondo). Guarda x, y, z, ancho (en Z),
-  alto, invertida; se mueve con x/y/z como cualquier pieza y en el despiece suma con las diagonales.
+- `diagonalLateral`: diagonal vertical en el plano X = x (caras de fondo), disponible aunque las torres no la
+  usen. Guarda x, y, z, ancho (en Z), alto, invertida; en el despiece suma con las diagonales.
 - Portón y puerta de emergencia paramétricos (luz libre, alto, hojas, sentido de apertura), peso sin dato.
 - Áreas: sector de carga de generadores, área de combustible. Recorridos: carril de acceso,
   bandeja portacables; `sentido` (ida/vuelta/doble) y `cota` (null = sin dato).
-- Pendiente de Huguito: regla de plataformas y barandas en el tope de torre.
 
 **Fase 2b — espera datos de MasAlto:** lastres, anclajes y vientos, motores, trusses por sistema,
 bases de truss, eslingas, molinetes, tableros, cajas de potencia, transformadores/UPS, bobinas,

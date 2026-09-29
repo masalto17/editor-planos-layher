@@ -18,10 +18,14 @@ export const USOS_TORRE = [
   { id: 'vigilancia', label: 'Torre de vigilancia', prefijo: 'VG' },
 ];
 
-// Frente y fondo posibles: largos de horizontal O que además tienen diagonal de 2,00 m en catálogo.
+// Regla de armado de MasAlto (29/09/2026): diagonales solo en las 2 caras de frente
+// (frente y contrafrente), en todos los pisos; sin diagonal de planta; sin plataforma,
+// barandas ni rodapiés en el tope.
+// Frente: largos de horizontal O con diagonal de 2,00 m en catálogo. Fondo: cualquier horizontal O.
 export const MEDIDAS_TORRE = CATALOGO.horizontalesO
   .map(h => h.largo)
   .filter(l => CATALOGO.diagonales.some(d => d.ancho === l && d.alto === 2));
+export const MEDIDAS_FONDO = CATALOGO.horizontalesO.map(h => h.largo);
 export const ALTURA_PISO = 2.00;
 export const ALTO_MIN = 2.00, ALTO_MAX = 16.00;
 
@@ -52,7 +56,8 @@ export function nivelesTorre(alto) {
 export function generarTorre({ uso = 'pa', frente = 2.57, fondo = 1.57, alto = 6, x = 0, z = 0, grupoId, nuevoId }) {
   const u = USOS_TORRE.find(t => t.id === uso);
   if (!u) throw Error(`Uso de torre desconocido: ${uso}`);
-  if (!MEDIDAS_TORRE.includes(frente) || !MEDIDAS_TORRE.includes(fondo)) throw Error('Frente y fondo deben ser largos de horizontal con diagonal en catálogo.');
+  if (!MEDIDAS_TORRE.includes(frente)) throw Error('El frente debe ser un largo de horizontal con diagonal en catálogo.');
+  if (!MEDIDAS_FONDO.includes(fondo)) throw Error('El fondo debe ser un largo de horizontal O de catálogo.');
   if (!(alto >= ALTO_MIN && alto <= ALTO_MAX) || Math.abs(alto * 2 - Math.round(alto * 2)) > 1e-9) throw Error('El alto va de 2,00 a 16,00 m en pasos de 0,50 m (rosetas).');
 
   const fmt = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2 });
@@ -83,17 +88,13 @@ export function generarTorre({ uso = 'pa', frente = 2.57, fondo = 1.57, alto = 6
     for (const cx of [x, x2]) add(pieza(hoFondo, 'horizontalO', { largo: fondo, x: cx, y, z, orientacion: 'z' }));
   }
 
-  // Diagonales en cada piso y cada cara, alternando el sentido piso a piso
+  // Diagonales en cada piso, solo en las caras de frente, alternando el sentido piso a piso
   for (let i = 1; i < niveles.length; i++) {
     const y0 = niveles[i - 1], h = r3(niveles[i] - y0), sube = i % 2 === 1;
     const dFrente = cat('diagonales', d => d.ancho === frente && d.alto === h);
-    const dFondo = cat('diagonales', d => d.ancho === fondo && d.alto === h);
     if (dFrente) for (const cz of [z, z2]) {
       add(pieza(dFrente, 'diagonal', { ancho: frente, alto: h, x1: x, y1: sube ? y0 : r3(y0 + h), x2, y2: sube ? r3(y0 + h) : y0, z: cz }));
-    } else faltantes.push(`Diagonal ${fmt(frente)} × ${fmt(h)} m (caras de frente, piso ${fmt(y0)}–${fmt(niveles[i])} m): no está en catálogo`);
-    if (dFondo) for (const cx of [x, x2]) {
-      add(pieza(dFondo, 'diagonalLateral', { ancho: fondo, alto: h, x: cx, y: y0, z, invertida: !sube }));
-    } else faltantes.push(`Diagonal ${fmt(fondo)} × ${fmt(h)} m (caras laterales, piso ${fmt(y0)}–${fmt(niveles[i])} m): no está en catálogo`);
+    } else faltantes.push(`Diagonal ${fmt(frente)} × ${fmt(h)} m (piso ${fmt(y0)}–${fmt(niveles[i])} m): no está en catálogo`);
   }
 
   return { piezas, faltantes, grupo };

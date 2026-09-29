@@ -3,7 +3,7 @@ import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle
 import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
-import { USOS_TORRE, MEDIDAS_TORRE, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
+import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -429,13 +429,13 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
                     <select id="torre-frente" className={selectCls} value={torre.frente} onChange={cambiarTorre('frente', Number)}>{MEDIDAS_TORRE.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
                   </label>
                   <label className="text-[9px] text-gray-500">Fondo
-                    <select id="torre-fondo" className={selectCls} value={torre.fondo} onChange={cambiarTorre('fondo', Number)}>{MEDIDAS_TORRE.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
+                    <select id="torre-fondo" className={selectCls} value={torre.fondo} onChange={cambiarTorre('fondo', Number)}>{MEDIDAS_FONDO.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
                   </label>
                   <label className="text-[9px] text-gray-500">Alto
                     <select id="torre-alto" className={selectCls} value={torre.alto} onChange={cambiarTorre('alto', Number)}>{altos.map(m => <option key={m} value={m}>{fmt2(m)}</option>)}</select>
                   </label>
                 </div>
-                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">Clic en planta = esquina de menor X y Z. Pisos de 2,00 m con diagonales en las cuatro caras.</p>
+                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">Clic en planta = esquina de menor X y Z. Pisos de 2,00 m; diagonales en frente y contrafrente; sin plataforma en el tope.</p>
               </div>
             </div>
           )}

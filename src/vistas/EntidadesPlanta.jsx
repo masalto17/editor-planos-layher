@@ -73,8 +73,9 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
     );
   }
 
-  // Sin profundidad confirmada: se dibuja la línea de frente, no una huella inventada.
-  if (!h.profundidadConocida) {
+  // Reja (o pieza sin profundidad confirmada): línea de frente; en la reja, patas de la base
+  // en los extremos cuando la ficha informa su fondo.
+  if (!h.profundidadConocida || def.familia === 'rejaModular') {
     const a = aPantalla(worldToScreen, localAMundo(pieza, -ancho / 2, 0));
     const b = aPantalla(worldToScreen, localAMundo(pieza, ancho / 2, 0));
     const grosor = Math.max(3, zoom * 0.06);
@@ -84,7 +85,14 @@ function PiezaFestivalPlanta({ pieza, worldToScreen, zoom, seleccionada, op, cur
         {seleccionada && <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={SEL} strokeWidth={grosor + 6} opacity="0.25" />}
         <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={color} strokeWidth={grosor} strokeDasharray={provisional ? `${grosor * 2} ${grosor * 0.6}` : 'none'} />
         {[a, b].map((q, i) => <circle key={i} cx={q.x} cy={q.y} r={grosor * 0.7} fill="white" stroke={color} strokeWidth="1" />)}
-        {(seleccionada || zoom > 90) && <Etiqueta x={c.x} y={c.y - grosor - 6} texto={`${fmt(ancho)} m · prof. sin dato`} color={color} size={8} />}
+        {h.profundidadConocida && (() => {
+          const { profundidad } = dimsDe(pieza);
+          return [-ancho / 2 + 0.08, ancho / 2 - 0.08].map((u, i) => {
+            const p1 = aPantalla(worldToScreen, localAMundo(pieza, u, -profundidad / 2)), p2 = aPantalla(worldToScreen, localAMundo(pieza, u, profundidad / 2));
+            return <line key={`b${i}`} x1={p1.x} y1={p1.y} x2={p2.x} y2={p2.y} stroke={color} strokeWidth={Math.max(1.5, grosor * 0.5)} />;
+          });
+        })()}
+        {(seleccionada || zoom > 90) && <Etiqueta x={c.x} y={c.y - grosor - 6} texto={`${fmt(ancho)} m · ${h.profundidadConocida ? `base ${fmt(dimsDe(pieza).profundidad)} m` : 'prof. sin dato'}`} color={color} size={8} />}
       </g>
     );
   }

@@ -60,10 +60,10 @@ test('Portón y puerta de emergencia: paramétricos, sin peso inventado', () => 
 
 test('Torre: solo piezas Layher de catálogo con su peso real', () => {
   const r = generarTorre({ uso: 'pa', frente: 2.57, fondo: 1.57, alto: 6, x: 10, z: 20, grupoId: 'g1', nuevoId: id });
-  const ids = new Set(Object.values(CATALOGO).flat().map(p => p.id));
+  const todas = Object.values(CATALOGO).flat();
   for (const p of r.piezas) {
-    assert.ok(ids.has(p.tipoId), `${p.tipoId} no es de catálogo`);
-    const c = Object.values(CATALOGO).flat().find(q => q.id === p.tipoId);
+    const c = todas.find(q => q.id === p.tipoId);
+    assert.ok(c, `${p.tipoId} no es de catálogo`);
     assert.equal(p.peso, c.peso);
     assert.equal(p.grupo.id, 'g1');
   }
@@ -72,31 +72,40 @@ test('Torre: solo piezas Layher de catálogo con su peso real', () => {
   assert.equal(cuenta('collarin'), 4);
   assert.equal(cuenta('vertical'), 8, '6 m = 4,00 + 2,00 por columna');
   assert.equal(cuenta('horizontalO'), 16, '4 niveles × 4 caras');
-  assert.equal(cuenta('diagonal'), 6, '3 pisos × 2 caras de frente');
-  assert.equal(cuenta('diagonalLateral'), 6, '3 pisos × 2 caras laterales');
+  assert.equal(cuenta('diagonal'), 6, '3 pisos × frente y contrafrente');
   assert.deepEqual(r.faltantes, []);
   const peso = r.piezas.reduce((s, p) => s + p.peso, 0);
-  // 4 × (4,5 + 1,3) bases · 4 × (15,4 + 7,7) verticales · 4 niveles × (2 × 9,7 + 2 × 5,9) · 6 × 8,5 + 6 × 6,7 diagonales
-  assert.ok(Math.abs(peso - 331.6) < 0.01, `peso ${peso}`);
+  // 4 × (4,5 + 1,3) bases · 4 × (15,4 + 7,7) verticales · 4 niveles × (2 × 9,7 + 2 × 5,9) · 6 × 8,5 diagonales
+  assert.ok(Math.abs(peso - 291.4) < 0.01, `peso ${peso}`);
 });
 
-test('Torre: diagonales en las cuatro caras, alternadas, y geometría coherente', () => {
+test('Torre: regla MasAlto — diagonales solo en frente y contrafrente, sin plataforma ni barandas', () => {
   const r = generarTorre({ frente: 2.07, fondo: 2.07, alto: 4, x: 0, z: 0, grupoId: 'g', nuevoId: id });
-  const lat = r.piezas.filter(p => p.categoria === 'diagonalLateral');
-  assert.deepEqual(lat.map(p => p.x).sort(), [0, 0, 2.07, 2.07]);
-  assert.deepEqual(extremosDiagonalLateral(lat[0]), [[0, 0, 0], [0, 2, 2.07]]);
-  assert.equal(lat.find(p => p.y === 2).invertida, true, 'el piso siguiente alterna');
-  assert.deepEqual(piezaBoundsXZ(lat[0]), { xMin: 0, xMax: 0, zMin: 0, zMax: 2.07 });
-  assert.deepEqual(piezaBounds(lat[0]), { xMin: 0, xMax: 0, yMin: 0, yMax: 2 });
-  assert.ok(cruzaFilaZ(lat[0], 1) && !cruzaFilaZ(lat[0], 3));
+  const diag = r.piezas.filter(p => p.categoria === 'diagonal');
+  assert.equal(diag.length, 4);
+  assert.deepEqual([...new Set(diag.map(p => p.z))].sort(), [0, 2.07]);
+  const [p1, p2] = diag.filter(p => p.z === 0);
+  assert.ok(p1.y2 > p1.y1 && p2.y2 < p2.y1, 'el piso siguiente alterna el sentido');
+  for (const cat of ['diagonalLateral', 'diagonalPlanta', 'plataforma', 'barandilla', 'rodapie']) {
+    assert.ok(!r.piezas.some(p => p.categoria === cat), `no lleva ${cat}`);
+  }
+});
+
+test('Diagonal lateral: geometría coherente (queda disponible para armados a mano)', () => {
+  const lat = { id: 'dl', categoria: 'diagonalLateral', ancho: 2.07, alto: 2, x: 0, y: 0, z: 0, invertida: false };
+  assert.deepEqual(extremosDiagonalLateral(lat), [[0, 0, 0], [0, 2, 2.07]]);
+  assert.deepEqual(piezaBoundsXZ(lat), { xMin: 0, xMax: 0, zMin: 0, zMax: 2.07 });
+  assert.deepEqual(piezaBounds(lat), { xMin: 0, xMax: 0, yMin: 0, yMax: 2 });
+  assert.ok(cruzaFilaZ(lat, 1) && !cruzaFilaZ(lat, 3));
 });
 
 test('Torre: lo que no se arma con catálogo se informa, no se inventa', () => {
   const r = generarTorre({ frente: 1.57, fondo: 1.57, alto: 5, grupoId: 'g', nuevoId: id });
-  assert.equal(r.faltantes.length, 2, 'piso superior de 1,00 m sin diagonal 1,57 × 1,00');
+  assert.equal(r.faltantes.length, 1, 'piso superior de 1,00 m sin diagonal 1,57 × 1,00');
   assert.deepEqual(tramosVertical(5), [4, 1]);
   assert.deepEqual(nivelesTorre(5), [0, 2, 4, 5]);
   assert.throws(() => generarTorre({ frente: 0.73, fondo: 1.57, alto: 4, grupoId: 'g', nuevoId: id }));
+  assert.ok(generarTorre({ frente: 2.57, fondo: 0.73, alto: 4, grupoId: 'g', nuevoId: id }).piezas.length, 'el fondo admite cualquier horizontal O');
   assert.throws(() => generarTorre({ frente: 2.57, fondo: 1.57, alto: 4.2, grupoId: 'g', nuevoId: id }));
   assert.ok(!MEDIDAS_TORRE.includes(0.73));
 });
@@ -112,13 +121,14 @@ test('Torre: código de conjunto por uso y copia con conjunto nuevo', () => {
   assert.equal(conj[0].cantidad, a.length);
 });
 
-test('Visor 3D: diagonal lateral y portón dentro de su envolvente', async () => {
+test('Visor 3D: torre, diagonal lateral y portón dentro de su envolvente', async () => {
   const { parseDesign } = await import('../public/visualizador/model.mjs');
   const r = generarTorre({ frente: 2.57, fondo: 1.57, alto: 4, grupoId: 'g', nuevoId: id });
   const m = parseDesign(JSON.stringify({ piezas: r.piezas }));
   assert.ok(m.items.every(i => i.rendered), 'todas las piezas de la torre se dibujan');
-  const lat = r.piezas.findIndex(p => p.categoria === 'diagonalLateral');
-  const pr = m.primitives.find(q => q.index === lat);
+  const lat = { id: 'dl', categoria: 'diagonalLateral', nombre: 'Diagonal 1.57×2.00m', ancho: 1.57, alto: 2, peso: 6.7, x: 0, y: 0, z: 0 };
+  const ml = parseDesign(JSON.stringify({ piezas: [lat] }));
+  const pr = ml.primitives[0];
   assert.deepEqual([pr.a, pr.b].map(v => v.map(c => Math.round(c * 100) / 100)), [[0, 0, 0], [0, 2, 1.57]]);
   const porton = { ...inst('PORTON-GEN'), dims: { ancho: 5, alto: 2.2 } };
   const mp = parseDesign(JSON.stringify({ piezas: [porton] }));

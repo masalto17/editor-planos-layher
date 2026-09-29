@@ -112,13 +112,34 @@ export function geometriaPredio(p, index) {
     return { primitives, labels, representacion: 'esquema', aviso: `abertura paramétrica: luz libre ${f(d.ancho)} m, alto ${f(H)} m; hojas y postes esquemáticos.` };
   }
 
-  if (d.profundidad == null) {
-    // Reja: marco y barrotes en el plano del frente. Bases y profundidad pendientes.
-    const c = [W(-hu, 0), W(hu, 0), W(hu, d.alto), W(-hu, d.alto)];
-    c.forEach((q, i) => line(q, c[(i + 1) % 4], 0.02, kind));
-    const n = Math.max(2, Math.round(d.ancho / PASO_BARROTES));
-    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; line(W(u, 0), W(u, d.alto), 0.008, kind); }
-    return { primitives, labels, representacion: 'esquema', aviso: 'marco y barrotes esquemáticos; bases, relleno y profundidad pendientes.' };
+  if (def.familia === 'rejaModular' || d.profundidad == null) {
+    // Reja: marco y barrotes en el plano del frente (w = 0) y base según la ficha.
+    const E = def.esquema ?? {};
+    const tubo = def.acabado === 'pintura en polvo' ? ['route', { color: def.color }] : [kind];
+    const L = (a, b, r) => line(a, b, r, ...tubo);
+    const c = [W(-hu, 0.02), W(hu, 0.02), W(hu, d.alto), W(-hu, d.alto)];
+    c.forEach((q, i) => L(q, c[(i + 1) % 4], 0.019));
+    const n = Math.max(2, Math.round(d.ancho / (E.pasoBarrotes ?? PASO_BARROTES)));
+    for (let k = 1; k < n; k++) { const u = -hu + (k * d.ancho) / n; L(W(u, 0.02), W(u, d.alto), 0.008); }
+    if (d.profundidad != null) {
+      const hwb = d.profundidad / 2;
+      for (const u of [-hu + 0.08, hu - 0.08]) {
+        if (E.base === 'patas') {
+          // Patas inclinadas hacia ambos lados desde el pie del marco.
+          L(W(u, d.alto * 0.28), W(u, 0, -hwb), 0.019);
+          L(W(u, d.alto * 0.28), W(u, 0, hwb), 0.019);
+        } else {
+          // Tubos soldados apoyados en el piso, a lo largo del fondo de la base.
+          for (const du of [-0.04, 0.04]) L(W(u + du, 0.02, -hwb), W(u + du, 0.02, hwb), 0.019);
+        }
+      }
+    }
+    return {
+      primitives, labels, representacion: 'esquema',
+      aviso: d.profundidad == null
+        ? 'marco y barrotes esquemáticos; bases, relleno y profundidad pendientes.'
+        : `${f(d.ancho)} × ${f(d.alto)} m, base ${f(d.profundidad)} m según ficha de referencia; unión entre módulos sin paso definido.`,
+    };
   }
 
   const hw = d.profundidad / 2;
@@ -136,7 +157,9 @@ export function geometriaPredio(p, index) {
     const E = { ...ESQUEMA_ANTIAVALANCHA, ...(def.esquema ?? {}) };
     const H = d.alto, wp = -hw + d.profundidad * E.panel;
     const negro = def.acabado === 'negro', chapa = negro ? 'chapaNegra' : 'chapaPlata', placa = negro ? 'placaNegra' : 'placaPlata';
-    face([W(-hu, 0.02, -hw), W(hu, 0.02, -hw), W(hu, 0.02, wp), W(-hu, 0.02, wp)], placa);
+    const wr = -hw + (E.rampa ?? 0); // con rampa, la placa arranca a nivel del piso en el borde público
+    face([W(-hu, 0.02, wr), W(hu, 0.02, wr), W(hu, 0.02, wp), W(-hu, 0.02, wp)], placa);
+    if (E.rampa) face([W(-hu, 0, -hw), W(hu, 0, -hw), W(hu, 0.02, wr), W(-hu, 0.02, wr)], placa);
     const marco = [W(-hu, 0, wp), W(hu, 0, wp), W(hu, H, wp), W(-hu, H, wp)];
     marco.forEach((q, i) => line(q, marco[(i + 1) % 4], 0.022, kind));
     face([W(-hu + 0.02, 0.02, wp), W(hu - 0.02, 0.02, wp), W(hu - 0.02, H - 0.02, wp), W(-hu + 0.02, H - 0.02, wp)], chapa);

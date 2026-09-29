@@ -158,6 +158,10 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
         <Fila label="Alto">{dimCampo('alto')}</Fila>
         <Fila label="Fondo (w)">{dimCampo('profundidad')}</Fila>
         <Fila label="Peso">{p.peso == null ? SIN_DATO : <span className="font-mono">{fmt(p.peso)} kg</span>}</Fila>
+        {def.detalle && Object.entries(def.detalle).map(([k, v]) => (
+          <Fila key={k} label={k[0].toUpperCase() + k.slice(1)}><span className="text-gray-700">{v}</span></Fila>
+        ))}
+        {def.conexion?.tipo && <Fila label="Unión"><span className="text-gray-700">{def.conexion.tipo}</span></Fila>}
         {def.electrico && (
           <Fila label="Potencia">
             <span className="font-mono">{def.electrico.kVA ?? '—'} kVA · </span>{def.electrico.kW == null ? SIN_DATO : <span className="font-mono">{def.electrico.kW} kW</span>}
