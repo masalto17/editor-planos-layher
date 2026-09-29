@@ -7,6 +7,13 @@ import {
 } from '../catalogo/constantes.js';
 import { idbGet, idbSet, idbDel, idbKeys } from './storage.js';
 import { uid, roundTo, piezaMinX, piezaMinY, piezaMinZ, desplazarPieza, cruzaFilaZ } from './operaciones.js';
+import { CAPAS, USOS_AREA, USOS_RECORRIDO, definicionPorId } from '../catalogo/festival.js';
+import {
+  VERSION_DISENO, esFestival, crearInstanciaFestival, crearArea, crearRecorrido, valladoPorRecorrido,
+  normalizarCapas, migrarDiseno, normRot,
+} from './entidades.js';
+
+const CAPA_IDS = CAPAS.map(c => c.id);
 
 /**
  * Estado central del diseño — compartido por TODAS las vistas (Alzado, Planta, ...).
@@ -39,9 +46,11 @@ export function useDisenoState() {
   const [mensajeGuardado, setMensajeGuardado] = useState('');
   const [clipboardOrigY, setClipboardOrigY] = useState(0);
   const [clipboardOrigZ, setClipboardOrigZ] = useState(0);
+  const [capas, setCapas] = useState(() => normalizarCapas(null, CAPA_IDS));
+  const [rotacionActiva, setRotacionActiva] = useState(0); // grados, para piezas de festival
 
   const stateRef = useRef({});
-  stateRef.current = { piezas, piezasSeleccionadas, clipboard, clipboardOrigY, clipboardOrigZ, historialIdx, historial, filaZ, alturaY, orientacionActiva, filas, filaActivaId };
+  stateRef.current = { piezas, piezasSeleccionadas, clipboard, clipboardOrigY, clipboardOrigZ, historialIdx, historial, filaZ, alturaY, orientacionActiva, filas, filaActivaId, capas, rotacionActiva, herramientaActiva, nombreDiseno };
 
   const setHerramientaActiva = useCallback((h) => { setHerramientaActivaRaw(h); setDiagonalOrigen(null); setDiagonalPlantaOrigen(null); }, []);
   const toggleOrientacion = useCallback(() => { setOrientacionActiva(o => (o === 'x' ? 'z' : 'x')); }, []);
@@ -180,6 +189,7 @@ export function useDisenoState() {
     if (h.alto) n.alto = h.alto;
     if (h.tipoLuz) n.tipoLuz = h.tipoLuz;
     if (h.consumoW) n.consumoW = h.consumoW;
+    if (h.estado) n.estado = h.estado;
     // Pieza importada: copiar datos de render genérico
     Object.assign(n, datosImportados(h));
 
@@ -216,6 +226,7 @@ export function useDisenoState() {
     if (h.alto) n.alto = h.alto;
     if (h.tipoLuz) n.tipoLuz = h.tipoLuz;
     if (h.consumoW) n.consumoW = h.consumoW;
+    if (h.estado) n.estado = h.estado;
     // Pieza importada: copiar datos de render genérico
     Object.assign(n, datosImportados(h));
 
@@ -229,6 +240,47 @@ export function useDisenoState() {
     const n = { id: uid(), tipoId: cat.id, nombre: cat.nombre, categoria: 'diagonalPlanta', largo: cat.largo, peso: cat.peso, ref: cat.ref, color: cat.color, x1: o.x, z1: o.z, x2: d.x, z2: d.z, y };
     commit([...pz, n]); setPiezasSeleccionadas([n.id]);
   }, [commit]);
+
+  // ---------- Entidades de predio ----------
+  // Desde el Alzado la pieza apoya en la cota del clic y queda en la fila activa;
+  // desde la Planta apoya en el terreno (y = 0). La cota se edita luego en Propiedades.
+  const colocarFestival = useCallback((def, x, y, z) => {
+    const { piezas: pz, rotacionActiva: rot } = stateRef.current;
+    const n = crearInstanciaFestival(def, { x, y, z, rot }, uid());
+    commit([...pz, n]); setPiezasSeleccionadas([n.id]);
+  }, [commit]);
+  const colocarArea = useCallback((puntos, usoId = 'generica') => {
+    const uso = USOS_AREA.find(u => u.id === usoId) ?? USOS_AREA[USOS_AREA.length - 1];
+    const n = crearArea(puntos, uso, uid());
+    commit([...stateRef.current.piezas, n]); setPiezasSeleccionadas([n.id]);
+  }, [commit]);
+  const colocarRecorrido = useCallback((puntos, usoId = 'circulacion') => {
+    const uso = USOS_RECORRIDO.find(u => u.id === usoId) ?? USOS_RECORRIDO[0];
+    const n = crearRecorrido(puntos, uso, uid());
+    commit([...stateRef.current.piezas, n]); setPiezasSeleccionadas([n.id]);
+  }, [commit]);
+  // Devuelve el informe (módulos, largo nominal, remanentes) para mostrarlo al usuario.
+  const colocarValladoRecorrido = useCallback((puntos, defId) => {
+    const def = definicionPorId(defId);
+    const r = valladoPorRecorrido(puntos, def);
+    const nuevas = r.modulos.map(m => crearInstanciaFestival(def, { x: m.x, y: 0, z: m.z, rot: m.rot }, uid()));
+    if (nuevas.length) { commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id)); }
+    return { ...r, nombre: def.nombre };
+  }, [commit]);
+  // Edición de instancia (Propiedades). `cambios` es un objeto o una función (pieza) => objeto.
+  const actualizarPiezas = useCallback((ids, cambios) => {
+    const pz = stateRef.current.piezas;
+    commit(pz.map(p => ids.includes(p.id) ? { ...p, ...(typeof cambios === 'function' ? cambios(p) : cambios) } : p));
+  }, [commit]);
+  const rotarSeleccion = useCallback((delta) => {
+    const { piezas: pz, piezasSeleccionadas: sel } = stateRef.current;
+    if (!pz.some(p => sel.includes(p.id) && esFestival(p))) return false;
+    commit(pz.map(p => (sel.includes(p.id) && esFestival(p)) ? { ...p, rot: normRot((p.rot ?? 0) + delta) } : p));
+    return true;
+  }, [commit]);
+  const toggleCapa = useCallback((id, clave) => {
+    setCapas(prev => ({ ...prev, [id]: { ...prev[id], [clave]: !prev[id]?.[clave] } }));
+  }, []);
 
   const borrarTodo = useCallback(() => {
     if (stateRef.current.piezas.length === 0) return;
@@ -248,6 +300,8 @@ export function useDisenoState() {
     setFilaActivaId('A');
     setAlturaY(0);
     setOrientacionActiva('x');
+    setRotacionActiva(0);
+    setCapas(normalizarCapas(null, CAPA_IDS));
     setNombreDiseno('Diseño sin título');
     setMensajeGuardado('');
     idbDel('autosave').catch(() => {});
@@ -372,8 +426,8 @@ export function useDisenoState() {
     return list.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
   }, []);
   const guardar = useCallback(async (nombre) => {
-    const { piezas: pz, filas: fl } = stateRef.current;
-    const payload = { nombre, piezas: pz, filas: fl, fecha: new Date().toISOString() };
+    const { piezas: pz, filas: fl, capas: cp } = stateRef.current;
+    const payload = { nombre, piezas: pz, filas: fl, capas: cp, fecha: new Date().toISOString(), version: VERSION_DISENO };
     try {
       await idbSet(`diseno:${nombre}`, payload);
       setNombreDiseno(nombre);
@@ -388,6 +442,26 @@ export function useDisenoState() {
     }
     setTimeout(() => setMensajeGuardado(''), 2500);
   }, []);
+  // Aplica un diseño leído (IDB, localStorage o archivo). Proyectos anteriores a 2.1
+  // pasan por migrarDiseno, que no reescribe ninguna propiedad existente.
+  const aplicarDiseno = useCallback((doc, nombreFallback) => {
+    const d = migrarDiseno(doc);
+    commit(d.piezas);
+    setNombreDiseno(d.nombre || nombreFallback);
+    setCapas(normalizarCapas(d.capas, CAPA_IDS));
+    if (Array.isArray(d.filas) && d.filas.length) {
+      setFilas(d.filas); setFilaActivaId(d.filas[0].id);
+    } else {
+      const zs = [...new Set(d.piezas.map(p => p.z ?? 0))].sort((a, b) => a - b);
+      const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      const derivadas = zs.length
+        ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
+        : [{ id: 'A', nombre: 'A', z: 0 }];
+      setFilas(derivadas); setFilaActivaId(derivadas[0].id);
+    }
+    return d;
+  }, [commit]);
+
   const cargar = useCallback(async (nombre) => {
     try {
       let d = await idbGet(`diseno:${nombre}`);
@@ -396,24 +470,13 @@ export function useDisenoState() {
         if (raw) d = JSON.parse(raw);
       }
       if (!d || !Array.isArray(d.piezas)) { setMensajeGuardado('✗ No encontrado'); setTimeout(() => setMensajeGuardado(''), 2500); return; }
-      const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
-      commit(piezasNorm); setNombreDiseno(d.nombre || nombre);
-      if (Array.isArray(d.filas) && d.filas.length) {
-        setFilas(d.filas); setFilaActivaId(d.filas[0].id);
-      } else {
-        const zs = [...new Set(piezasNorm.map(p => p.z ?? 0))].sort((a, b) => a - b);
-        const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        const derivadas = zs.length
-          ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
-          : [{ id: 'A', nombre: 'A', z: 0 }];
-        setFilas(derivadas); setFilaActivaId(derivadas[0].id);
-      }
+      aplicarDiseno(d, nombre);
       setMensajeGuardado(`✓ ${d.nombre || nombre}`);
     } catch {
       setMensajeGuardado('✗ Error al cargar');
     }
     setTimeout(() => setMensajeGuardado(''), 2500);
-  }, [commit]);
+  }, [aplicarDiseno]);
   const eliminarDiseno = useCallback(async (nombre) => {
     try { await idbDel(`diseno:${nombre}`); } catch { /* ignorar */ }
     try { localStorage.removeItem(`layher:disenos:${nombre}`); } catch { /* ignorar */ }
@@ -425,8 +488,9 @@ export function useDisenoState() {
       nombre: nombre || stateRef.current.nombreDiseno || 'Diseño sin título',
       piezas: stateRef.current.piezas,
       filas: stateRef.current.filas,
+      capas: stateRef.current.capas,
       fecha: new Date().toISOString(),
-      version: '2.0',
+      version: VERSION_DISENO,
       app: 'MasAlto Layout',
     };
     const json = JSON.stringify(payload, null, 2);
@@ -477,19 +541,7 @@ export function useDisenoState() {
         const file = await handle.getFile();
         const text = await file.text();
         const d = JSON.parse(text);
-        const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
-        commit(piezasNorm);
-        setNombreDiseno(d.nombre || 'Importado');
-        if (Array.isArray(d.filas) && d.filas.length) {
-          setFilas(d.filas); setFilaActivaId(d.filas[0].id);
-        } else {
-          const zs = [...new Set(piezasNorm.map(p => p.z ?? 0))].sort((a, b) => a - b);
-          const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-          const derivadas = zs.length
-            ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
-            : [{ id: 'A', nombre: 'A', z: 0 }];
-          setFilas(derivadas); setFilaActivaId(derivadas[0].id);
-        }
+        aplicarDiseno(d, 'Importado');
         setMensajeGuardado(`✓ ${d.nombre || 'Archivo cargado'}`);
         setTimeout(() => setMensajeGuardado(''), 2500);
         return;
@@ -506,25 +558,13 @@ export function useDisenoState() {
       try {
         const text = await file.text();
         const d = JSON.parse(text);
-        const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
-        commit(piezasNorm);
-        setNombreDiseno(d.nombre || 'Importado');
-        if (Array.isArray(d.filas) && d.filas.length) {
-          setFilas(d.filas); setFilaActivaId(d.filas[0].id);
-        } else {
-          const zs = [...new Set(piezasNorm.map(p => p.z ?? 0))].sort((a, b) => a - b);
-          const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-          const derivadas = zs.length
-            ? zs.map((z, i) => ({ id: letras[i] || `F${i}`, nombre: letras[i] || `F${i}`, z }))
-            : [{ id: 'A', nombre: 'A', z: 0 }];
-          setFilas(derivadas); setFilaActivaId(derivadas[0].id);
-        }
+        aplicarDiseno(d, 'Importado');
         setMensajeGuardado(`✓ ${d.nombre || 'Archivo cargado'}`);
         setTimeout(() => setMensajeGuardado(''), 2500);
       } catch { setMensajeGuardado('✗ Archivo inválido'); setTimeout(() => setMensajeGuardado(''), 2500); }
     };
     input.click();
-  }, [commit]);
+  }, [aplicarDiseno]);
 
   // ---------- Autoguardado (localStorage, cada 30s) ----------
   useEffect(() => {
@@ -537,12 +577,7 @@ export function useDisenoState() {
           if (raw) d = JSON.parse(raw);
         }
         if (d && Array.isArray(d.piezas) && d.piezas.length > 0) {
-          const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
-          commit(piezasNorm);
-          if (d.nombre) setNombreDiseno(d.nombre);
-          if (Array.isArray(d.filas) && d.filas.length) {
-            setFilas(d.filas); setFilaActivaId(d.filas[0].id);
-          }
+          aplicarDiseno(d, 'Diseño sin título');
           setMensajeGuardado('✓ Restaurado'); setTimeout(() => setMensajeGuardado(''), 2500);
         }
       } catch { /* ignorar */ }
@@ -551,11 +586,11 @@ export function useDisenoState() {
 
   useEffect(() => {
     const timer = setInterval(() => {
-      const { piezas: pz, filas: fl } = stateRef.current;
+      const { piezas: pz, filas: fl, capas: cp } = stateRef.current;
       if (pz.length === 0) return;
       const data = {
-        piezas: pz, filas: fl, nombre: stateRef.current.nombreDiseno || 'Diseño sin título',
-        fecha: new Date().toISOString(),
+        piezas: pz, filas: fl, capas: cp, nombre: stateRef.current.nombreDiseno || 'Diseño sin título',
+        fecha: new Date().toISOString(), version: VERSION_DISENO,
       };
       idbSet('autosave', data).catch(() => {});
       // Respaldo en localStorage (solo diseños chicos)
@@ -572,9 +607,19 @@ export function useDisenoState() {
     const kd = (e) => {
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
       const ctrl = e.ctrlKey || e.metaKey;
-      if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); eliminarSeleccion(); }
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        e.preventDefault();
+        // Con una herramienta de trazo, ⌫ borra el último punto (lo maneja la Planta), no la selección.
+        if (!['area', 'recorrido', 'valladoRecorrido'].includes(stateRef.current.herramientaActiva?.categoria)) eliminarSeleccion();
+      }
       else if (e.key === 'Escape') { setPiezasSeleccionadas([]); setHerramientaActivaRaw(null); setDiagonalOrigen(null); setDiagonalPlantaOrigen(null); }
-      else if (!ctrl && e.key.toLowerCase() === 'r') { e.preventDefault(); toggleOrientacion(); }
+      else if (!ctrl && e.key.toLowerCase() === 'r') {
+        // Festival: R gira 90° (Shift+R: 15°) la pieza a colocar o la selección. Layher: alterna X/Z.
+        e.preventDefault();
+        const delta = e.shiftKey ? 15 : 90;
+        if (esFestival(stateRef.current.herramientaActiva)) setRotacionActiva(r => normRot(r + delta));
+        else if (!rotarSeleccion(delta)) toggleOrientacion();
+      }
       else if (ctrl && e.key.toLowerCase() === 'c') { e.preventDefault(); copiar(); }
       else if (ctrl && e.key.toLowerCase() === 'd') { e.preventDefault(); duplicar(); }
       else if (ctrl && e.key.toLowerCase() === 'a') { e.preventDefault(); seleccionarTodo(); }
@@ -583,7 +628,7 @@ export function useDisenoState() {
     };
     window.addEventListener('keydown', kd);
     return () => window.removeEventListener('keydown', kd);
-  }, [copiar, duplicar, eliminarSeleccion, seleccionarTodo, undo, redo, toggleOrientacion]);
+  }, [copiar, duplicar, eliminarSeleccion, seleccionarTodo, undo, redo, toggleOrientacion, rotarSeleccion]);
 
   return {
     piezas, historial, historialIdx, herramientaActiva, setHerramientaActiva,
@@ -599,5 +644,7 @@ export function useDisenoState() {
     calcularSnapAlzado, calcularSnapPlanta, moverPiezas, moverPiezasZ, commitPiezasActuales,
     guardar, cargar, listarDisenos, eliminarDiseno,
     guardarComoArchivo, cargarDesdeArchivo,
+    capas, toggleCapa, rotacionActiva, setRotacionActiva,
+    colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, actualizarPiezas, rotarSeleccion,
   };
 }

@@ -9,6 +9,7 @@
  */
 import { jsPDF } from 'jspdf';
 import { DESPIECE_ORDER } from '../catalogo/constantes.js';
+import { resumenPeso, computaMaterial } from '../modelo/entidades.js';
 
 // --- Constantes de diseño ---
 const ROJO = '#E30613';
@@ -93,8 +94,9 @@ async function cargarLogos() {
 }
 
 /** Calcula despiece agrupado. */
-function calcularDespiece(piezas) {
+function calcularDespiece(todas) {
   const ag = {};
+  const piezas = todas.filter(computaMaterial);
   piezas.forEach(p => {
     if (p.categoria === 'techo' && Array.isArray(p.componentes)) {
       p.componentes.forEach(c => {
@@ -103,11 +105,12 @@ function calcularDespiece(piezas) {
       });
       return;
     }
-    if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p.nombre, categoria: p.categoria, peso: p.peso, ref: p.ref, cantidad: 0 };
+    if (!ag[p.tipoId]) ag[p.tipoId] = { nombre: p._def?.nombre ?? p.nombre, categoria: p.categoria, peso: p.peso ?? null, ref: p.ref, cantidad: 0 };
     ag[p.tipoId].cantidad += 1;
   });
   const lista = Object.values(ag).sort((a, b) => (DESPIECE_ORDER[a.categoria] ?? 99) - (DESPIECE_ORDER[b.categoria] ?? 99));
-  return { lista, pesoTotal: piezas.reduce((s, p) => s + p.peso, 0), cantidadTotal: piezas.length };
+  const peso = resumenPeso(piezas);
+  return { lista, pesoTotal: peso.conocido, pesoCompleto: peso.completo, sinPeso: peso.sinDato, cantidadTotal: piezas.length };
 }
 
 // --- Dibujo ---
@@ -264,7 +267,7 @@ function dibujarCuadroDatos(doc, datos, x0, y0) {
   const estrCampos = [
     ['Sistema', 'Layher Allround'],
     ['Dimensiones', datos.dimensiones],
-    ['Peso total', datos.pesoTotal ? `${datos.pesoTotal} kg` : null],
+    [datos.pesoCompleto === false ? 'Peso conocido' : 'Peso total', datos.pesoTotal ? `${datos.pesoTotal} kg${datos.pesoCompleto === false ? ' (parcial)' : ''}` : null],
     ['Piezas', datos.cantPiezas ? String(datos.cantPiezas) : null],
     ['Verticales', datos.cantVerts ? String(datos.cantVerts) : null],
     ['Niveles piso', datos.cantNiveles ? String(datos.cantNiveles) : null],
@@ -383,7 +386,7 @@ function dibujarDespiece(doc, despiece, x0, y0, maxH) {
     doc.setTextColor(NEGRO);
     doc.setFontSize(5.5);
     doc.text(String(it.cantidad), x0 + 58, y, { align: 'right' });
-    doc.text((it.cantidad * it.peso).toFixed(1), x0 + w - 1.5, y, { align: 'right' });
+    doc.text(it.peso == null ? 'Sin dato' : (it.cantidad * it.peso).toFixed(1), x0 + w - 1.5, y, { align: 'right' });
     y += 3.5;
   });
 
@@ -397,13 +400,13 @@ function dibujarDespiece(doc, despiece, x0, y0, maxH) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7);
   doc.setTextColor(NEGRO);
-  doc.text('TOTAL', x0 + 1.5, y + 2.5);
+  doc.text(despiece.pesoCompleto ? 'TOTAL' : 'SUBTOTAL CONOCIDO', x0 + 1.5, y + 2.5);
   doc.setFontSize(10);
   doc.setTextColor(ROJO);
   doc.text(`${despiece.pesoTotal.toFixed(1)} kg`, x0 + w - 1.5, y + 3, { align: 'right' });
   doc.setFontSize(5.5);
   doc.setTextColor(GRIS);
-  doc.text(`${despiece.cantidadTotal} piezas`, x0 + w - 1.5, y + 5.5, { align: 'right' });
+  doc.text(`${despiece.cantidadTotal} piezas${despiece.pesoCompleto ? '' : ` · ${despiece.sinPeso} sin peso`}`, x0 + w - 1.5, y + 5.5, { align: 'right' });
 
   // Borde del cuadro
   doc.setDrawColor(NEGRO);
@@ -801,7 +804,8 @@ export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgP
   const allXpos = verts.map(p => p.x);
   const allYpos = verts.map(p => p.y + (p.largo || 0));
   const allZpos = [...new Set(piezas.map(p => p.z ?? 0))];
-  const pesoTotal = piezas.reduce((s, p) => s + (p.peso || 0), 0);
+  const pesoR = resumenPeso(piezas);
+  const pesoTotal = pesoR.conocido;
   const anchoEst = allXpos.length ? (Math.max(...allXpos) - Math.min(...allXpos)) : 0;
   const altoEst = allYpos.length ? Math.max(...allYpos) : 0;
   const profEst = allZpos.length > 1 ? (Math.max(...allZpos) - Math.min(...allZpos)) : 0;
@@ -825,7 +829,8 @@ export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgP
     // Métricas calculadas
     dimensiones: dimStr,
     pesoTotal: pesoTotal > 0 ? pesoTotal.toFixed(0) : '',
-    cantPiezas: piezas.length,
+    pesoCompleto: pesoR.completo,
+    cantPiezas: pesoR.cantidad,
     cantVerts: verts.length,
     cantNiveles: altPisos.length,
     altPisos: altPisosStr,

@@ -1,11 +1,22 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { DRAG_UMBRAL_PX, ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js';
-import { piezaBoundsXZ } from '../modelo/operaciones.js';
+import { piezaBoundsXZ, roundTo } from '../modelo/operaciones.js';
 import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
 import { Grilla, LineaBase, IndicadoresSnap, GuiasModulacion } from './Compartidos.jsx';
 import CotasPlanta from './CotasPlanta.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import PiezaTooltip from '../ui/PiezaTooltip.jsx';
+import EntidadPlanta, { TrazoEnCurso } from './EntidadesPlanta.jsx';
+import { PanelCapas, PanelPropiedades } from '../ui/PanelPredio.jsx';
+import { esFestival, esTrazo, capaDe } from '../modelo/entidades.js';
+
+// Escala de predio: 1,5 px/m permite ver ~600 m en una pantalla de notebook.
+const ZOOM_MIN = 1.5, ZOOM_MAX = 220;
+const TRAZOS = new Set(['area', 'recorrido', 'valladoRecorrido']);
+const esHerramientaTrazo = h => TRAZOS.has(h?.categoria);
+// Piezas de festival y trazos usan grilla simple: el snap a módulos Layher no aplica a un predio.
+const usaGrillaPredio = h => esFestival(h) || esHerramientaTrazo(h);
+const pasoGrilla = zoom => (zoom >= 10 ? 0.1 : zoom >= 3 ? 0.5 : 1);
 
 // Extremos de una horizontal en X-Z, respetando su orientacion.
 function extremosXZ(pieza) {
@@ -83,6 +94,10 @@ function clipLineToRect(x1, y1, x2, y2, xmin, ymin, xmax, ymax) {
 }
 
 function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraAltura, onMouseDown, modoTecnico }) {
+  if (esFestival(pieza) || esTrazo(pieza)) {
+    return <EntidadPlanta pieza={pieza} worldToScreen={worldToScreen} zoom={zoom} seleccionada={seleccionada}
+      fantasma={fantasma} onMouseDown={onMouseDown} modoTecnico={modoTecnico} />;
+  }
   const op = fantasma ? 0.4 : otraAltura ? 0.18 : 1;
   const sc = seleccionada ? '#E30613' : (modoTecnico ? (TECNICO_COLORS_PLANTA[pieza.categoria] || '#333') : pieza.color);
   const cur = fantasma ? 'none' : 'pointer';
@@ -900,7 +915,21 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     clipboard, orientacionActiva, filas, alturaY,
     diagonalPlantaOrigen, setDiagonalPlantaOrigen,
     colocarPiezaPlanta, colocarDiagonalPlanta, calcularSnapPlanta, moverPiezasZ, commitPiezasActuales, pegar,
+    capas, toggleCapa, rotacionActiva, colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, actualizarPiezas,
   } = modelo;
+
+  // Capas: las ocultas no se dibujan; las bloqueadas se ven pero no se seleccionan ni se mueven.
+  const piezasVisibles = useMemo(() => piezas.filter(p => capas[capaDe(p)]?.visible !== false), [piezas, capas]);
+  const esBloqueada = useCallback(p => !!capas[capaDe(p)]?.bloqueada, [capas]);
+  // El trazo en curso pertenece a una herramienta: al cambiarla, queda descartado sin esperar un efecto.
+  const claveTrazo = esHerramientaTrazo(herramientaActiva) ? `${herramientaActiva.id}:${herramientaActiva.uso ?? herramientaActiva.defId ?? ''}` : null;
+  const [trazoGuardado, setTrazoGuardado] = useState({ clave: null, puntos: [] });
+  const trazo = trazoGuardado.clave === claveTrazo ? trazoGuardado.puntos : [];
+  const setTrazo = useCallback(fn => setTrazoGuardado(t => {
+    const actual = t.clave === claveTrazo ? t.puntos : [];
+    return { clave: claveTrazo, puntos: typeof fn === 'function' ? fn(actual) : fn };
+  }), [claveTrazo]);
+  const [informe, setInforme] = useState(null);
 
   const [arrastrando, setArrastrando] = useState(null);
   const [seleccionRect, setSeleccionRect] = useState(null);
@@ -916,7 +945,22 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const [dimCanvas, setDimCanvas] = useState({ w: 1000, h: 600 });
   const spaceHeld = useRef(false);
   const stateRef = useRef({});
-  stateRef.current = { mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas };
+  stateRef.current = { mousePos, clipboard, _zoom: zoom, _pan: pan, _dimCanvas: dimCanvas, trazo, herramientaActiva };
+
+  // Cierra el trazo en curso. Dobles clics agregan puntos repetidos: se descartan acá.
+  const terminarTrazo = useCallback(() => {
+    const h = stateRef.current.herramientaActiva;
+    const pts = stateRef.current.trazo.filter((q, i, a) => i === 0 || Math.hypot(q.x - a[i - 1].x, q.z - a[i - 1].z) > 1e-3);
+    setTrazo([]);
+    if (!esHerramientaTrazo(h)) return;
+    try {
+      const minimo = h.categoria === 'area' ? 3 : 2;
+      if (pts.length < minimo) { setInforme({ error: `${h.nombre}: hacen falta al menos ${minimo} puntos (marcaste ${pts.length}).` }); return; }
+      if (h.categoria === 'area') colocarArea(pts, h.uso);
+      else if (h.categoria === 'recorrido') colocarRecorrido(pts, h.uso);
+      else setInforme(colocarValladoRecorrido(pts, h.defId));
+    } catch (err) { setInforme({ error: err.message }); }
+  }, [colocarArea, colocarRecorrido, colocarValladoRecorrido, setTrazo]);
 
   // Reportar estado al padre (StatusBar)
   useEffect(() => {
@@ -944,13 +988,24 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     const nz = Math.min(dimCanvas.w / wW, dimCanvas.h / wH, 200);
     const cx = (bounds.xMin + bounds.xMax) / 2;
     const cz = (bounds.zMin + bounds.zMax) / 2;
-    setZoom(Math.max(15, nz));
+    setZoom(Math.max(ZOOM_MIN, nz));
     setPan({ x: cx - dimCanvas.w / (2 * nz), y: cz - dimCanvas.h / (2 * nz) });
   }, [fitTrigger]);
 
   // Nota: sin flip vertical (la profundidad Z no tiene "gravedad") — Z crece hacia abajo en pantalla.
   const worldToScreen = useCallback((wx, wz) => ({ x: (wx - pan.x) * zoom, y: (wz - pan.y) * zoom }), [pan, zoom]);
   const screenToWorld = useCallback((sx, sy) => ({ x: sx / zoom + pan.x, z: sy / zoom + pan.y }), [pan, zoom]);
+  const snapPara = (h, wx, wz, excluir) => {
+    if (!usaGrillaPredio(h)) return calcularSnapPlanta(wx, wz, excluir);
+    const paso = pasoGrilla(zoom);
+    return { x: roundTo(wx, paso), z: roundTo(wz, paso), snapX: false, snapZ: false };
+  };
+  // Posición ajustada del propio evento: no depende del último mousemove.
+  const puntoEvento = (e) => {
+    const rect = svgRef.current.getBoundingClientRect();
+    const w = screenToWorld(e.clientX - rect.left, e.clientY - rect.top);
+    return snapPara(herramientaActiva, w.x, w.z);
+  };
 
   useEffect(() => {
     const kd = (e) => {
@@ -963,11 +1018,15 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       if (e.key === 'ArrowUp') { e.preventDefault(); setPan(p => ({ ...p, y: p.y - PAN_STEP })); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); setPan(p => ({ ...p, y: p.y + PAN_STEP })); return; }
       if (ctrl && e.key.toLowerCase() === 'v') { e.preventDefault(); pegar({ x: stateRef.current.mousePos.x, z: stateRef.current.mousePos.z }, 'planta'); }
+      if (stateRef.current.trazo.length) {
+        if (e.key === 'Enter') { e.preventDefault(); terminarTrazo(); }
+        else if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); setTrazo(t => t.slice(0, -1)); }
+      }
     };
     const ku = (e) => { if (e.key === ' ') spaceHeld.current = false; };
     window.addEventListener('keydown', kd); window.addEventListener('keyup', ku);
     return () => { window.removeEventListener('keydown', kd); window.removeEventListener('keyup', ku); };
-  }, [pegar]);
+  }, [pegar, terminarTrazo, setTrazo]);
 
   const onMouseMove = (e) => {
     const rect = svgRef.current.getBoundingClientRect();
@@ -982,7 +1041,8 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       const posI = arrastrando.snapshotPosiciones[arrastrando.piezaAnclaId];
       const posIX = (arrastrando.categoriaAncla === 'diagonal' || arrastrando.categoriaAncla === 'diagonalPlanta') ? posI.x1 : posI.x;
       const posIZ = arrastrando.categoriaAncla === 'diagonalPlanta' ? posI.z1 : (posI.z ?? 0);
-      const snapped = calcularSnapPlanta(w.x - arrastrando.offsetX, w.z - arrastrando.offsetZ, arrastrando.idsAMover);
+      const ancla = piezas.find(p => p.id === arrastrando.piezaAnclaId);
+      const snapped = snapPara(esFestival(ancla) || esTrazo(ancla) ? { categoria: 'festival' } : null, w.x - arrastrando.offsetX, w.z - arrastrando.offsetZ, arrastrando.idsAMover);
       const dX = snapped.x - posIX, dZ = snapped.z - posIZ;
       moverPiezasZ(arrastrando.idsAMover, arrastrando.snapshotPosiciones, dX, dZ);
       setArrastrando(a => ({ ...a, moved: true })); return;
@@ -994,7 +1054,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       }
     }
     const world = screenToWorld(sx, sy);
-    setMousePos(calcularSnapPlanta(world.x, world.z));
+    setMousePos(snapPara(herramientaActiva, world.x, world.z));
   };
   const onMouseEnter = () => setMouseEnCanvas(true);
   const onMouseLeave = () => { setMouseEnCanvas(false); setPanneando(false); if (arrastrando?.moved) commitPiezasActuales(); setArrastrando(null); setSeleccionInicio(null); setSeleccionRect(null); };
@@ -1006,13 +1066,17 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     }
     if (e.button !== 0) return;
     if (herramientaActiva) {
+      const pos = puntoEvento(e);
+      setMousePos(pos);
       if (herramientaActiva.categoria === 'diagonal') return; // diagonales de alzado solo desde el Alzado
       if (herramientaActiva.categoria === 'diagonalPlanta') {
-        if (!diagonalPlantaOrigen) setDiagonalPlantaOrigen({ x: mousePos.x, z: mousePos.z });
-        else { colocarDiagonalPlanta(diagonalPlantaOrigen, { x: mousePos.x, z: mousePos.z }); setDiagonalPlantaOrigen(null); }
+        if (!diagonalPlantaOrigen) setDiagonalPlantaOrigen({ x: pos.x, z: pos.z });
+        else { colocarDiagonalPlanta(diagonalPlantaOrigen, { x: pos.x, z: pos.z }); setDiagonalPlantaOrigen(null); }
         return;
       }
-      colocarPiezaPlanta(herramientaActiva, mousePos.x, mousePos.z);
+      if (esFestival(herramientaActiva)) { colocarFestival(herramientaActiva, pos.x, 0, pos.z); return; }
+      if (esHerramientaTrazo(herramientaActiva)) { setTrazo(t => [...t, { x: pos.x, z: pos.z }]); return; }
+      colocarPiezaPlanta(herramientaActiva, pos.x, pos.z);
       return;
     }
     const rect = svgRef.current.getBoundingClientRect();
@@ -1028,7 +1092,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       if (seleccionRect) {
         const xMin = Math.min(seleccionRect.x1, seleccionRect.x2), xMax = Math.max(seleccionRect.x1, seleccionRect.x2);
         const zMin = Math.min(seleccionRect.z1, seleccionRect.z2), zMax = Math.max(seleccionRect.z1, seleccionRect.z2);
-        const ns = piezas.filter(p => { const b = piezaBoundsXZ(p); return !(b.xMax < xMin || b.xMin > xMax || b.zMax < zMin || b.zMin > zMax); }).map(p => p.id);
+        const ns = piezasVisibles.filter(p => !esBloqueada(p)).filter(p => { const b = piezaBoundsXZ(p); return !(b.xMax < xMin || b.xMin > xMax || b.zMax < zMin || b.zMin > zMax); }).map(p => p.id);
         setPiezasSeleccionadas(seleccionInicio.shift ? prev => [...new Set([...prev, ...ns])] : ns);
       } else if (!seleccionInicio.shift) setPiezasSeleccionadas([]);
       setSeleccionInicio(null); setSeleccionRect(null);
@@ -1047,13 +1111,13 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       const s2w = (sx2, sy2) => ({ x: sx2 / z + p.x, z: sy2 / z + p.y });
       if (e.ctrlKey || e.metaKey) {
         const wa = s2w(sx, sy); const f = e.deltaY < 0 ? 1.08 : 0.93;
-        const nz = Math.max(15, Math.min(220, z * f)); setZoom(nz);
+        const nz = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z * f)); setZoom(nz);
         setPan({ x: wa.x - sx / nz, y: wa.z - sy / nz }); return;
       }
       if (Math.abs(e.deltaX) > 0 || !e.shiftKey) {
         setPan(pp => ({ x: pp.x + e.deltaX / z, y: pp.y + e.deltaY / z }));
       } else {
-        const wa = s2w(sx, sy); const nz = Math.max(15, Math.min(220, z * (e.deltaY < 0 ? 1.15 : 0.87)));
+        const wa = s2w(sx, sy); const nz = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z * (e.deltaY < 0 ? 1.15 : 0.87)));
         setZoom(nz); setPan({ x: wa.x - sx / nz, y: wa.z - sy / nz });
       }
     };
@@ -1062,7 +1126,13 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   }, []);
 
   const onMouseDownPieza = (e, pieza) => {
-    e.stopPropagation(); if (herramientaActiva) return;
+    if (esBloqueada(pieza)) return;
+    if (herramientaActiva) {
+      // Sobre áreas y recorridos, o con herramientas de predio, el clic sigue al lienzo para colocar o trazar.
+      if (!esTrazo(pieza) && !esHerramientaTrazo(herramientaActiva) && !esFestival(herramientaActiva)) e.stopPropagation();
+      return;
+    }
+    e.stopPropagation();
     const yaSel = piezasSeleccionadas.includes(pieza.id);
     if (e.shiftKey) { setPiezasSeleccionadas(yaSel ? prev => prev.filter(id => id !== pieza.id) : prev => [...prev, pieza.id]); return; }
     let ids = yaSel ? piezasSeleccionadas : [pieza.id];
@@ -1091,6 +1161,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       <svg ref={svgRef} className="w-full h-full select-none" tabIndex={0}
         onMouseMove={onMouseMove} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}
         onMouseDown={onMouseDown} onMouseUp={onMouseUp}
+        onDoubleClick={() => { if (trazo.length) terminarTrazo(); }}
         style={{ cursor: panneando ? 'grabbing' : arrastrando ? 'grabbing' : herramientaActiva ? 'crosshair' : 'default' }}>
         {/* Defs: flechas para cotas de distancia */}
         <defs>
@@ -1186,8 +1257,8 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             );
           });
         })()}
-        {piezas.map(p => (
-          <g key={p.id}
+        {piezasVisibles.map(p => (
+          <g key={p.id} style={esBloqueada(p) ? { pointerEvents: 'none' } : undefined}
             onMouseEnter={(e) => { if (!arrastrando && !herramientaActiva) setHoverPieza({ pieza: p, screenX: e.clientX, screenY: e.clientY }); }}
             onMouseLeave={() => setHoverPieza(null)}>
             <PiezaPlanta pieza={p} worldToScreen={worldToScreen} zoom={zoom}
@@ -1197,8 +1268,14 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
               onMouseDown={(e) => onMouseDownPieza(e, p)} />
           </g>
         ))}
-        {mouseEnCanvas && herramientaActiva && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !panneando && !arrastrando && (
-          <PiezaPlanta pieza={{ ...herramientaActiva, x: mousePos.x, z: mousePos.z, id: 'ghost', orientacion: orientacionActiva }} worldToScreen={worldToScreen} zoom={zoom} fantasma modoTecnico={modoTecnico} />
+        {mouseEnCanvas && herramientaActiva && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !esHerramientaTrazo(herramientaActiva) && !panneando && !arrastrando && (
+          <PiezaPlanta pieza={esFestival(herramientaActiva)
+            ? { ...herramientaActiva, _def: herramientaActiva, x: mousePos.x, y: 0, z: mousePos.z, rot: rotacionActiva, id: 'ghost' }
+            : { ...herramientaActiva, x: mousePos.x, z: mousePos.z, id: 'ghost', orientacion: orientacionActiva }} worldToScreen={worldToScreen} zoom={zoom} fantasma modoTecnico={modoTecnico} />
+        )}
+        {esHerramientaTrazo(herramientaActiva) && (
+          <TrazoEnCurso herramienta={herramientaActiva} puntos={trazo} cursor={mouseEnCanvas && !panneando ? { x: mousePos.x, z: mousePos.z } : null}
+            worldToScreen={worldToScreen} zoom={zoom} />
         )}
         {mouseEnCanvas && herramientaActiva?.categoria === 'diagonalPlanta' && diagonalPlantaOrigen && (() => {
           const pA = worldToScreen(diagonalPlantaOrigen.x, diagonalPlantaOrigen.z);
@@ -1239,6 +1316,38 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           )}
         </div>
       )}
+      {/* Capas y propiedades de la selección (entidades de predio) */}
+      <div className="absolute top-2 left-8 flex flex-col gap-1.5 items-start z-10">
+        <PanelCapas capas={capas} toggleCapa={toggleCapa} piezas={piezas} />
+        {!herramientaActiva && <PanelPropiedades piezas={piezas} piezasSeleccionadas={piezasSeleccionadas} actualizarPiezas={actualizarPiezas} />}
+      </div>
+      {esHerramientaTrazo(herramientaActiva) && (
+        <div className="pointer-events-none absolute bottom-9 left-1/2 -translate-x-1/2 bg-black/85 text-white text-[11px] px-3 py-1.5 rounded shadow">
+          {herramientaActiva.nombre}: clic agrega un punto · <b>Enter</b> o doble clic termina · <b>⌫</b> borra el último · <b>Esc</b> cancela
+        </div>
+      )}
+      {esFestival(herramientaActiva) && (
+        <div className="pointer-events-none absolute bottom-9 left-1/2 -translate-x-1/2 bg-black/85 text-white text-[11px] px-3 py-1.5 rounded shadow">
+          {herramientaActiva.nombre} · rotación {rotacionActiva}° · <b>R</b> gira 90° · <b>⇧R</b> gira 15°
+        </div>
+      )}
+      {informe && (
+        <div className={`absolute top-12 left-1/2 -translate-x-1/2 max-w-md text-[11px] px-3 py-2 rounded shadow border ${informe.error ? 'bg-red-50 border-red-300 text-red-800' : 'bg-white border-gray-300 text-gray-800'}`}>
+          <div className="flex items-start gap-3">
+            <div className="flex-1">
+              {informe.error ? informe.error : <>
+                <div className="font-bold">{informe.cantidad} × {informe.nombre}</div>
+                <div>Largo del recorrido {informe.largoRecorrido.toLocaleString('es-AR')} m · nominal colocado {informe.largoNominal.toLocaleString('es-AR')} m</div>
+                {informe.remanentes.length > 0
+                  ? <div className="text-amber-700 font-semibold">Sin cubrir: {informe.remanentes.map(r => `${r.largo.toLocaleString('es-AR')} m en tramo ${r.segmento}`).join(' · ')}. No se estiran ni recortan módulos.</div>
+                  : <div className="text-green-700">Recorrido cubierto con módulos completos.</div>}
+                <div className="text-gray-500">Módulos a paso nominal: la separación real depende de la unión, todavía sin definir.{informe.giros > 0 ? ` ${informe.giros} giro(s) sin esquinero verificado.` : ''}</div>
+              </>}
+            </div>
+            <button onClick={() => setInforme(null)} className="text-gray-400 hover:text-gray-700 font-bold">✕</button>
+          </div>
+        </div>
+      )}
       {/* Badge altura Y activa */}
       <div className="absolute top-2 right-2 bg-blue-600/90 text-white text-xs font-bold px-3 py-1 rounded shadow">
         Altura Y = {alturaY.toFixed(2)}m
@@ -1262,9 +1371,9 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       })()}
       {/* Controles de zoom */}
       <div className="absolute bottom-2 right-56 flex items-center gap-1">
-        <button onClick={() => { const nz = Math.max(15, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
+        <button onClick={() => { const nz = Math.max(ZOOM_MIN, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
         <div className="bg-white/90 border border-gray-300 text-[9px] text-gray-500 px-1.5 py-0.5 rounded font-mono min-w-[40px] text-center">{Math.round(zoom)}%</div>
-        <button onClick={() => { const nz = Math.min(220, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
+        <button onClick={() => { const nz = Math.min(ZOOM_MAX, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
       </div>
       <div className="absolute bottom-2 right-2 bg-white/95 border border-gray-300 text-[9px] text-gray-500 px-2 py-0.5 rounded">
         Vista de planta · Z = profundidad/fila · Esquemático preliminar

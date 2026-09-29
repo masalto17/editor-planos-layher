@@ -7,6 +7,10 @@ import Cotas from './Cotas.jsx';
 import FlashColocacion from '../ui/FlashColocacion.jsx';
 import { elegirDiagonal } from '../catalogo/piezas.js';
 import PiezaTooltip from '../ui/PiezaTooltip.jsx';
+import { PanelCapas, PanelPropiedades } from '../ui/PanelPredio.jsx';
+import { esFestival, capaDe } from '../modelo/entidades.js';
+
+const ZOOM_MIN = 1.5, ZOOM_MAX = 220;
 
 // Vista de alzado frontal: plano X (horizontal) - Y (altura), a la profundidad `filaZ` activa.
 export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnico, svgRefCb, fitTrigger, onStatusUpdate }) {
@@ -16,7 +20,9 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     filas, setFilaActivaId,
     commit, copiar, pegar, duplicar, eliminarSeleccion, flipMensulas,
     colocarPiezaAlzado, colocarDiagonalAlzado, calcularSnapAlzado, moverPiezas, commitPiezasActuales,
+    capas, toggleCapa, rotacionActiva, colocarFestival, actualizarPiezas,
   } = modelo;
+  const esBloqueada = useCallback(p => !!capas[capaDe(p)]?.bloqueada, [capas]);
 
   // Piezas seleccionadas que están fuera de la fila visible ahora. Sirve para avisar
   // al usuario cuando su selección vino de la Planta y no cae en el Alzado actual.
@@ -28,7 +34,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
 
   // Filtra piezas visibles en la fila Z activa. Horizontales orientadas en Z pueden
   // atravesar la fila (arrancan en un z0 y llegan hasta z0+largo) — cruzaFilaZ maneja eso.
-  const piezasFila = useMemo(() => piezas.filter(p => cruzaFilaZ(p, filaZ)), [piezas, filaZ]);
+  const piezasFila = useMemo(() => piezas.filter(p => cruzaFilaZ(p, filaZ) && capas[capaDe(p)]?.visible !== false), [piezas, filaZ, capas]);
 
   const [arrastrando, setArrastrando] = useState(null);
   const [seleccionRect, setSeleccionRect] = useState(null);
@@ -73,7 +79,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     const nz = Math.min(dimCanvas.w / wW, dimCanvas.h / wH, 200);
     const cx = (bounds.xMin + bounds.xMax) / 2;
     const cy = (bounds.yMin + bounds.yMax) / 2;
-    setZoom(Math.max(15, nz));
+    setZoom(Math.max(ZOOM_MIN, nz));
     setPan({ x: cx - dimCanvas.w / (2 * nz), y: cy - dimCanvas.h / (2 * nz) });
   }, [fitTrigger]);
 
@@ -136,10 +142,17 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     }
     if (e.button !== 0) return;
     if (herramientaActiva) {
+      // Posición ajustada del propio evento: no depende del último mousemove.
+      const r = svgRef.current.getBoundingClientRect();
+      const w = screenToWorld(e.clientX - r.left, e.clientY - r.top);
+      const pos = calcularSnapAlzado(w.x, w.y, herramientaActiva);
+      setMousePos(pos);
       if (herramientaActiva.categoria === 'diagonal') {
-        if (!diagonalOrigen) setDiagonalOrigen({ x: mousePos.x, y: mousePos.y });
-        else { colocarDiagonalAlzado(diagonalOrigen, { x: mousePos.x, y: mousePos.y }); setDiagonalOrigen(null); }
-      } else colocarPiezaAlzado(herramientaActiva, mousePos.x, mousePos.y);
+        if (!diagonalOrigen) setDiagonalOrigen({ x: pos.x, y: pos.y });
+        else { colocarDiagonalAlzado(diagonalOrigen, { x: pos.x, y: pos.y }); setDiagonalOrigen(null); }
+      } else if (esFestival(herramientaActiva)) colocarFestival(herramientaActiva, pos.x, pos.y, filaZ);
+      else if (['area', 'recorrido', 'valladoRecorrido'].includes(herramientaActiva.categoria)) return; // se trazan en Planta
+      else colocarPiezaAlzado(herramientaActiva, pos.x, pos.y);
       return;
     }
     const rect = svgRef.current.getBoundingClientRect();
@@ -155,7 +168,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       if (seleccionRect) {
         const xMin = Math.min(seleccionRect.x1, seleccionRect.x2), xMax = Math.max(seleccionRect.x1, seleccionRect.x2);
         const yMin = Math.min(seleccionRect.y1, seleccionRect.y2), yMax = Math.max(seleccionRect.y1, seleccionRect.y2);
-        const ns = piezasFila.filter(p => { const b = piezaBounds(p); return !(b.xMax < xMin || b.xMin > xMax || b.yMax < yMin || b.yMin > yMax); }).map(p => p.id);
+        const ns = piezasFila.filter(p => !esBloqueada(p)).filter(p => { const b = piezaBounds(p); return !(b.xMax < xMin || b.xMin > xMax || b.yMax < yMin || b.yMin > yMax); }).map(p => p.id);
         setPiezasSeleccionadas(seleccionInicio.shift ? prev => [...new Set([...prev, ...ns])] : ns);
       } else if (!seleccionInicio.shift) setPiezasSeleccionadas([]);
       setSeleccionInicio(null); setSeleccionRect(null);
@@ -174,13 +187,13 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       const s2w = (sx2, sy2) => ({ x: sx2 / z + p.x, y: (dc.h - sy2) / z + p.y });
       if (e.ctrlKey || e.metaKey) {
         const wa = s2w(sx, sy); const f = e.deltaY < 0 ? 1.08 : 0.93;
-        const nz = Math.max(15, Math.min(220, z * f)); setZoom(nz);
+        const nz = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z * f)); setZoom(nz);
         setPan({ x: wa.x - sx / nz, y: wa.y - (dc.h - sy) / nz }); return;
       }
       if (Math.abs(e.deltaX) > 0 || !e.shiftKey) {
         setPan(pp => ({ x: pp.x + e.deltaX / z, y: pp.y - e.deltaY / z }));
       } else {
-        const wa = s2w(sx, sy); const nz = Math.max(15, Math.min(220, z * (e.deltaY < 0 ? 1.15 : 0.87)));
+        const wa = s2w(sx, sy); const nz = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, z * (e.deltaY < 0 ? 1.15 : 0.87)));
         setZoom(nz); setPan({ x: wa.x - sx / nz, y: wa.y - (dc.h - sy) / nz });
       }
     };
@@ -189,6 +202,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   }, []);
 
   const onMouseDownPieza = (e, pieza) => {
+    if (esBloqueada(pieza)) return;
     e.stopPropagation(); if (herramientaActiva) return;
     const yaSel = piezasSeleccionadas.includes(pieza.id);
     if (e.shiftKey) { setPiezasSeleccionadas(yaSel ? prev => prev.filter(id => id !== pieza.id) : prev => [...prev, pieza.id]); return; }
@@ -220,7 +234,7 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         <LineaBase worldVisible={worldVisible} worldToScreen={worldToScreen} label="SUELO" />
         {/* Niveles de piso — marcas de altura cada 0.50m en borde izquierdo */}
         {(() => {
-          const step = zoom > 80 ? 0.5 : zoom > 40 ? 1.0 : 2.0;
+          const step = zoom > 80 ? 0.5 : zoom > 40 ? 1.0 : zoom > 12 ? 2.0 : zoom > 4 ? 5.0 : 10.0;
           const yMin = Math.floor(worldVisible.yMin / step) * step;
           const yMax = Math.ceil(worldVisible.yMax / step) * step;
           const niveles = [];
@@ -269,7 +283,9 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
         <FlashColocacion piezas={piezasFila} worldToScreen={worldToScreen} />
         {mostrarCotas && <Cotas piezas={piezasFila} worldToScreen={worldToScreen} zoom={zoom} worldVisible={worldVisible} dimCanvas={dimCanvas} modoTecnico={modoTecnico} />}
         {mouseEnCanvas && herramientaActiva && !panneando && !arrastrando && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && (
-          <PiezaRender pieza={{ ...herramientaActiva, x: mousePos.x, y: mousePos.y, id: 'ghost', orientacion: orientacionActiva }}
+          <PiezaRender pieza={esFestival(herramientaActiva)
+              ? { ...herramientaActiva, _def: herramientaActiva, x: mousePos.x, y: mousePos.y, z: filaZ, rot: rotacionActiva, id: 'ghost' }
+              : { ...herramientaActiva, x: mousePos.x, y: mousePos.y, id: 'ghost', orientacion: orientacionActiva }}
             worldToScreen={worldToScreen} zoom={zoom} fantasma modoTecnico={modoTecnico} />
         )}
         {mouseEnCanvas && herramientaActiva?.categoria === 'diagonal' && diagonalOrigen && (
@@ -317,11 +333,15 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           )}
         </div>
       )}
+      <div className="absolute top-2 left-12 flex flex-col gap-1.5 items-start z-10">
+        <PanelCapas capas={capas} toggleCapa={toggleCapa} piezas={piezas} />
+        {!herramientaActiva && <PanelPropiedades piezas={piezas} piezasSeleccionadas={piezasSeleccionadas} actualizarPiezas={actualizarPiezas} />}
+      </div>
       {/* Controles de zoom */}
       <div className="absolute bottom-2 right-44 flex items-center gap-1">
-        <button onClick={() => { const nz = Math.max(15, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
+        <button onClick={() => { const nz = Math.max(ZOOM_MIN, zoom * 0.8); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Alejar">−</button>
         <div className="bg-white/90 border border-gray-300 text-[9px] text-gray-500 px-1.5 py-0.5 rounded font-mono min-w-[40px] text-center">{Math.round(zoom)}%</div>
-        <button onClick={() => { const nz = Math.min(220, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
+        <button onClick={() => { const nz = Math.min(ZOOM_MAX, zoom * 1.25); setZoom(nz); }} className="bg-white/90 hover:bg-gray-100 border border-gray-300 text-gray-600 w-6 h-6 rounded text-sm font-bold flex items-center justify-center" title="Acercar">+</button>
       </div>
       <div className="absolute bottom-2 right-2 bg-white/95 border border-gray-300 text-[9px] text-gray-500 px-2 py-0.5 rounded">
         Esquemático preliminar · No usar como guía de armado

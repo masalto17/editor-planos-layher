@@ -95,7 +95,14 @@ const materials = {
   selected: new THREE.MeshStandardMaterial({ color: 0xe30613, metalness: 0.62, roughness: 0.2, emissive: 0x3c0004, emissiveIntensity: 0.28 }),
   ghost: new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.08, depthWrite: false }),
   dimension: new THREE.LineBasicMaterial({ color: 0xe30613, transparent: true, opacity: 0.9 }),
+  festival: new THREE.MeshStandardMaterial({ color: 0x8d9189, metalness: 0.55, roughness: 0.35 }),
+  route: new THREE.MeshStandardMaterial({ color: 0x3b82f6, metalness: 0.1, roughness: 0.8 }),
+  area: new THREE.MeshBasicMaterial({ color: 0x60a5fa, side: THREE.DoubleSide, depthWrite: false }),
+  deck: new THREE.MeshStandardMaterial({ color: 0x6b4a2f, metalness: 0.05, roughness: 0.85, side: THREE.DoubleSide }),
+  deckTechnical: new THREE.MeshStandardMaterial({ color: 0x8a8a84, metalness: 0.1, roughness: 0.7, side: THREE.DoubleSide }),
 };
+// Áreas: superficies translúcidas, nunca cajas opacas.
+const OPACIDAD_AREA = 0.18;
 
 const geometries = {
   rosette: new THREE.TorusGeometry(0.061, 0.006, 8, 24),
@@ -136,7 +143,7 @@ function enrichLine(mesh, length, radius, primitive) {
     mesh.material = materials.edge;
     return;
   }
-  if (primitive.kind === 'imported' || primitive.kind === 'envelope') return;
+  if (['imported', 'envelope', 'festival', 'route'].includes(primitive.kind)) return;
   if (primitive.kind === 'head') {
     mesh.material = materials.head;
     return;
@@ -215,7 +222,7 @@ function faceMesh(points, primitive) {
   geometry.computeVertexNormals();
   const mesh = new THREE.Mesh(geometry, primitive.kind === 'plate' ? faceMaterial(points) : chooseMaterial(primitive));
   mesh.position.copy(center);
-  mesh.castShadow = true;
+  mesh.castShadow = primitive.kind !== 'area';
   mesh.receiveShadow = true;
   enrichFace(mesh, points, primitive);
   return mesh;
@@ -255,6 +262,8 @@ function enrichFace(mesh, points, primitive) {
 }
 
 function chooseMaterial(primitive) {
+  if (primitive.kind === 'area') return materials.area;
+  if (primitive.kind === 'deck') return style === 'technical' ? materials.deckTechnical : materials.deck;
   if (primitive.kind === 'wood' && style !== 'technical') return materials.wood;
   if (style === 'technical') return materials.tubeTechnical;
   if (primitive.kind === 'imported' || primitive.kind === 'envelope') return materials.imported;
@@ -263,6 +272,8 @@ function chooseMaterial(primitive) {
   if (primitive.kind === 'rosette') return materials.rosette;
   if (primitive.kind === 'grating') return materials.edge;
   if (primitive.kind === 'brace') return materials.brace;
+  if (primitive.kind === 'festival') return materials.festival;
+  if (primitive.kind === 'route') return materials.route;
   return materials.tube;
 }
 
@@ -272,8 +283,8 @@ function setMeshState(mesh, primitive) {
   mesh.visible = visibleByCategory;
   if (!visibleByCategory) return;
   setObjectMaterial(mesh, primitive.index === selected ? materials.selected : chooseMaterial(primitive));
-  mesh.userData.baseOpacity = selected < 0 || primitive.index === selected ? 1 : 0.2;
-  if (primitive.index !== selected) {
+  mesh.userData.baseOpacity = (selected < 0 || primitive.index === selected ? 1 : 0.2) * (primitive.kind === 'area' ? OPACIDAD_AREA : 1);
+  if (primitive.index !== selected || primitive.kind === 'area') {
     setObjectOpacity(mesh, mesh.userData.baseOpacity);
   }
   const source = primitive.type === 'face' ? primitive.pts[0] : primitive.source ?? primitive.a;

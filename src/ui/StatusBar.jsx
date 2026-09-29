@@ -1,7 +1,7 @@
 // Barra de estado inferior — muestra zoom, coordenadas, pieza seleccionada, peso total
 import { Crosshair, Layers, Weight, ZoomIn } from 'lucide-react';
 
-export default function StatusBar({ zoom, mousePos, vista, piezasSeleccionadas, piezas, pesoTotal, cantPiezas, herramientaActiva }) {
+export default function StatusBar({ zoom, mousePos, vista, piezasSeleccionadas, piezas, pesoTotal, pesoCompleto = true, cantPiezas, herramientaActiva }) {
   const selCount = piezasSeleccionadas.length;
   const selPieza = selCount === 1 ? piezas?.find(p => p.id === piezasSeleccionadas[0]) : null;
 
@@ -56,7 +56,7 @@ export default function StatusBar({ zoom, mousePos, vista, piezasSeleccionadas, 
           <div className="flex items-center gap-1 text-blue-600">
             <Layers size={10} />
             {selCount === 1 && selPieza ? (
-              <span>{selPieza.nombre || selPieza.categoria} · {selPieza.peso}kg</span>
+              <span>{selPieza.nombre || selPieza.categoria}{selPieza.peso != null ? ` · ${selPieza.peso}kg` : ''}</span>
             ) : (
               <span>{selCount} sel · {pesoSel.toFixed(1)}kg</span>
             )}
@@ -70,7 +70,7 @@ export default function StatusBar({ zoom, mousePos, vista, piezasSeleccionadas, 
         <Weight size={10} className="text-gray-400" />
         <span>{cantPiezas} piezas</span>
         <span className="text-gray-300">·</span>
-        <span className="font-semibold">{pesoTotal.toFixed(0)} kg</span>
+        <span className="font-semibold" title={pesoCompleto ? 'Peso total' : 'Subtotal conocido: hay piezas sin peso'}>{pesoCompleto ? '' : '≥ '}{pesoTotal.toFixed(0)} kg</span>
         {pesoTotal >= 1000 && <span className="text-gray-400">({(pesoTotal / 1000).toFixed(2)}t)</span>}
       </div>
     </div>

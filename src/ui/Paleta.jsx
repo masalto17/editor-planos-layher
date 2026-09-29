@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { MousePointer2, ChevronDown, ChevronRight, Upload, Trash2, AlertTriangle, Search, X, Clock } from 'lucide-react';
 import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalogo/piezas.js';
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
+import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -204,6 +205,7 @@ function PiezaItem({ pieza, activa, onSelect, showRef }) {
             </>
         }
       </div>
+      {pieza.estado === 'esquematico' && <span title="Esquemático: medidas y peso aproximados, sin validar" className={`text-[8px] font-bold px-0.5 rounded border shrink-0 ${sel ? 'text-white border-white' : 'text-amber-700 border-amber-600'}`}>ESQ</span>}
       <span className={`text-[9px] shrink-0 tabular-nums ${sel ? 'text-red-100' : 'text-gray-400'}`}>{pieza.peso}kg</span>
     </button>
   );
@@ -325,6 +327,104 @@ function SeccionImportadas({ piezasImportadas, activa, onSelect, onEliminar, onI
   );
 }
 
+// ─── Sección Predio / Festival ─────────────────────────────────────
+const GRUPOS_FESTIVAL = [
+  { titulo: 'Vallados', familias: ['valladoAntiavalancha', 'rejaModular'] },
+  { titulo: 'Energía', familias: ['generador'] },
+  { titulo: 'Escenario', familias: ['tarima'] },
+];
+const fmtM = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+function medidaFestival(d) {
+  const { ancho, alto } = d.dimensiones;
+  if (ancho == null) return 'sin dimensiones';
+  return `${fmtM(ancho)} × ${alto == null ? '?' : fmtM(alto)} m`;
+}
+
+function ItemFestival({ def, sel, onSelect }) {
+  const est = ESTADOS[def.estado];
+  return (
+    <button onClick={() => onSelect({ ...def, categoria: 'festival' })}
+      title={`${def.nombre}\n${est?.label ?? ''}${def.pendientes?.length ? `\nPendiente: ${def.pendientes.join(', ')}` : ''}`}
+      className={`w-full flex items-center gap-1.5 px-1.5 py-1 text-[11px] rounded border transition-all ${
+        sel ? 'bg-red-600 text-white border-red-700 shadow-sm' : 'bg-white border-gray-200 hover:border-gray-400 hover:shadow-sm text-gray-800'}`}>
+      <span className="w-3 h-3 rounded-sm shrink-0 border border-black/20" style={{ background: sel ? '#fff' : def.color }} />
+      <div className="flex-1 min-w-0 text-left">
+        <span className="font-semibold truncate block">{def.nombre.replace(/ · .*/, '')}{def.acabado ? ` · ${def.acabado}` : ''}</span>
+        <span className={`text-[9px] ${sel ? 'text-red-100' : 'text-gray-400'}`}>{medidaFestival(def)}</span>
+      </div>
+      {est && <span className="text-[8px] font-bold px-1 rounded shrink-0" style={{ color: sel ? '#fff' : est.color, border: `1px solid ${sel ? '#fff' : est.color}` }}>{est.corto}</span>}
+    </button>
+  );
+}
+
+function SeccionFestival({ activa, onSelect, vista, termino }) {
+  const [abierto, setAbierto] = useState(true);
+  const [usoArea, setUsoArea] = useState('campo');
+  const [usoRec, setUsoRec] = useState('circulacion');
+  const [valla, setValla] = useState('REJA-300');
+  const coincide = d => !termino || [d.nombre, ...(d.aliases ?? [])].some(t => t.toLowerCase().includes(termino));
+  const grupos = GRUPOS_FESTIVAL.map(g => ({ ...g, defs: DEFINICIONES_FESTIVAL.filter(d => g.familias.includes(d.familia) && coincide(d)) })).filter(g => g.defs.length);
+  const trazos = vista === 'planta' ? HERRAMIENTAS_TRAZO.filter(coincide) : [];
+  if (!grupos.length && !trazos.length) return null;
+
+  const herramientaTrazo = (h, valor) => {
+    if (h.categoria === 'area') { const u = USOS_AREA.find(x => x.id === (valor ?? usoArea)); return { ...h, uso: u.id, nombre: `Área · ${u.label}` }; }
+    if (h.categoria === 'recorrido') { const u = USOS_RECORRIDO.find(x => x.id === (valor ?? usoRec)); return { ...h, uso: u.id, nombre: `Recorrido · ${u.label}` }; }
+    const v = VALLAS.find(x => x.id === (valor ?? valla)); return { ...h, defId: v.id, nombre: `Vallado por recorrido · ${v.nombre}` };
+  };
+  // Si cambia el uso o la valla con la herramienta activa, se actualiza la herramienta.
+  const cambiar = (setter, cat) => e => {
+    const valor = e.target.value;
+    setter(valor);
+    if (activa?.categoria === cat) onSelect(herramientaTrazo(HERRAMIENTAS_TRAZO.find(h => h.categoria === cat), valor));
+  };
+  const selectCls = 'w-full mt-0.5 px-1 py-0.5 text-[10px] border border-gray-300 rounded bg-white';
+
+  return (
+    <div className="mb-1">
+      <button onClick={() => setAbierto(a => !a)}
+        className="w-full flex items-center gap-1.5 px-1.5 py-1 text-[11px] font-extrabold rounded hover:bg-gray-50 text-gray-700">
+        {abierto ? <ChevronDown size={11} className="shrink-0" /> : <ChevronRight size={11} className="shrink-0" />}
+        <span>🎪</span><span className="truncate">Predio / Festival</span>
+        <span className="ml-auto text-[8px] font-bold text-amber-700 border border-amber-600 rounded px-1">FASE 1</span>
+      </button>
+      {abierto && (
+        <div className="pl-2 border-l-2 border-gray-100 ml-2 mt-0.5 space-y-1">
+          {grupos.map(g => (
+            <div key={g.titulo}>
+              <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">{g.titulo}</div>
+              <div className="space-y-0.5">{g.defs.map(d => <ItemFestival key={d.id} def={d} sel={activa?.id === d.id} onSelect={onSelect} />)}</div>
+            </div>
+          ))}
+          {trazos.length > 0 && (
+            <div>
+              <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">Trazar en planta</div>
+              <div className="space-y-1">
+                {trazos.map(h => {
+                  const sel = activa?.id === h.id;
+                  return (
+                    <div key={h.id} className={`rounded border px-1.5 py-1 ${sel ? 'border-red-600 bg-red-50' : 'border-gray-200 bg-white'}`}>
+                      <button onClick={() => onSelect(herramientaTrazo(h))}
+                        className={`w-full text-left text-[11px] font-semibold ${sel ? 'text-red-700' : 'text-gray-800'}`}>
+                        {h.categoria === 'area' ? '⬠' : h.categoria === 'recorrido' ? '⤳' : '▭▭'} {h.nombre}
+                      </button>
+                      {h.categoria === 'area' && <select id="uso-area" className={selectCls} value={usoArea} onChange={cambiar(setUsoArea, 'area')}>{USOS_AREA.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}</select>}
+                      {h.categoria === 'recorrido' && <select id="uso-recorrido" className={selectCls} value={usoRec} onChange={cambiar(setUsoRec, 'recorrido')}>{USOS_RECORRIDO.map(u => <option key={u.id} value={u.id}>{u.label}</option>)}</select>}
+                      {h.categoria === 'valladoRecorrido' && <select id="valla-recorrido" className={selectCls} value={valla} onChange={cambiar(setValla, 'valladoRecorrido')}>{VALLAS.map(v => <option key={v.id} value={v.id}>{v.nombre}</option>)}</select>}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          <p className="px-1 text-[9px] text-gray-400 leading-snug">ESQ = esquemático, PEND = pendiente de referencia. Los datos sin confirmar se muestran como «Sin dato».</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Sección Últimas usadas ────────────────────────────────────────
 function UltimasUsadas({ recientes, activa, onSelect }) {
   if (recientes.length === 0) return null;
@@ -336,8 +436,8 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
       <div className="flex flex-wrap gap-1 mt-0.5 px-0.5">
         {recientes.map(p => {
           const sel = activa?.id === p.id;
-          const esEv = CATS_EVENTO.has(p.categoria);
-          const medida = p.categoria === 'diagonal'
+          const esEv = CATS_EVENTO.has(p.categoria) || ['festival', 'area', 'recorrido', 'valladoRecorrido'].includes(p.categoria);
+          const medida = esEv ? null : p.categoria === 'diagonal'
             ? `${p.ancho.toFixed(2)}×${p.alto.toFixed(2)}`
             : p.anchoPlat ? `${p.anchoPlat.toFixed(2)}×${p.largo.toFixed(2)}`
             : `${p.largo.toFixed(2)}m`;
@@ -501,7 +601,7 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
       {!hayBusqueda && <UltimasUsadas recientes={recientes} activa={herramientaActiva} onSelect={handleSelect} />}
 
       {/* Catálogo agrupado */}
-      {hayBusqueda && seccionesFiltradas.length === 0 && (
+      {hayBusqueda && seccionesFiltradas.length === 0 && !DEFINICIONES_FESTIVAL.some(d => [d.nombre, ...d.aliases].some(t => t.toLowerCase().includes(terminoBusqueda))) && (
         <div className="text-center py-4 text-gray-400 text-[11px]">
           Sin resultados para «{busqueda}»
         </div>
@@ -516,6 +616,8 @@ export default function Paleta({ herramientaActiva, setHerramientaActiva, vista,
           showRef={showRef}
           searchMode={hayBusqueda} />
       ))}
+
+      <SeccionFestival activa={herramientaActiva} onSelect={handleSelect} vista={vista} termino={terminoBusqueda} />
 
       {/* Importadas */}
       <SeccionImportadas

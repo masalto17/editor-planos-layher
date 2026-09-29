@@ -23,6 +23,7 @@ import HorizontalUT14 from './HorizontalUT14.jsx';
 import TacoMadera from './TacoMadera.jsx';
 import DiagonalPlanta from './DiagonalPlanta.jsx';
 import GenericPiezaRender from './GenericPiezaRender.jsx';
+import FestivalAlzado from './FestivalAlzado.jsx';
 import { TIENE_ORIENTACION } from '../catalogo/constantes.js';
 
 export { PreviewDiagonal };
@@ -70,6 +71,7 @@ const RENDERERS = {
   pantallaLED: PantallaLED,
   luz: MovingHead,
   diagonalPlanta: DiagonalPlanta,
+  festival: FestivalAlzado,
 };
 
 // Colores modo técnico: monocromo según categoría (grosor de línea diferencia)

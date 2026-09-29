@@ -1,3 +1,5 @@
+import { esTrazo } from '../modelo/entidades.js';
+
 // Tooltip enriquecido al hacer hover sobre una pieza — muestra nombre, ref, peso,
 // dimensiones, posición y fila. Compartido entre Alzado y Planta.
 
@@ -78,10 +80,10 @@ export default function PiezaTooltip({ hoverPieza, svgRef, vista }) {
         <div className="flex items-center gap-1.5 mt-0.5">
           <span className="font-mono text-gray-400 text-[9px]">{p.ref}</span>
           <span className="text-gray-500">·</span>
-          <span className="font-mono text-yellow-300/80 font-semibold">{p.peso} kg</span>
+          <span className="font-mono text-yellow-300/80 font-semibold">{esTrazo(p) ? 'no suma material' : p.peso == null ? 'peso sin dato' : `${p.peso} kg`}</span>
         </div>
         {/* Dimensiones */}
-        {p.largo && (
+        {typeof p.largo === 'number' && (
           <div className="flex items-center gap-1 mt-1 text-[9px] text-gray-300">
             <span>📏</span>
             <span className="font-mono">{p.largo.toFixed(2)}m</span>

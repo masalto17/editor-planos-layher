@@ -18,7 +18,7 @@ export default function Toolbar({
   orientacionActiva, toggleOrientacion,
   mostrarCotas, setMostrarCotas,
   modoTecnico, setModoTecnico,
-  pesoTotal, cantPiezas,
+  pesoTotal, pesoCompleto = true, cantPiezas,
   onAyuda, onCorte, onPlantillas, onImportDXF, onValidaciones,
   isMobile, onTogglePaleta, onToggleDespiece,
 }) {
@@ -137,7 +137,7 @@ export default function Toolbar({
               <button onClick={() => { onAyuda(); setMobileMenuOpen(false); }}
                 className="w-full flex items-center gap-2 px-3 py-2 text-xs hover:bg-gray-100"><HelpCircle size={14} /> Ayuda</button>
               {cantPiezas > 0 && (
-                <div className="px-3 py-1 text-[10px] text-gray-500 border-t border-gray-200 mt-1">{cantPiezas} pzas · {pesoTotal.toFixed(0)} kg</div>
+                <div className="px-3 py-1 text-[10px] text-gray-500 border-t border-gray-200 mt-1">{cantPiezas} pzas · {pesoCompleto ? '' : '≥ '}{pesoTotal.toFixed(0)} kg</div>
               )}
             </div>
           </>
@@ -173,7 +173,7 @@ export default function Toolbar({
         <div className="flex items-center gap-3 text-xs text-gray-300">
           <span>{nombreDiseno}</span>
           {mensajeGuardado && <span className={mensajeGuardado.startsWith('✓') ? 'text-green-400' : 'text-red-400'}>{mensajeGuardado}</span>}
-          {cantPiezas > 0 && <span className="text-gray-500 font-mono text-[10px]">{cantPiezas} pzas · {pesoTotal.toFixed(0)} kg</span>}
+          {cantPiezas > 0 && <span className="text-gray-500 font-mono text-[10px]">{cantPiezas} pzas · {pesoCompleto ? '' : '≥ '}{pesoTotal.toFixed(0)} kg</span>}
         </div>
       </div>
 

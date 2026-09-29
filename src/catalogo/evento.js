@@ -70,6 +70,9 @@ export const CATALOGO_EVENTO = {
   ],
 };
 
+// Dimensiones, pesos y consumos de referencia, no de un equipo concreto: esquemáticos.
+Object.values(CATALOGO_EVENTO).forEach(lista => lista.forEach(p => { p.estado = 'esquematico'; }));
+
 // Mapeo de categorías → sección de paleta
 export const CAT_KEYS_EVENTO = [
   { key: 'lineArrays',   cat: 'lineArray',   label: '🔊 Line Array / Sonido' },

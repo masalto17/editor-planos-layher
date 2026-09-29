@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { FileDown, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { ES_TIPO_VERTICAL } from '../catalogo/constantes.js';
+import { resumenPeso } from '../modelo/entidades.js';
 
 /**
  * Modal que pide datos del proyecto antes de exportar PDF.
@@ -44,7 +45,8 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
     const allX = verts.map(p => p.x);
     const allY = verts.map(p => p.y + (p.largo || 0));
     const allZ = [...new Set(piezas.map(p => p.z ?? 0))];
-    const pesoTotal = piezas.reduce((s, p) => s + (p.peso || 0), 0);
+    const peso = resumenPeso(piezas);
+    const pesoTotal = peso.conocido;
     const anchoEst = allX.length ? (Math.max(...allX) - Math.min(...allX)) : 0;
     const altoEst = allY.length ? Math.max(...allY) : 0;
     const profEst = allZ.length > 1 ? (Math.max(...allZ) - Math.min(...allZ)) : 0;
@@ -53,8 +55,8 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
       piezas.filter(p => p.categoria === 'plataforma').map(p => p.y)
     )].sort((a, b) => a - b);
     return {
-      anchoEst, altoEst, profEst, pesoTotal,
-      cantPiezas: piezas.length,
+      anchoEst, altoEst, profEst, pesoTotal, pesoCompleto: peso.completo, sinPeso: peso.sinDato,
+      cantPiezas: peso.cantidad,
       cantFilas: filas?.length || 1,
       cantNiveles: altPisos.length,
       altPisos,
@@ -157,7 +159,7 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
                   <div className="font-bold text-gray-800 text-[10px] uppercase tracking-wide mb-1">Resumen calculado automáticamente</div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
                     <span>Dimensiones: <b className="text-gray-800">{resumen.anchoEst.toFixed(2)} × {resumen.altoEst.toFixed(2)}{resumen.profEst > 0 ? ` × ${resumen.profEst.toFixed(2)}` : ''}m</b></span>
-                    <span>Peso total: <b className="text-gray-800">{resumen.pesoTotal.toFixed(0)} kg</b></span>
+                    <span>{resumen.pesoCompleto ? 'Peso total' : 'Subtotal conocido'}: <b className="text-gray-800">{resumen.pesoTotal.toFixed(0)} kg</b>{!resumen.pesoCompleto && <span className="text-amber-700"> ({resumen.sinPeso} sin peso)</span>}</span>
                     <span>Filas: <b className="text-gray-800">{resumen.cantFilas}</b></span>
                     <span>Piezas: <b className="text-gray-800">{resumen.cantPiezas}</b></span>
                     <span>Verticales: <b className="text-gray-800">{resumen.cantVerts}</b></span>

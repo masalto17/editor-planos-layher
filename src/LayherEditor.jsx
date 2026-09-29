@@ -13,6 +13,7 @@ import Onboarding from './ui/Onboarding.jsx';
 import StatusBar from './ui/StatusBar.jsx';
 import { CATALOGO } from './catalogo/piezas.js';
 import { uid } from './modelo/operaciones.js';
+import { resumenPeso } from './modelo/entidades.js';
 
 const Planta = lazy(() => import('./vistas/Planta.jsx'));
 const ModalCorte = lazy(() => import('./ui/ModalCorte.jsx'));
@@ -64,8 +65,10 @@ export default function LayherEditor() {
   const duplicarEnVista = () => modelo.duplicar(vista);
   const pegarEnVista = (punto) => modelo.pegar(punto, vista);
   const zoomEncuadrar = () => setFitTrigger(t => t + 1);
-  const pesoTotal = useMemo(() => modelo.piezas.reduce((s, p) => s + p.peso, 0), [modelo.piezas]);
-  const cantPiezas = modelo.piezas.length;
+  const resumenP = useMemo(() => resumenPeso(modelo.piezas), [modelo.piezas]);
+  const pesoTotal = resumenP.conocido;
+  const pesoCompleto = resumenP.completo;
+  const cantPiezas = resumenP.cantidad;
 
   // Auto-cerrar paleta al elegir pieza en móvil
   const setHerramientaMobile = useCallback((h) => {
@@ -182,6 +185,8 @@ export default function LayherEditor() {
     if (!h) return;
     const sec = CAT_KEYS.find(ck => ck.cat === h.categoria);
     if (sec?.vistas && !sec.vistas.includes(vista)) modelo.setHerramientaActiva(null);
+    // Áreas, recorridos y vallado por recorrido se trazan en Planta.
+    if (vista === 'alzado' && ['area', 'recorrido', 'valladoRecorrido'].includes(h.categoria)) modelo.setHerramientaActiva(null);
   }, [vista, modelo.herramientaActiva]);
 
   // Atajo global: ? para atajos, G para grilla, T para técnico
@@ -253,7 +258,7 @@ export default function LayherEditor() {
         orientacionActiva={modelo.orientacionActiva} toggleOrientacion={modelo.toggleOrientacion}
         mostrarCotas={mostrarCotas} setMostrarCotas={setMostrarCotas}
         modoTecnico={modoTecnico} setModoTecnico={setModoTecnico}
-        pesoTotal={pesoTotal} cantPiezas={cantPiezas}
+        pesoTotal={pesoTotal} pesoCompleto={pesoCompleto} cantPiezas={cantPiezas}
         onAyuda={() => setMostrarAyuda(true)}
         onCorte={() => setMostrarCorte(true)}
         onPlantillas={() => setMostrarPlantillas(true)}
@@ -415,7 +420,7 @@ export default function LayherEditor() {
         <StatusBar
           zoom={zoomLevel} mousePos={mousePos} vista={vista}
           piezasSeleccionadas={modelo.piezasSeleccionadas} piezas={modelo.piezas}
-          pesoTotal={pesoTotal} cantPiezas={cantPiezas}
+          pesoTotal={pesoTotal} pesoCompleto={pesoCompleto} cantPiezas={cantPiezas}
           herramientaActiva={modelo.herramientaActiva}
         />
       )}
