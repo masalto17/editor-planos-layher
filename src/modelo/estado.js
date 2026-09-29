@@ -5,6 +5,7 @@ import {
   MODULOS_STANDARD, ROSETA_STEP, SNAP_TOLERANCIA, SNAP_TOL_DIAGONAL,
   ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL, TIENE_ORIENTACION,
 } from '../catalogo/constantes.js';
+import { idbGet, idbSet, idbDel, idbKeys } from './storage.js';
 import { uid, roundTo, piezaMinX, piezaMinY, piezaMinZ, desplazarPieza, cruzaFilaZ } from './operaciones.js';
 
 /**
@@ -15,6 +16,7 @@ import { uid, roundTo, piezaMinX, piezaMinY, piezaMinZ, desplazarPieza, cruzaFil
  * funcionando igual mientras no se agreguen filas nuevas.
  */
 export function useDisenoState() {
+  const MAX_HISTORIAL = 100;
   const [piezas, setPiezas] = useState([]);
   const [historial, setHistorial] = useState([[]]);
   const [historialIdx, setHistorialIdx] = useState(0);
@@ -92,8 +94,17 @@ export function useDisenoState() {
 
   // ---------- Historial ----------
   const commit = useCallback((np) => {
-    setHistorial(h => { const nh = h.slice(0, stateRef.current.historialIdx + 1); nh.push(np); return nh; });
-    setHistorialIdx(i => i + 1);
+    const prevIdx = stateRef.current.historialIdx;
+    const nh = stateRef.current.historial.slice(0, prevIdx + 1);
+    nh.push(np);
+    let newIdx = prevIdx + 1;
+    if (nh.length > MAX_HISTORIAL) {
+      const excess = nh.length - MAX_HISTORIAL;
+      nh.splice(0, excess);
+      newIdx -= excess;
+    }
+    setHistorial(nh);
+    setHistorialIdx(newIdx);
     setPiezas(np);
   }, []);
   const undo = useCallback(() => {
@@ -239,7 +250,8 @@ export function useDisenoState() {
     setOrientacionActiva('x');
     setNombreDiseno('Diseño sin título');
     setMensajeGuardado('');
-    try { localStorage.removeItem('layher:autosave'); } catch {}
+    idbDel('autosave').catch(() => {});
+    try { localStorage.removeItem('layher:autosave'); } catch { /* ignorar */ }
   }, []);
 
   // ---------- Snap: Alzado (plano X-Y, dentro de la fila Z activa) ----------
@@ -327,35 +339,65 @@ export function useDisenoState() {
   }, [commit]);
 
   // ---------- Persistencia ----------
-  const listarDisenos = useCallback(() => {
-    const claves = Object.keys(localStorage).filter(k => k.startsWith('layher:disenos:'));
-    return claves.map(k => {
+  const listarDisenos = useCallback(async () => {
+    const list = [];
+    const resumen = (d, nombre) => {
+      const fecha = d.fecha ? new Date(d.fecha) : null;
+      return {
+        nombre: d.nombre || nombre,
+        fecha,
+        fechaCorta: fecha ? fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—',
+        cantPiezas: Array.isArray(d.piezas) ? d.piezas.length : 0,
+      };
+    };
+    try {
+      const keys = await idbKeys();
+      for (const k of keys) {
+        if (typeof k === 'string' && k.startsWith('diseno:')) {
+          const d = await idbGet(k);
+          if (d) list.push(resumen(d, k.slice(7)));
+        }
+      }
+    } catch { /* ignorar */ }
+    // Diseños viejos en localStorage que aún no están en IDB
+    try {
+      const lsKeys = Object.keys(localStorage).filter(k => k.startsWith('layher:disenos:'));
+      for (const k of lsKeys) {
+        const nombre = k.replace('layher:disenos:', '');
+        if (!list.find(l => l.nombre === nombre)) {
+          try { list.push(resumen(JSON.parse(localStorage.getItem(k)), nombre)); } catch { /* ignorar */ }
+        }
+      }
+    } catch { /* ignorar */ }
+    return list.sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+  }, []);
+  const guardar = useCallback(async (nombre) => {
+    const { piezas: pz, filas: fl } = stateRef.current;
+    const payload = { nombre, piezas: pz, filas: fl, fecha: new Date().toISOString() };
+    try {
+      await idbSet(`diseno:${nombre}`, payload);
+      setNombreDiseno(nombre);
+      setMensajeGuardado(`✓ ${nombre}`);
+      // Respaldo en localStorage (solo diseños chicos)
       try {
-        const d = JSON.parse(localStorage.getItem(k));
-        const fecha = d.fecha ? new Date(d.fecha) : null;
-        return {
-          nombre: d.nombre || k.replace('layher:disenos:', ''),
-          fecha,
-          fechaCorta: fecha ? fecha.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: '2-digit' }) : '—',
-          cantPiezas: Array.isArray(d.piezas) ? d.piezas.length : 0,
-        };
-      } catch { return null; }
-    }).filter(Boolean).sort((a, b) => (b.fecha || 0) - (a.fecha || 0));
+        const json = JSON.stringify(payload);
+        if (json.length < 4_000_000) localStorage.setItem(`layher:disenos:${nombre}`, json);
+      } catch { /* ignorar */ }
+    } catch {
+      setMensajeGuardado('✗ Error al guardar');
+    }
+    setTimeout(() => setMensajeGuardado(''), 2500);
   }, []);
-  const guardar = useCallback((nombre) => {
+  const cargar = useCallback(async (nombre) => {
     try {
-      const payload = { nombre, piezas: stateRef.current.piezas, filas: stateRef.current.filas, fecha: new Date().toISOString() };
-      localStorage.setItem(`layher:disenos:${nombre}`, JSON.stringify(payload));
-      setNombreDiseno(nombre); setMensajeGuardado(`✓ ${nombre}`); setTimeout(() => setMensajeGuardado(''), 2500);
-    } catch { setMensajeGuardado('✗ Error'); setTimeout(() => setMensajeGuardado(''), 2500); }
-  }, []);
-  const cargar = useCallback((nombre) => {
-    try {
-      const raw = localStorage.getItem(`layher:disenos:${nombre}`);
-      if (!raw) { setMensajeGuardado('✗ No encontrado'); setTimeout(() => setMensajeGuardado(''), 2500); return; }
-      const d = JSON.parse(raw);
+      let d = await idbGet(`diseno:${nombre}`);
+      if (!d) {
+        const raw = localStorage.getItem(`layher:disenos:${nombre}`);
+        if (raw) d = JSON.parse(raw);
+      }
+      if (!d || !Array.isArray(d.piezas)) { setMensajeGuardado('✗ No encontrado'); setTimeout(() => setMensajeGuardado(''), 2500); return; }
       const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
-      commit(piezasNorm); setNombreDiseno(d.nombre);
+      commit(piezasNorm); setNombreDiseno(d.nombre || nombre);
       if (Array.isArray(d.filas) && d.filas.length) {
         setFilas(d.filas); setFilaActivaId(d.filas[0].id);
       } else {
@@ -366,11 +408,15 @@ export function useDisenoState() {
           : [{ id: 'A', nombre: 'A', z: 0 }];
         setFilas(derivadas); setFilaActivaId(derivadas[0].id);
       }
-      setMensajeGuardado(`✓ ${d.nombre}`); setTimeout(() => setMensajeGuardado(''), 2500);
-    } catch { setMensajeGuardado('✗ Error'); setTimeout(() => setMensajeGuardado(''), 2500); }
+      setMensajeGuardado(`✓ ${d.nombre || nombre}`);
+    } catch {
+      setMensajeGuardado('✗ Error al cargar');
+    }
+    setTimeout(() => setMensajeGuardado(''), 2500);
   }, [commit]);
-  const eliminarDiseno = useCallback((nombre) => {
-    localStorage.removeItem(`layher:disenos:${nombre}`);
+  const eliminarDiseno = useCallback(async (nombre) => {
+    try { await idbDel(`diseno:${nombre}`); } catch { /* ignorar */ }
+    try { localStorage.removeItem(`layher:disenos:${nombre}`); } catch { /* ignorar */ }
   }, []);
 
   // ---------- Guardar/Cargar como archivo (.json) ----------
@@ -481,14 +527,16 @@ export function useDisenoState() {
   }, [commit]);
 
   // ---------- Autoguardado (localStorage, cada 30s) ----------
-  const AUTOSAVE_KEY = 'layher:autosave';
   useEffect(() => {
-    // Restaurar al montar (solo si no hay piezas)
-    try {
-      const raw = localStorage.getItem(AUTOSAVE_KEY);
-      if (raw) {
-        const d = JSON.parse(raw);
-        if (Array.isArray(d.piezas) && d.piezas.length > 0) {
+    // Restaurar al montar: IndexedDB primero, localStorage como respaldo
+    (async () => {
+      try {
+        let d = await idbGet('autosave');
+        if (!d) {
+          const raw = localStorage.getItem('layher:autosave');
+          if (raw) d = JSON.parse(raw);
+        }
+        if (d && Array.isArray(d.piezas) && d.piezas.length > 0) {
           const piezasNorm = d.piezas.map(p => ({ z: 0, ...p }));
           commit(piezasNorm);
           if (d.nombre) setNombreDiseno(d.nombre);
@@ -497,19 +545,23 @@ export function useDisenoState() {
           }
           setMensajeGuardado('✓ Restaurado'); setTimeout(() => setMensajeGuardado(''), 2500);
         }
-      }
-    } catch { /* ignorar */ }
+      } catch { /* ignorar */ }
+    })();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const timer = setInterval(() => {
       const { piezas: pz, filas: fl } = stateRef.current;
       if (pz.length === 0) return;
+      const data = {
+        piezas: pz, filas: fl, nombre: stateRef.current.nombreDiseno || 'Diseño sin título',
+        fecha: new Date().toISOString(),
+      };
+      idbSet('autosave', data).catch(() => {});
+      // Respaldo en localStorage (solo diseños chicos)
       try {
-        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
-          piezas: pz, filas: fl, nombre: stateRef.current.nombreDiseno || 'Diseño sin título',
-          fecha: new Date().toISOString(),
-        }));
+        const json = JSON.stringify(data);
+        if (json.length < 4_000_000) localStorage.setItem('layher:autosave', json);
       } catch { /* ignorar */ }
     }, 30000);
     return () => clearInterval(timer);

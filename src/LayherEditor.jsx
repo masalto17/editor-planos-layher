@@ -1,26 +1,26 @@
 import { abrirVisualizador } from './export/visualizador.js';
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from 'react';
 import { CAT_KEYS } from './catalogo/piezas.js';
 import { useDisenoState } from './modelo/estado.js';
 import Toolbar from './ui/Toolbar.jsx';
 import Paleta from './ui/Paleta.jsx';
 import Despiece from './ui/Despiece.jsx';
 import Alzado from './vistas/Alzado.jsx';
-import Planta from './vistas/Planta.jsx';
 import ModalGuardarCargar from './ui/ModalGuardarCargar.jsx';
-import ModalExportPDF from './ui/ModalExportPDF.jsx';
 import ModalConfirmar from './ui/ModalConfirmar.jsx';
-import ModalCorte from './ui/ModalCorte.jsx';
 import AyudaRapida from './ui/AyudaRapida.jsx';
-import ModalPlantillas from './ui/ModalPlantillas.jsx';
-import ModalImportDXF from './ui/ModalImportDXF.jsx';
 import Onboarding from './ui/Onboarding.jsx';
-import ValidacionesEstructura from './ui/ValidacionesEstructura.jsx';
-import AtajosPanel from './ui/AtajosPanel.jsx';
 import StatusBar from './ui/StatusBar.jsx';
-import { exportarPDF } from './export/pdfExporter.js';
 import { CATALOGO } from './catalogo/piezas.js';
 import { uid } from './modelo/operaciones.js';
+
+const Planta = lazy(() => import('./vistas/Planta.jsx'));
+const ModalCorte = lazy(() => import('./ui/ModalCorte.jsx'));
+const ModalExportPDF = lazy(() => import('./ui/ModalExportPDF.jsx'));
+const ModalImportDXF = lazy(() => import('./ui/ModalImportDXF.jsx'));
+const ModalPlantillas = lazy(() => import('./ui/ModalPlantillas.jsx'));
+const ValidacionesEstructura = lazy(() => import('./ui/ValidacionesEstructura.jsx'));
+const AtajosPanel = lazy(() => import('./ui/AtajosPanel.jsx'));
 
 function useIsMobile(breakpoint = 768) {
   const [mobile, setMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < breakpoint);
@@ -205,6 +205,7 @@ export default function LayherEditor() {
   const handleExportPDF = async (datosProyecto) => {
     setExportando(true);
     try {
+      const { exportarPDF } = await import('./export/pdfExporter.js');
       await exportarPDF({
         nombreDiseno: datosProyecto.nombre || modelo.nombreDiseno,
         piezas: modelo.piezas,
@@ -222,6 +223,7 @@ export default function LayherEditor() {
   };
 
   return (
+    <Suspense fallback={<div className="w-full h-screen flex items-center justify-center bg-gray-100"><div className="text-gray-500">Cargando editor...</div></div>}>
     <div style={{ fontFamily: 'Nunito Sans, system-ui, sans-serif' }} className="w-full h-screen flex flex-col bg-gray-100">
       <Toolbar
         vista={vista} setVista={setVista}
@@ -229,8 +231,8 @@ export default function LayherEditor() {
         nuevo={handleNuevo}
         guardar={() => setModal('guardar')} guardarComo={() => setModal('guardarComo')} cargar={() => setModal('cargar')}
         verEn3D={() => {
-          try { abrirVisualizador(modelo, import.meta.env.BASE_URL); }
-          catch (error) { window.alert(error.message); }
+          abrirVisualizador(modelo, import.meta.env.BASE_URL)
+            .catch((error) => window.alert(error.message));
         }}
         exportarPDF={() => setModalPDF(true)} exportando={exportando}
         zoomEncuadrar={zoomEncuadrar}
@@ -431,5 +433,6 @@ export default function LayherEditor() {
         />
       )}
     </div>
+    </Suspense>
   );
 }

@@ -1,3 +1,5 @@
+import { idbSet } from '../modelo/storage.js';
+
 export function serializarDiseno(modelo) {
   if (!Array.isArray(modelo.piezas)) throw Error('El diseño no contiene una lista de piezas.');
   const text = JSON.stringify({
@@ -12,16 +14,16 @@ export function serializarDiseno(modelo) {
   return text;
 }
 
-export function abrirVisualizador(modelo, base = '/') {
-  const text = serializarDiseno(modelo);
+export async function abrirVisualizador(modelo, base = '/') {
+  const data = JSON.parse(serializarDiseno(modelo));
   const id = crypto.randomUUID();
   const url = new URL(`${base}visualizador/index.html`, location.origin);
   url.hash = new URLSearchParams({ proyecto: id }).toString();
+  // Abrir la pestaña de forma síncrona (antes del await) para no ser bloqueada por el navegador.
   const tab = window.open('about:blank', '_blank');
   if (!tab) throw Error('El navegador bloqueó la nueva pestaña. Permití las ventanas emergentes para abrir el visualizador.');
   try {
-    // Store only in the new tab: reload works without changing the editor or its saved designs.
-    tab.sessionStorage.setItem(`masalto:visor:${id}`, text);
+    await idbSet(`visor:${id}`, data);
     tab.opener = null;
     tab.location.replace(url.href);
   } catch {

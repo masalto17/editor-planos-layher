@@ -24,17 +24,15 @@ Proyecto Vite + React en la raíz. `src/LayherEditor.jsx` es el orquestador (ya 
 ver "Arquitectura objetivo" abajo, ya aplicada. V1.3 original queda de referencia en
 `files/LayherEditor_Alzado_V1_3.jsx`.
 
-## Piloto integrado versionado
+## Historial del piloto
 
-El piloto online de MasAlto Layout quedo versionado como snapshot aislado en
-`piloto/integracion-layout/`. Incluye landing comun, editor Layout integrado,
-disenador de piezas, visualizador 3D y paquete Netlify de referencia.
+El piloto online se construyó como snapshot aislado (branch `piloto-netlify-raw`,
+commit `c30cbe1`, deploy `masalto-layout-piloto` en Netlify). Todo su código fuente
+ya fue integrado a la app raíz; el directorio `piloto/` se eliminó en Fase 2.
 
-Ese snapshot proviene del branch `piloto-netlify-raw` (commit `c30cbe1`) y del
-deploy protegido `masalto-layout-piloto`. No es todavia la migracion final a la
-app raiz: usarlo como fuente controlada para integrar cambios por partes,
-manteniendo `www.masalto.com.ar` y produccion sin cambios hasta completar QA con
-casos reales.
+Documentación histórica conservada en:
+- `docs/historial-integracion-piloto.md` — changelog de las 6 entregas de integración
+- `docs/estado-piloto-netlify.md` — datos del deploy Netlify (site ID, URL, estado)
 
 Corré local:
 ```
