@@ -4,7 +4,7 @@ import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalog
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
 import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, OPCIONES_DIAGONALES, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
-import { MODULACIONES, ALTURAS_PISO, MAX_MODULOS_ANCHO, MAX_MODULOS_PROFUNDIDAD, MAX_PISOS } from '../catalogo/estructuras.js';
+import { MODULACIONES, ALTURAS_PISO, MAX_MODULOS_ANCHO, MAX_MODULOS_PROFUNDIDAD, MAX_PISOS, ALTURA_ESC_MIN, ALTURA_ESC_MAX, ALTURA_ESC_STEP, calcularRegulacion } from '../catalogo/estructuras.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -529,15 +529,22 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
                     </select>
                   </label>
                   <label className="text-[9px] text-gray-500">Alto a piso
-                    <select className={selectCls} value={escenario.alturaPiso} onChange={cambiarEscenario('alturaPiso', Number)}>
-                      {ALTURAS_PISO.map(h => <option key={h} value={h}>{fmt2(h)} m</option>)}
-                    </select>
+                    <input type="number" className={selectCls} value={escenario.alturaPiso}
+                      min={ALTURA_ESC_MIN} max={ALTURA_ESC_MAX} step={ALTURA_ESC_STEP}
+                      onChange={cambiarEscenario('alturaPiso', Number)} />
                   </label>
                 </div>
-                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">
-                  Total: {fmt2(escenario.modulosAncho * escenario.modulacion)} × {fmt2(escenario.modulosProfundidad * escenario.modulacion)} m, piso a {fmt2(escenario.alturaPiso)} m.
-                  {' '}Incluye vigas puente, stringers, fenólico. Diag. planta en todos los niveles.
-                </p>
+                {(() => {
+                  const reg = calcularRegulacion(escenario.alturaPiso);
+                  return (
+                    <p className="text-[9px] text-gray-400 leading-snug mt-0.5">
+                      Total: {fmt2(escenario.modulosAncho * escenario.modulacion)} × {fmt2(escenario.modulosProfundidad * escenario.modulacion)} m, piso a {fmt2(escenario.alturaPiso)} m.
+                      {reg && <span className="text-blue-600"> (vert. {fmt2(reg.verticalH)} + hus. ext. {fmt2(reg.extension)} m{reg.husiloId === 'HUS080' ? ', tornillón 0,80' : ''})</span>}
+                      {!reg && <span className="text-red-600"> Altura no alcanzable</span>}
+                      {' '}Incluye vigas puente, stringers, fenólico. Diag. planta en todos los niveles.
+                    </p>
+                  );
+                })()}
               </div>
             </div>
           )}
