@@ -10,6 +10,7 @@
 import { jsPDF } from 'jspdf';
 import { DESPIECE_ORDER } from '../catalogo/constantes.js';
 import { resumenPeso, computaMaterial } from '../modelo/entidades.js';
+import { dibujarPlantaPredio, dibujarLeyendaPredio, capasPresentes } from './pdfPredio.js';
 
 // --- Constantes de diseño ---
 const ROJO = '#E30613';
@@ -791,7 +792,8 @@ export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgP
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
   const fecha = new Date().toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
   const incluyeCorte = datosProyecto.incluirCorte && datosProyecto.corteX != null;
-  const totalPaginas = 1 + (svgPlanta ? 1 : 0) + (incluyeCorte ? 1 : 0);
+  const incluyePredio = !!datosProyecto.incluirPredio;
+  const totalPaginas = 1 + (svgPlanta ? 1 : 0) + (incluyeCorte ? 1 : 0) + (incluyePredio ? 1 : 0);
 
   // Cargar logos
   const logos = await cargarLogos();
@@ -933,6 +935,22 @@ export async function exportarPDF({ nombreDiseno, piezas, filas, svgAlzado, svgP
     dibujarResumenCorte(doc, corteResumen, W - M - PANEL_W, ctC + 1, corteBottom - ctC - 3);
 
     dibujarFooter(doc, datos, logos, paginaActual, totalPaginas);
+  }
+
+  // === PÁGINA PLANTA DE PREDIO (vectorial, por capas) ===
+  if (incluyePredio) {
+    paginaActual++;
+    doc.addPage('a3', 'landscape');
+    const ctP = dibujarHeader(doc, datos, logos);
+    const bottomP = H - FOOTER_H - 2;
+    const capas = datosProyecto.capasPredio?.length ? datosProyecto.capasPredio : capasPresentes(piezas).map(c => c.id);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6);
+    doc.setTextColor(GRIS);
+    doc.text('PLANTA DE PREDIO POR CAPAS', M, ctP + 4);
+    const r = dibujarPlantaPredio(doc, piezas, capas, M, ctP + 6, W - M * 2 - PANEL_W - 4, bottomP - ctP - 6);
+    dibujarLeyendaPredio(doc, piezas, capas, W - M - PANEL_W, ctP + 1, PANEL_W, bottomP - ctP - 1);
+    dibujarFooter(doc, { ...datos, escala: `1:${r.escala}` }, logos, paginaActual, totalPaginas);
   }
 
   // Descargar

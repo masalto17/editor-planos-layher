@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import { DRAG_UMBRAL_PX, ES_TIPO_VERTICAL, ES_TIPO_HORIZONTAL } from '../catalogo/constantes.js';
 import { piezaBoundsXZ, roundTo } from '../modelo/operaciones.js';
 import { elegirDiagonalPlanta } from '../catalogo/piezas.js';
@@ -92,6 +92,18 @@ function clipLineToRect(x1, y1, x2, y2, xmin, ymin, xmax, ymax) {
   }
   return null;
 }
+
+// Pieza de la capa memorizada: solo se vuelve a dibujar si cambia ella, el zoom o su selección.
+const ItemPlanta = memo(function ItemPlanta({ pieza, worldToScreen, zoom, seleccionada, otraAltura, modoTecnico, bloqueada, handlersRef }) {
+  return (
+    <g style={bloqueada ? { pointerEvents: 'none' } : undefined}
+      onMouseEnter={(e) => handlersRef.current.enter(e, pieza)}
+      onMouseLeave={() => handlersRef.current.leave()}>
+      <PiezaPlanta pieza={pieza} worldToScreen={worldToScreen} zoom={zoom} seleccionada={seleccionada}
+        otraAltura={otraAltura} modoTecnico={modoTecnico} onMouseDown={(e) => handlersRef.current.down(e, pieza)} />
+    </g>
+  );
+});
 
 function PiezaPlanta({ pieza, worldToScreen, zoom, seleccionada, fantasma, otraAltura, onMouseDown, modoTecnico }) {
   if (esFestival(pieza) || esTrazo(pieza)) {
@@ -1020,6 +1032,9 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
 
   // Nota: sin flip vertical (la profundidad Z no tiene "gravedad") — Z crece hacia abajo en pantalla.
   const worldToScreen = useCallback((wx, wz) => ({ x: (wx - pan.x) * zoom, y: (wz - pan.y) * zoom }), [pan, zoom]);
+  // Capa de piezas: se dibuja sin el pan y se desplaza con un transform, así desplazar el plano
+  // no vuelve a dibujar las piezas (clave con miles de instancias).
+  const worldToCapa = useCallback((wx, wz) => ({ x: wx * zoom, y: wz * zoom }), [zoom]);
   const screenToWorld = useCallback((sx, sy) => ({ x: sx / zoom + pan.x, z: sy / zoom + pan.y }), [pan, zoom]);
   const snapPara = (h, wx, wz, excluir) => {
     if (!usaGrillaPredio(h)) return calcularSnapPlanta(wx, wz, excluir);
@@ -1151,6 +1166,23 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     el.addEventListener('wheel', handler, { passive: false });
     return () => el.removeEventListener('wheel', handler);
   }, []);
+
+  // Handlers estables para la capa de piezas memorizada: leen el estado vigente por ref.
+  const handlersRef = useRef({});
+  handlersRef.current.down = (e, p) => onMouseDownPieza(e, p);
+  handlersRef.current.leave = () => setHoverPieza(null);
+  handlersRef.current.enter = (e, p) => { if (!arrastrando && !herramientaActiva) setHoverPieza({ pieza: p, screenX: e.clientX, screenY: e.clientY }); };
+  const seleccionSet = useMemo(() => new Set(piezasSeleccionadas), [piezasSeleccionadas]);
+  const capaPiezas = useMemo(() => (
+    <>
+      {piezasVisibles.map(p => (
+        <ItemPlanta key={p.id} pieza={p} worldToScreen={worldToCapa} zoom={zoom}
+          seleccionada={seleccionSet.has(p.id)} otraAltura={(p.y ?? 0) !== alturaY}
+          modoTecnico={modoTecnico} bloqueada={esBloqueada(p)} handlersRef={handlersRef} />
+      ))}
+      <EtiquetasConjuntos conjuntos={conjuntos} worldToScreen={worldToCapa} seleccionadas={piezasSeleccionadas} />
+    </>
+  ), [piezasVisibles, worldToCapa, zoom, seleccionSet, piezasSeleccionadas, alturaY, modoTecnico, esBloqueada, conjuntos]);
 
   const onMouseDownPieza = (e, pieza) => {
     if (esBloqueada(pieza)) return;
@@ -1286,18 +1318,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
             );
           });
         })()}
-        {piezasVisibles.map(p => (
-          <g key={p.id} style={esBloqueada(p) ? { pointerEvents: 'none' } : undefined}
-            onMouseEnter={(e) => { if (!arrastrando && !herramientaActiva) setHoverPieza({ pieza: p, screenX: e.clientX, screenY: e.clientY }); }}
-            onMouseLeave={() => setHoverPieza(null)}>
-            <PiezaPlanta pieza={p} worldToScreen={worldToScreen} zoom={zoom}
-              seleccionada={piezasSeleccionadas.includes(p.id)}
-              otraAltura={(p.y ?? 0) !== alturaY}
-              modoTecnico={modoTecnico}
-              onMouseDown={(e) => onMouseDownPieza(e, p)} />
-          </g>
-        ))}
-        <EtiquetasConjuntos conjuntos={conjuntos} worldToScreen={worldToScreen} seleccionadas={piezasSeleccionadas} />
+        <g transform={`translate(${-pan.x * zoom} ${-pan.y * zoom})`}>{capaPiezas}</g>
         {mouseEnCanvas && herramientaActiva?.categoria === 'torre' && !panneando && (() => {
           const a = worldToScreen(mousePos.x, mousePos.z), b = worldToScreen(mousePos.x + herramientaActiva.frente, mousePos.z + herramientaActiva.fondo);
           return <g pointerEvents="none" opacity="0.6">
