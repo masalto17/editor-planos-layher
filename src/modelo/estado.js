@@ -9,6 +9,7 @@ import { idbGet, idbSet, idbDel, idbKeys } from './storage.js';
 import { uid, roundTo, piezaMinX, piezaMinY, piezaMinZ, desplazarPieza, cruzaFilaZ } from './operaciones.js';
 import { CAPAS, USOS_AREA, USOS_RECORRIDO, definicionPorId } from '../catalogo/festival.js';
 import { generarTorre } from '../catalogo/torres.js';
+import { generarAndamio, generarEscenario } from '../catalogo/estructuras.js';
 import {
   VERSION_DISENO, esFestival, crearInstanciaFestival, crearArea, crearRecorrido, valladoPorRecorrido,
   normalizarCapas, migrarDiseno, normRot, asignarCodigos, paraCopia,
@@ -275,6 +276,14 @@ export function useDisenoState() {
     const nuevas = asignarCodigos(stateRef.current.piezas, r.piezas);
     commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id));
     return { grupo: nuevas[0].grupo, cantidad: nuevas.length, peso: Math.round(nuevas.reduce((s, p) => s + p.peso, 0) * 10) / 10, faltantes: r.faltantes };
+  }, [commit]);
+  // Estructura general (andamio o escenario) como conjunto de piezas Layher.
+  const colocarEstructura = useCallback((h, x, z) => {
+    const gen = h.tipoEstructura === 'escenario' ? generarEscenario : generarAndamio;
+    const r = gen({ modulacion: h.modulacion, modulosAncho: h.modulosAncho, modulosProfundidad: h.modulosProfundidad, pisos: h.pisos, alturaPiso: h.alturaPiso, x: roundTo(x, 0.01), z: roundTo(z, 0.01), grupoId: uid(), nuevoId: uid });
+    const nuevas = asignarCodigos(stateRef.current.piezas, r.piezas);
+    commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id));
+    return { grupo: nuevas[0].grupo, cantidad: nuevas.length, peso: Math.round(nuevas.reduce((s, p) => s + (p.peso ?? 0), 0) * 10) / 10, faltantes: r.faltantes };
   }, [commit]);
   // Edición de instancia (Propiedades). `cambios` es un objeto o una función (pieza) => objeto.
   const actualizarPiezas = useCallback((ids, cambios) => {
@@ -654,6 +663,6 @@ export function useDisenoState() {
     guardar, cargar, listarDisenos, eliminarDiseno,
     guardarComoArchivo, cargarDesdeArchivo,
     capas, toggleCapa, rotacionActiva, setRotacionActiva,
-    colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, actualizarPiezas, rotarSeleccion,
+    colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, colocarEstructura, actualizarPiezas, rotarSeleccion,
   };
 }

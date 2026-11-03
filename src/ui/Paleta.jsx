@@ -4,6 +4,7 @@ import { CATALOGO, CAT_KEYS, CATALOGO_EVENTO, CAT_KEYS_EVENTO } from '../catalog
 import { cargarPiezasImportadas, guardarPiezaImportada, eliminarPiezaImportada, leerArchivoPieza } from '../catalogo/importador.js';
 import { DEFINICIONES_FESTIVAL, ESTADOS, HERRAMIENTAS_TRAZO, USOS_AREA, USOS_RECORRIDO, VALLAS } from '../catalogo/festival.js';
 import { USOS_TORRE, MEDIDAS_TORRE, MEDIDAS_FONDO, OPCIONES_DIAGONALES, ALTO_MIN, ALTO_MAX } from '../catalogo/torres.js';
+import { MODULACIONES, ALTURAS_PISO, MAX_MODULOS_ANCHO, MAX_MODULOS_PROFUNDIDAD, MAX_PISOS } from '../catalogo/estructuras.js';
 
 // Catálogo combinado: piezas Layher + elementos de evento (sonido/video/luces).
 // Se usa en lugar de CATALOGO en toda la paleta para que ambos convivan.
@@ -366,11 +367,14 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
   const [usoRec, setUsoRec] = useState('circulacion');
   const [valla, setValla] = useState('REJA-300');
   const [torre, setTorre] = useState({ uso: 'pa', frente: 2.57, fondo: 1.57, alto: 6, diagonales: 2 });
+  const [andamio, setAndamio] = useState({ modulacion: 2.57, modulosAncho: 3, modulosProfundidad: 1, pisos: 3, alturaPiso: 2.00 });
+  const [escenario, setEscenario] = useState({ modulacion: 2.57, modulosAncho: 5, modulosProfundidad: 3, alturaPiso: 2.00 });
   const coincide = d => !termino || [d.nombre, ...(d.aliases ?? [])].some(t => t.toLowerCase().includes(termino));
   const grupos = GRUPOS_FESTIVAL.map(g => ({ ...g, defs: DEFINICIONES_FESTIVAL.filter(d => g.familias.includes(d.familia) && coincide(d)) })).filter(g => g.defs.length);
   const trazos = vista === 'planta' ? HERRAMIENTAS_TRAZO.filter(coincide) : [];
   const verTorres = vista === 'planta' && (!termino || ['torre', 'pa', 'delay', 'video', 'foh', 'iluminación', 'vigilancia', 'conjunto'].some(t => t.includes(termino) || termino.includes(t)));
-  if (!grupos.length && !trazos.length && !verTorres) return null;
+  const verEstructuras = vista === 'planta' && (!termino || ['andamio', 'escenario', 'estructura', 'módulo', 'modulo', 'piso', 'fachada'].some(t => t.includes(termino) || termino.includes(t)));
+  if (!grupos.length && !trazos.length && !verTorres && !verEstructuras) return null;
   const fmt2 = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2 });
   const herramientaTorre = (t) => {
     const u = USOS_TORRE.find(x => x.id === t.uso);
@@ -383,6 +387,25 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
   };
   const altos = [];
   for (let a = ALTO_MIN; a <= ALTO_MAX + 1e-9; a += 0.5) altos.push(a);
+  const herramientaAndamio = (a) => ({
+    id: 'ANDAMIO', categoria: 'andamio', tipoEstructura: 'andamio', ...a,
+    nombre: `Andamio ${a.modulosAncho}×${a.modulosProfundidad}×${a.pisos} mód. ${fmt2(a.modulacion)} · piso ${fmt2(a.alturaPiso)} m`,
+  });
+  const herramientaEscenario = (e) => ({
+    id: 'ESCENARIO', categoria: 'escenario', tipoEstructura: 'escenario', ...e,
+    nombre: `Escenario ${e.modulosAncho}×${e.modulosProfundidad} mód. ${fmt2(e.modulacion)} · alto ${fmt2(e.alturaPiso)} m`,
+  });
+  const cambiarAndamio = (clave, conv) => e => {
+    const a = { ...andamio, [clave]: conv(e.target.value) };
+    setAndamio(a);
+    if (activa?.categoria === 'andamio') onSelect(herramientaAndamio(a));
+  };
+  const cambiarEscenario = (clave, conv) => e => {
+    const es = { ...escenario, [clave]: conv(e.target.value) };
+    setEscenario(es);
+    if (activa?.categoria === 'escenario') onSelect(herramientaEscenario(es));
+  };
+  const numModulos = max => Array.from({ length: max }, (_, i) => i + 1);
 
   const herramientaTrazo = (h, valor) => {
     if (h.categoria === 'area') { const u = USOS_AREA.find(x => x.id === (valor ?? usoArea)); return { ...h, uso: u.id, nombre: `Área · ${u.label}` }; }
@@ -442,6 +465,82 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
               </div>
             </div>
           )}
+          {verEstructuras && (
+            <div>
+              <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">Estructuras generales</div>
+              {/* ── Andamio ── */}
+              <div className={`rounded border px-1.5 py-1 mb-1 ${activa?.categoria === 'andamio' ? 'border-green-600 bg-green-50' : 'border-gray-200 bg-white'}`}>
+                <button onClick={() => onSelect(herramientaAndamio(andamio))}
+                  className={`w-full text-left text-[11px] font-semibold ${activa?.categoria === 'andamio' ? 'text-green-700' : 'text-gray-800'}`}>
+                  ▦ Andamio (módulos sin piso)
+                </button>
+                <label className="text-[9px] text-gray-500 block">Modulación
+                  <select className={selectCls} value={andamio.modulacion} onChange={cambiarAndamio('modulacion', Number)}>
+                    {MODULACIONES.map(m => <option key={m} value={m}>{fmt2(m)} m</option>)}
+                  </select>
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  <label className="text-[9px] text-gray-500">Ancho (mód.)
+                    <select className={selectCls} value={andamio.modulosAncho} onChange={cambiarAndamio('modulosAncho', Number)}>
+                      {numModulos(MAX_MODULOS_ANCHO).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Prof. (mód.)
+                    <select className={selectCls} value={andamio.modulosProfundidad} onChange={cambiarAndamio('modulosProfundidad', Number)}>
+                      {numModulos(MAX_MODULOS_PROFUNDIDAD).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Pisos
+                    <select className={selectCls} value={andamio.pisos} onChange={cambiarAndamio('pisos', Number)}>
+                      {numModulos(MAX_PISOS).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                </div>
+                <label className="text-[9px] text-gray-500 block">Altura de piso
+                  <select className={selectCls} value={andamio.alturaPiso} onChange={cambiarAndamio('alturaPiso', Number)}>
+                    {ALTURAS_PISO.map(h => <option key={h} value={h}>{fmt2(h)} m</option>)}
+                  </select>
+                </label>
+                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">
+                  Total: {fmt2(andamio.modulosAncho * andamio.modulacion)} × {fmt2(andamio.modulosProfundidad * andamio.modulacion)} × {fmt2(andamio.pisos * andamio.alturaPiso)} m.
+                  {' '}Diag. planta: base completa + 1/5 en niveles (regla Layher fachada).
+                </p>
+              </div>
+              {/* ── Escenario ── */}
+              <div className={`rounded border px-1.5 py-1 ${activa?.categoria === 'escenario' ? 'border-amber-600 bg-amber-50' : 'border-gray-200 bg-white'}`}>
+                <button onClick={() => onSelect(herramientaEscenario(escenario))}
+                  className={`w-full text-left text-[11px] font-semibold ${activa?.categoria === 'escenario' ? 'text-amber-700' : 'text-gray-800'}`}>
+                  ▦ Escenario (módulo con piso)
+                </button>
+                <label className="text-[9px] text-gray-500 block">Modulación
+                  <select className={selectCls} value={escenario.modulacion} onChange={cambiarEscenario('modulacion', Number)}>
+                    {MODULACIONES.map(m => <option key={m} value={m}>{fmt2(m)} m</option>)}
+                  </select>
+                </label>
+                <div className="grid grid-cols-3 gap-1">
+                  <label className="text-[9px] text-gray-500">Ancho (mód.)
+                    <select className={selectCls} value={escenario.modulosAncho} onChange={cambiarEscenario('modulosAncho', Number)}>
+                      {numModulos(MAX_MODULOS_ANCHO).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Prof. (mód.)
+                    <select className={selectCls} value={escenario.modulosProfundidad} onChange={cambiarEscenario('modulosProfundidad', Number)}>
+                      {numModulos(MAX_MODULOS_PROFUNDIDAD).map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </label>
+                  <label className="text-[9px] text-gray-500">Alto a piso
+                    <select className={selectCls} value={escenario.alturaPiso} onChange={cambiarEscenario('alturaPiso', Number)}>
+                      {ALTURAS_PISO.map(h => <option key={h} value={h}>{fmt2(h)} m</option>)}
+                    </select>
+                  </label>
+                </div>
+                <p className="text-[9px] text-gray-400 leading-snug mt-0.5">
+                  Total: {fmt2(escenario.modulosAncho * escenario.modulacion)} × {fmt2(escenario.modulosProfundidad * escenario.modulacion)} m, piso a {fmt2(escenario.alturaPiso)} m.
+                  {' '}Incluye vigas puente, stringers, fenólico. Diag. planta en todos los niveles.
+                </p>
+              </div>
+            </div>
+          )}
           {trazos.length > 0 && (
             <div>
               <div className="px-1 py-0.5 text-[10px] uppercase tracking-wide font-bold text-gray-500">Trazar en planta</div>
@@ -481,7 +580,7 @@ function UltimasUsadas({ recientes, activa, onSelect }) {
       <div className="flex flex-wrap gap-1 mt-0.5 px-0.5">
         {recientes.map(p => {
           const sel = activa?.id === p.id;
-          const esEv = CATS_EVENTO.has(p.categoria) || ['festival', 'area', 'recorrido', 'valladoRecorrido', 'torre'].includes(p.categoria);
+          const esEv = CATS_EVENTO.has(p.categoria) || ['festival', 'area', 'recorrido', 'valladoRecorrido', 'torre', 'andamio', 'escenario'].includes(p.categoria);
           const medida = esEv ? null : p.categoria === 'diagonal'
             ? `${p.ancho.toFixed(2)}×${p.alto.toFixed(2)}`
             : p.anchoPlat ? `${p.anchoPlat.toFixed(2)}×${p.largo.toFixed(2)}`
