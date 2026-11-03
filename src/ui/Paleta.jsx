@@ -389,7 +389,7 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
   for (let a = ALTO_MIN; a <= ALTO_MAX + 1e-9; a += 0.5) altos.push(a);
   const herramientaAndamio = (a) => ({
     id: 'ANDAMIO', categoria: 'andamio', tipoEstructura: 'andamio', ...a,
-    nombre: `Andamio ${a.modulosAncho}×${a.modulosProfundidad}×${a.pisos} mód. ${fmt2(a.modulacion)} · piso ${fmt2(a.alturaPiso)} m`,
+    nombre: `Andamio ${a.modulosAncho}×${a.modulosProfundidad}×${a.pisos} mód. ${fmt2(a.modulacion)} · h ${fmt2(a.alturaPiso)} m`,
   });
   const herramientaEscenario = (e) => ({
     id: 'ESCENARIO', categoria: 'escenario', tipoEstructura: 'escenario', ...e,
@@ -490,7 +490,7 @@ function SeccionFestival({ activa, onSelect, vista, termino }) {
                       {numModulos(MAX_MODULOS_PROFUNDIDAD).map(n => <option key={n} value={n}>{n}</option>)}
                     </select>
                   </label>
-                  <label className="text-[9px] text-gray-500">Pisos
+                  <label className="text-[9px] text-gray-500">Mód. alto
                     <select className={selectCls} value={andamio.pisos} onChange={cambiarAndamio('pisos', Number)}>
                       {numModulos(MAX_PISOS).map(n => <option key={n} value={n}>{n}</option>)}
                     </select>

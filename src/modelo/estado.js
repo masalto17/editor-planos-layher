@@ -280,11 +280,32 @@ export function useDisenoState() {
   // Estructura general (andamio o escenario) como conjunto de piezas Layher.
   const colocarEstructura = useCallback((h, x, z) => {
     const gen = h.tipoEstructura === 'escenario' ? generarEscenario : generarAndamio;
-    const r = gen({ modulacion: h.modulacion, modulosAncho: h.modulosAncho, modulosProfundidad: h.modulosProfundidad, pisos: h.pisos, alturaPiso: h.alturaPiso, x: roundTo(x, 0.01), z: roundTo(z, 0.01), grupoId: uid(), nuevoId: uid });
+    const rx = roundTo(x, 0.01), rz = roundTo(z, 0.01);
+    const r = gen({ modulacion: h.modulacion, modulosAncho: h.modulosAncho, modulosProfundidad: h.modulosProfundidad, pisos: h.pisos, alturaPiso: h.alturaPiso, x: rx, z: rz, grupoId: uid(), nuevoId: uid });
     const nuevas = asignarCodigos(stateRef.current.piezas, r.piezas);
     commit([...stateRef.current.piezas, ...nuevas]); setPiezasSeleccionadas(nuevas.map(p => p.id));
+    const mod = h.modulacion || 2.57;
+    const nProf = h.modulosProfundidad || 1;
+    let filasNuevas = [...stateRef.current.filas];
+    const zExistentes = new Set(filasNuevas.map(f => f.z));
+    const usados = new Set(filasNuevas.map(f => f.id));
+    let primeraFilaId = null;
+    for (let mz = 0; mz <= nProf; mz++) {
+      const colZ = parseFloat((rz + mz * mod).toFixed(3));
+      const yaExiste = filasNuevas.find(f => Math.abs(f.z - colZ) < 0.01);
+      if (yaExiste) {
+        if (mz === 0) primeraFilaId = yaExiste.id;
+      } else {
+        const letra = proximaLetra([...usados]);
+        usados.add(letra);
+        filasNuevas.push({ id: letra, nombre: letra, z: colZ });
+        if (mz === 0) primeraFilaId = letra;
+      }
+    }
+    setFilas(filasNuevas);
+    if (primeraFilaId) setFilaActivaId(primeraFilaId);
     return { grupo: nuevas[0].grupo, cantidad: nuevas.length, peso: Math.round(nuevas.reduce((s, p) => s + (p.peso ?? 0), 0) * 10) / 10, faltantes: r.faltantes };
-  }, [commit]);
+  }, [commit, proximaLetra]);
   // Edición de instancia (Propiedades). `cambios` es un objeto o una función (pieza) => objeto.
   const actualizarPiezas = useCallback((ids, cambios) => {
     const pz = stateRef.current.piezas;

@@ -58,19 +58,25 @@ function nivelesHorizontales(altoTotal, alturaPiso) {
 }
 
 // ── Diagonales de fachada (alzado) ──────────────────────────
-// Se colocan alternando sentido piso a piso en las caras largas (frente/contrafrente)
-// y en las caras cortas (laterales), según la regla estándar.
+// Efecto espejo: módulos 1..centro suben en una dirección, centro+1..N en la opuesta.
+// Esto neutraliza la torsión global de la estructura.
+// Todas las diagonales de un mismo piso van en la misma dirección dentro de su mitad.
 function agregarDiagonalesFachada(piezas, faltantes, colXs, colZs, niveles, add) {
   const fmt = v => v.toLocaleString('es-AR', { minimumFractionDigits: 2 });
+  const nModX = colXs.length - 1;
+  const nModZ = colZs.length - 1;
+  const centroX = nModX / 2;
+  const centroZ = nModZ / 2;
 
   // Caras en X (frente/contrafrente): una diagonal por cada módulo de ancho, en cada piso.
   for (let i = 1; i < niveles.length; i++) {
-    const y0 = niveles[i - 1], h = r3(niveles[i] - y0), sube = i % 2 === 1;
-    for (let mx = 0; mx < colXs.length - 1; mx++) {
+    const y0 = niveles[i - 1], h = r3(niveles[i] - y0);
+    for (let mx = 0; mx < nModX; mx++) {
       const x1 = colXs[mx], x2 = colXs[mx + 1], ancho = r3(x2 - x1);
+      // Espejo: módulos de la primera mitad suben, los de la segunda bajan.
+      const sube = mx < centroX;
       const d = cat('diagonales', q => Math.abs(q.ancho - ancho) < 0.01 && Math.abs(q.alto - h) < 0.01);
       if (d) {
-        // Frente (z mínimo) y contrafrente (z máximo).
         for (const cz of [colZs[0], colZs[colZs.length - 1]]) {
           add(pieza(d, 'diagonal', { ancho, alto: h, x1, y1: sube ? y0 : r3(y0 + h), x2, y2: sube ? r3(y0 + h) : y0, z: cz }));
         }
@@ -78,9 +84,10 @@ function agregarDiagonalesFachada(piezas, faltantes, colXs, colZs, niveles, add)
         faltantes.push(`Diagonal ${fmt(ancho)} × ${fmt(h)} m (frente/contrafrente, piso ${fmt(y0)}–${fmt(niveles[i])} m): no está en catálogo`);
       }
     }
-    // Caras laterales (en Z): una diagonal por cada módulo de profundidad.
-    for (let mz = 0; mz < colZs.length - 1; mz++) {
+    // Caras laterales (en Z): espejo desde el centro de profundidad.
+    for (let mz = 0; mz < nModZ; mz++) {
       const z1 = colZs[mz], z2 = colZs[mz + 1], fondo = r3(z2 - z1);
+      const sube = mz < centroZ;
       const d = cat('diagonales', q => Math.abs(q.ancho - fondo) < 0.01 && Math.abs(q.alto - h) < 0.01);
       if (d) {
         for (const cx of [colXs[0], colXs[colXs.length - 1]]) {
@@ -341,17 +348,18 @@ export function generarEscenario({
   }
 
   // Fenólico cubriendo toda la superficie del piso.
-  // Placa estándar 2.44 × 1.22m; se modulan para cubrir el total.
+  // Placa estándar 2.44 × 1.22m; se recortan al perímetro de la estructura.
   const fen = CATALOGO.fenolicos[0];
   if (fen) {
-    // Colocar placas en grilla, orientación larga en X.
     const fenLargo = fen.largo;       // 2.44m
     const fenAncho = fen.anchoPlat;   // 1.22m
     let fx = x;
     while (fx < x + anchoTotal - 0.01) {
+      const largoReal = r3(Math.min(fenLargo, x + anchoTotal - fx));
       let fz = z;
       while (fz < z + profTotal - 0.01) {
-        add(pieza(fen, 'fenolico', { largo: fenLargo, anchoPlat: fenAncho, x: fx, y: altoTotal, z: fz, orientacion: 'x' }));
+        const anchoReal = r3(Math.min(fenAncho, z + profTotal - fz));
+        add(pieza(fen, 'fenolico', { largo: largoReal, anchoPlat: anchoReal, x: fx, y: altoTotal, z: fz, orientacion: 'x' }));
         fz = r3(fz + fenAncho);
       }
       fx = r3(fx + fenLargo);
