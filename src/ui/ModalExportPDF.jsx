@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { capasPresentes, tienePredio } from '../export/pdfPredio.js';
 import { FileDown, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { ES_TIPO_VERTICAL } from '../catalogo/constantes.js';
 import { resumenPeso } from '../modelo/entidades.js';
@@ -27,8 +28,11 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
   // --- Opciones páginas ---
   const [incluirPlanta, setIncluirPlanta] = useState(!!tienePlanta);
   const [incluirCorte, setIncluirCorte] = useState(false);
+  const capasDisponibles = useMemo(() => capasPresentes(piezas), [piezas]);
+  const [incluirPredio, setIncluirPredio] = useState(() => tienePredio(piezas));
+  const [capasPredio, setCapasPredio] = useState(() => capasPresentes(piezas).map(c => c.id));
   const [corteX, setCorteX] = useState('');
-  const [secExpanded, setSecExpanded] = useState({ tec: false, pag: false });
+  const [secExpanded, setSecExpanded] = useState(() => ({ tec: false, pag: tienePredio(piezas) }));
 
   // Detectar posiciones X con verticales
   const posicionesX = useMemo(() => {
@@ -73,7 +77,7 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
       sobrecargaUso: parseFloat(sobrecargaUso) || 150,
       clasificacionViento,
       observaciones,
-      incluirPlanta, incluirCorte,
+      incluirPlanta, incluirCorte, incluirPredio, capasPredio,
       corteX: incluirCorte ? (parseFloat(corteX) || posicionesX[Math.floor(posicionesX.length / 2)] || 0) : null,
     });
   };
@@ -223,6 +227,23 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
                   className="rounded border-gray-300 text-red-600 focus:ring-red-400" />
                 <span className="text-gray-700">Incluir vista de corte transversal</span>
               </label>
+              <label className="flex items-center gap-2 text-xs cursor-pointer">
+                <input id="pdf-predio" type="checkbox" checked={incluirPredio} onChange={e => setIncluirPredio(e.target.checked)}
+                  className="rounded border-gray-300 text-red-600 focus:ring-red-400" />
+                <span className="text-gray-700">Incluir planta de predio por capas (leyenda, superficies, vallado y torres)</span>
+              </label>
+              {incluirPredio && (
+                <div className="ml-6 flex flex-wrap gap-x-3 gap-y-1">
+                  {capasDisponibles.map(c => (
+                    <label key={c.id} className="flex items-center gap-1 text-[11px] cursor-pointer">
+                      <input type="checkbox" checked={capasPredio.includes(c.id)}
+                        onChange={e => setCapasPredio(prev => e.target.checked ? [...prev, c.id] : prev.filter(x => x !== c.id))} />
+                      <span className="w-2 h-2 rounded-full" style={{ background: c.color }} />
+                      <span>{c.label}</span><span className="text-gray-400">{c.cantidad}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
               {incluirCorte && posicionesX.length > 0 && (
                 <div className="ml-6 mt-1">
                   <label className="block text-[10px] uppercase tracking-wide text-gray-500 font-bold mb-1">
@@ -248,7 +269,7 @@ export default function ModalExportPDF({ nombreActual, piezas, filas, onExportar
         {/* Footer */}
         <div className="flex items-center justify-between gap-2 px-4 py-3 border-t border-gray-200 bg-gray-50 rounded-b-lg">
           <span className="text-[9px] text-gray-400">
-            {1 + (incluirPlanta ? 1 : 0) + (incluirCorte ? 1 : 0)} pág.
+            {1 + (incluirPlanta ? 1 : 0) + (incluirCorte ? 1 : 0) + (incluirPredio ? 1 : 0)} pág.
           </span>
           <div className="flex gap-2">
             <button onClick={onCerrar} className="px-4 py-1.5 text-xs text-gray-600 hover:bg-gray-200 rounded border border-gray-300">
