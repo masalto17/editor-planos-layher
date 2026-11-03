@@ -145,21 +145,23 @@ export function parseDesign(text){
  issues.push(`${item.name}: cluster de ${cajas} caja(s) con curva J; geometría esquemática.`);
  }else if(p.categoria==='pantallaLED'){
  // Pantalla LED: thin panel with frame + mounting brackets
+ // En 2D (x,y) es el anclaje superior; el panel cuelga hacia abajo (y-alto).
+ // En 3D se debe reproducir igual: el panel va de y=0 (tope) a y=-alto (base).
  const alto=n(p,'alto',2);const depth=0.10;const frameD=0.02;
- // Main panel body
- const c=[[0,0,-depth/2],[len,0,-depth/2],[len,alto,-depth/2],[0,alto,-depth/2],
-           [0,0,depth/2],[len,0,depth/2],[len,alto,depth/2],[0,alto,depth/2]].map(([u,v,w])=>P(u,v,w));
+ // Main panel body (cuelga hacia abajo: de 0 a -alto)
+ const c=[[0,0,-depth/2],[len,0,-depth/2],[len,-alto,-depth/2],[0,-alto,-depth/2],
+           [0,0,depth/2],[len,0,depth/2],[len,-alto,depth/2],[0,-alto,depth/2]].map(([u,v,w])=>P(u,v,w));
  [[0,1,2,3],[4,5,6,7],[3,2,6,7],[0,1,5,4],[0,3,7,4],[1,2,6,5]].forEach(idx=>face(idx.map(k=>c[k]),'plate'));
  // Mounting brackets at top (two vertical tubes at 20% and 80% width)
  const brkH=0.12;
- line(P(len*0.2,alto),P(len*0.2,alto+brkH),.012,'tube');
- line(P(len*0.8,alto),P(len*0.8,alto+brkH),.012,'tube');
+ line(P(len*0.2,0),P(len*0.2,brkH),.012,'tube');
+ line(P(len*0.8,0),P(len*0.8,brkH),.012,'tube');
  // Cross bar between brackets
- line(P(len*0.2,alto+brkH),P(len*0.8,alto+brkH),.010,'tube');
+ line(P(len*0.2,brkH),P(len*0.8,brkH),.010,'tube');
  // Module grid lines on front face (decorative)
  const nModH=Math.max(2,Math.round(alto/0.5));const nModW=Math.max(2,Math.round(len/0.5));
- for(let mi=1;mi<nModH;mi++){const gy=mi*alto/nModH;line(P(0,gy,-depth/2-0.001),P(len,gy,-depth/2-0.001),.002,'tube');}
- for(let mi=1;mi<nModW;mi++){const gx=mi*len/nModW;line(P(gx,0,-depth/2-0.001),P(gx,alto,-depth/2-0.001),.002,'tube');}
+ for(let mi=1;mi<nModH;mi++){const gy=-mi*alto/nModH;line(P(0,gy,-depth/2-0.001),P(len,gy,-depth/2-0.001),.002,'tube');}
+ for(let mi=1;mi<nModW;mi++){const gx=mi*len/nModW;line(P(gx,0,-depth/2-0.001),P(gx,-alto,-depth/2-0.001),.002,'tube');}
  issues.push(`${item.name}: panel LED ${len}×${alto}m con soporte superior.`);
  }else if(p.categoria==='luz'){
  // Luz: fixture with clamp, yoke/arm, and body

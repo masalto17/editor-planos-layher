@@ -74,6 +74,7 @@ export default function Toolbar({
               <span className="shrink-0">Fila:</span>
               <select value={filaActivaId} onChange={e => setFilaActivaId(e.target.value)}
                 className="px-1 py-0.5 border border-gray-300 rounded text-[11px] font-mono bg-white min-w-0">
+                <option value="__todas__">Todas las filas</option>
                 {filas.map(f => <option key={f.id} value={f.id}>{f.nombre} · Z={f.z.toFixed(2)}m</option>)}
               </select>
               <button onClick={agregarFila} className="p-1 bg-gray-100 rounded border border-gray-300 shrink-0"><Plus size={11} /></button>
@@ -235,13 +236,14 @@ export default function Toolbar({
               <>
                 <select value={filaActivaId} onChange={e => setFilaActivaId(e.target.value)}
                   className="px-1 py-0.5 border border-gray-300 rounded text-[11px] font-mono bg-white">
+                  <option value="__todas__">Todas las filas</option>
                   {filas.map(f => <option key={f.id} value={f.id}>{f.nombre} · Z={f.z.toFixed(2)}m</option>)}
                 </select>
-                <button onClick={iniciarEdicionFila} title="Editar nombre / Z"
-                  className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><Pencil size={11} /></button>
+                <button onClick={iniciarEdicionFila} title="Editar nombre / Z" disabled={filaActivaId === '__todas__'}
+                  className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><Pencil size={11} /></button>
                 <button onClick={agregarFila} title="Nueva fila (+2.57m)"
                   className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300"><Plus size={11} /></button>
-                <button onClick={() => eliminarFila(filaActivaId)} disabled={filas.length <= 1} title="Eliminar fila activa"
+                <button onClick={() => eliminarFila(filaActivaId)} disabled={filas.length <= 1 || filaActivaId === '__todas__'} title="Eliminar fila activa"
                   className="p-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 disabled:opacity-40"><Minus size={11} /></button>
               </>
             )}
