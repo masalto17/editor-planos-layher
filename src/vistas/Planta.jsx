@@ -940,7 +940,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
     clipboard, orientacionActiva, filas, alturaY,
     diagonalPlantaOrigen, setDiagonalPlantaOrigen,
     colocarPiezaPlanta, colocarDiagonalPlanta, calcularSnapPlanta, moverPiezasZ, commitPiezasActuales, pegar,
-    capas, toggleCapa, rotacionActiva, colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, actualizarPiezas,
+    capas, toggleCapa, rotacionActiva, colocarFestival, colocarArea, colocarRecorrido, colocarValladoRecorrido, colocarTorre, colocarEstructura, actualizarPiezas,
   } = modelo;
 
   // Capas: las ocultas no se dibujan; las bloqueadas se ven pero no se seleccionan ni se mueven.
@@ -1117,6 +1117,7 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
       }
       if (esFestival(herramientaActiva)) { colocarFestival(herramientaActiva, pos.x, 0, pos.z); return; }
       if (herramientaActiva.categoria === 'torre') { setInforme({ torre: colocarTorre(herramientaActiva, pos.x, pos.z) }); return; }
+      if (herramientaActiva.categoria === 'andamio' || herramientaActiva.categoria === 'escenario') { setInforme({ estructura: colocarEstructura(herramientaActiva, pos.x, pos.z) }); return; }
       if (esHerramientaTrazo(herramientaActiva)) { setTrazo(t => [...t, { x: pos.x, z: pos.z }]); return; }
       colocarPiezaPlanta(herramientaActiva, pos.x, pos.z);
       return;
@@ -1319,15 +1320,18 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
           });
         })()}
         <g transform={`translate(${-pan.x * zoom} ${-pan.y * zoom})`}>{capaPiezas}</g>
-        {mouseEnCanvas && herramientaActiva?.categoria === 'torre' && !panneando && (() => {
-          const a = worldToScreen(mousePos.x, mousePos.z), b = worldToScreen(mousePos.x + herramientaActiva.frente, mousePos.z + herramientaActiva.fondo);
+        {mouseEnCanvas && (herramientaActiva?.categoria === 'torre' || herramientaActiva?.categoria === 'andamio' || herramientaActiva?.categoria === 'escenario') && !panneando && (() => {
+          const anchoT = herramientaActiva.categoria === 'torre' ? herramientaActiva.frente : (herramientaActiva.modulosAncho ?? 1) * (herramientaActiva.modulacion ?? 2.57);
+          const fondoT = herramientaActiva.categoria === 'torre' ? herramientaActiva.fondo : (herramientaActiva.modulosProfundidad ?? 1) * (herramientaActiva.modulacion ?? 2.57);
+          const color = herramientaActiva.categoria === 'escenario' ? '#b45309' : herramientaActiva.categoria === 'andamio' ? '#059669' : '#1e40af';
+          const a = worldToScreen(mousePos.x, mousePos.z), b = worldToScreen(mousePos.x + anchoT, mousePos.z + fondoT);
           return <g pointerEvents="none" opacity="0.6">
-            <rect x={a.x} y={a.y} width={b.x - a.x} height={b.y - a.y} fill="#1e40af" fillOpacity="0.08" stroke="#1e40af" strokeWidth="1.5" strokeDasharray="6 3" />
-            {[[a.x, a.y], [b.x, a.y], [a.x, b.y], [b.x, b.y]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="4" fill="#1e40af" />)}
-            <text x={a.x} y={a.y - 6} fontSize="10" fill="#1e40af" fontFamily="monospace" fontWeight="bold">{herramientaActiva.nombre}</text>
+            <rect x={a.x} y={a.y} width={b.x - a.x} height={b.y - a.y} fill={color} fillOpacity="0.08" stroke={color} strokeWidth="1.5" strokeDasharray="6 3" />
+            {[[a.x, a.y], [b.x, a.y], [a.x, b.y], [b.x, b.y]].map(([cx, cy], i) => <circle key={i} cx={cx} cy={cy} r="4" fill={color} />)}
+            <text x={a.x} y={a.y - 6} fontSize="10" fill={color} fontFamily="monospace" fontWeight="bold">{herramientaActiva.nombre}</text>
           </g>;
         })()}
-        {mouseEnCanvas && herramientaActiva && herramientaActiva.categoria !== 'torre' && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !esHerramientaTrazo(herramientaActiva) && !panneando && !arrastrando && (
+        {mouseEnCanvas && herramientaActiva && !['torre', 'andamio', 'escenario'].includes(herramientaActiva.categoria) && herramientaActiva.categoria !== 'diagonal' && herramientaActiva.categoria !== 'diagonalPlanta' && !esHerramientaTrazo(herramientaActiva) && !panneando && !arrastrando && (
           <PiezaPlanta pieza={esFestival(herramientaActiva)
             ? { ...herramientaActiva, _def: herramientaActiva, x: mousePos.x, y: 0, z: mousePos.z, rot: rotacionActiva, id: 'ghost' }
             : { ...herramientaActiva, x: mousePos.x, z: mousePos.z, id: 'ghost', orientacion: orientacionActiva }} worldToScreen={worldToScreen} zoom={zoom} fantasma modoTecnico={modoTecnico} />
@@ -1401,6 +1405,18 @@ export default function Planta({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
                   ? <div className="text-amber-700 font-semibold">Sin pieza de catálogo: {informe.torre.faltantes.join(' · ')}.</div>
                   : <div className="text-green-700">Diagonales en {informe.torre.grupo.diagonales === 4 ? 'las 4 caras' : 'las 2 caras del lado largo'}, cada piso.</div>}
                 <div className="text-gray-500">Sin plataforma, barandas ni diagonal de planta (regla de MasAlto). Clic en cualquier pieza selecciona la torre entera.</div>
+              </> : informe.estructura ? <>
+                <div className="font-bold">{informe.estructura.grupo.codigo} · {informe.estructura.grupo.nombre}</div>
+                <div>{informe.estructura.cantidad} piezas · {informe.estructura.peso.toLocaleString('es-AR')} kg</div>
+                {informe.estructura.faltantes.length > 0
+                  ? <div className="text-amber-700 font-semibold">Sin pieza de catálogo: {informe.estructura.faltantes.join(' · ')}.</div>
+                  : <div className="text-green-700">Todas las piezas armadas con catálogo.</div>}
+                <div className="text-gray-500">
+                  {informe.estructura.grupo.tipo === 'escenario'
+                    ? 'Incluye vigas puente, stringers, fenólico y diagonales de planta en todos los niveles.'
+                    : 'Diagonales de planta: base completa + 1 de cada 5 módulos en niveles superiores (regla Layher).'}
+                  {' '}Clic en cualquier pieza selecciona el conjunto.
+                </div>
               </> : <>
                 <div className="font-bold">{informe.cantidad} × {informe.nombre}</div>
                 <div>Largo del recorrido {informe.largoRecorrido.toLocaleString('es-AR')} m · nominal colocado {informe.largoNominal.toLocaleString('es-AR')} m</div>
