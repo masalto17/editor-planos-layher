@@ -120,7 +120,57 @@ export function PanelPropiedades({ piezas, piezasSeleccionadas, actualizarPiezas
   }
   if (sel.length !== 1) return null;
   const p = sel[0];
-  if (!esFestival(p) && !esArea(p) && !esRecorrido(p)) return null;
+  // Piezas Layher normales: panel de edición de posición X, Y, Z
+  if (!esFestival(p) && !esArea(p) && !esRecorrido(p)) {
+    const upd = cambios => actualizarPiezas([p.id], cambios);
+    const idb = `prop-${p.id}`;
+    const esDiag = p.categoria === 'diagonal';
+    const esDiagP = p.categoria === 'diagonalPlanta';
+    const esDiagL = p.categoria === 'diagonalLateral';
+    return (
+      <div className="bg-white/97 border border-gray-300 rounded shadow-sm text-[11px] w-64 p-2 space-y-1">
+        <div className="flex items-start gap-1.5">
+          <span className="font-bold text-gray-800 leading-tight flex-1">{p.nombre}</span>
+          {p.ref && <span className="text-[9px] font-mono text-gray-400 shrink-0">{p.ref}</span>}
+        </div>
+        {p.peso != null && <Fila label="Peso"><span className="font-mono">{fmt(p.peso)} kg</span></Fila>}
+        {esDiag ? (
+          <>
+            <Fila label="X1"><CampoNumero id={`${idb}-x1`} valor={p.x1} sufijo="m" onCommit={v => upd({ x1: v })} /></Fila>
+            <Fila label="Y1"><CampoNumero id={`${idb}-y1`} valor={p.y1} sufijo="m" onCommit={v => upd({ y1: v })} /></Fila>
+            <Fila label="X2"><CampoNumero id={`${idb}-x2`} valor={p.x2} sufijo="m" onCommit={v => upd({ x2: v })} /></Fila>
+            <Fila label="Y2"><CampoNumero id={`${idb}-y2`} valor={p.y2} sufijo="m" onCommit={v => upd({ y2: v })} /></Fila>
+            <Fila label="Z (fila)"><CampoNumero id={`${idb}-z`} valor={p.z ?? 0} sufijo="m" onCommit={v => upd({ z: v })} /></Fila>
+          </>
+        ) : esDiagP ? (
+          <>
+            <Fila label="X1"><CampoNumero id={`${idb}-x1`} valor={p.x1} sufijo="m" onCommit={v => upd({ x1: v })} /></Fila>
+            <Fila label="Z1"><CampoNumero id={`${idb}-z1`} valor={p.z1} sufijo="m" onCommit={v => upd({ z1: v })} /></Fila>
+            <Fila label="X2"><CampoNumero id={`${idb}-x2`} valor={p.x2} sufijo="m" onCommit={v => upd({ x2: v })} /></Fila>
+            <Fila label="Z2"><CampoNumero id={`${idb}-z2`} valor={p.z2} sufijo="m" onCommit={v => upd({ z2: v })} /></Fila>
+            <Fila label="Altura Y"><CampoNumero id={`${idb}-y`} valor={p.y ?? 0} sufijo="m" onCommit={v => upd({ y: v })} /></Fila>
+          </>
+        ) : esDiagL ? (
+          <>
+            <Fila label="X"><CampoNumero id={`${idb}-x`} valor={p.x} sufijo="m" onCommit={v => upd({ x: v })} /></Fila>
+            <Fila label="Y"><CampoNumero id={`${idb}-y`} valor={p.y} sufijo="m" onCommit={v => upd({ y: v })} /></Fila>
+            <Fila label="Z"><CampoNumero id={`${idb}-z`} valor={p.z ?? 0} sufijo="m" onCommit={v => upd({ z: v })} /></Fila>
+            <Fila label="Ancho"><span className="font-mono">{fmt(p.ancho)} m</span></Fila>
+            <Fila label="Alto"><span className="font-mono">{fmt(p.alto)} m</span></Fila>
+          </>
+        ) : (
+          <>
+            <Fila label="X"><CampoNumero id={`${idb}-x`} valor={p.x} sufijo="m" onCommit={v => upd({ x: v })} /></Fila>
+            <Fila label="Y"><CampoNumero id={`${idb}-y`} valor={p.y} sufijo="m" onCommit={v => upd({ y: v })} /></Fila>
+            <Fila label="Z (fila)"><CampoNumero id={`${idb}-z`} valor={p.z ?? 0} sufijo="m" onCommit={v => upd({ z: v })} /></Fila>
+            {p.largo != null && <Fila label="Largo"><span className="font-mono">{fmt(p.largo)} m</span></Fila>}
+            {p.orientacion && <Fila label="Orientación"><span className="font-mono">eje {p.orientacion.toUpperCase()}</span></Fila>}
+          </>
+        )}
+        <div className="text-[9px] text-gray-400 pt-0.5">Editá las coordenadas y presioná Enter o clickeá fuera.</div>
+      </div>
+    );
+  }
   const upd = cambios => actualizarPiezas([p.id], cambios);
   const idb = `prop-${p.id}`;
 

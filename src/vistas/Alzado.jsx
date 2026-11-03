@@ -17,24 +17,27 @@ export default function Alzado({ modelo, mostrarGrilla, mostrarCotas, modoTecnic
   const {
     piezas, herramientaActiva, setHerramientaActiva, piezasSeleccionadas, setPiezasSeleccionadas,
     diagonalOrigen, setDiagonalOrigen, clipboard, filaZ, orientacionActiva,
-    filas, setFilaActivaId,
+    filas, filaActivaId, setFilaActivaId,
     commit, copiar, pegar, duplicar, eliminarSeleccion, flipMensulas,
     colocarPiezaAlzado, colocarDiagonalAlzado, calcularSnapAlzado, moverPiezas, commitPiezasActuales,
     capas, toggleCapa, rotacionActiva, colocarFestival, actualizarPiezas,
   } = modelo;
   const esBloqueada = useCallback(p => !!capas[capaDe(p)]?.bloqueada, [capas]);
 
+  const todasLasFilas = filaActivaId === '__todas__';
+
   // Piezas seleccionadas que están fuera de la fila visible ahora. Sirve para avisar
   // al usuario cuando su selección vino de la Planta y no cae en el Alzado actual.
-  const seleccionadasFueraFila = useMemo(() => piezas.filter(p => piezasSeleccionadas.includes(p.id) && !cruzaFilaZ(p, filaZ)), [piezas, piezasSeleccionadas, filaZ]);
+  const seleccionadasFueraFila = useMemo(() => todasLasFilas ? [] : piezas.filter(p => piezasSeleccionadas.includes(p.id) && !cruzaFilaZ(p, filaZ)), [piezas, piezasSeleccionadas, filaZ, todasLasFilas]);
   const filasSeleccionadas = useMemo(() => {
     const zs = [...new Set(seleccionadasFueraFila.map(p => p.z ?? 0))];
     return zs.map(z => filas.find(f => f.z === z) || { id: null, nombre: `Z=${z.toFixed(2)}m`, z });
   }, [seleccionadasFueraFila, filas]);
 
-  // Filtra piezas visibles en la fila Z activa. Horizontales orientadas en Z pueden
-  // atravesar la fila (arrancan en un z0 y llegan hasta z0+largo) — cruzaFilaZ maneja eso.
-  const piezasFila = useMemo(() => piezas.filter(p => cruzaFilaZ(p, filaZ) && capas[capaDe(p)]?.visible !== false), [piezas, filaZ, capas]);
+  // Filtra piezas visibles en la fila Z activa. En modo "Todas las filas" muestra todo.
+  const piezasFila = useMemo(() => todasLasFilas
+    ? piezas.filter(p => capas[capaDe(p)]?.visible !== false)
+    : piezas.filter(p => cruzaFilaZ(p, filaZ) && capas[capaDe(p)]?.visible !== false), [piezas, filaZ, capas, todasLasFilas]);
 
   const [arrastrando, setArrastrando] = useState(null);
   const [seleccionRect, setSeleccionRect] = useState(null);
